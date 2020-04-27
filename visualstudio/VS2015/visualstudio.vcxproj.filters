@@ -1,0 +1,225 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\extra\textparser.cpp">
+      <Filter>extra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\box.cpp">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\box_bld.cpp">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\coldet.cpp">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\coldet_bld.cpp">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\math3d.cpp">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\mytritri.cpp">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\sysdep.cpp">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\tritri.c">
+      <Filter>extra\coldet</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\picopng.cpp">
+      <Filter>extra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fbo.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\texture.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\shader.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\mesh.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\framework.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\utils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\input.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\application.cpp" />
+    <ClCompile Include="..\..\src\extra\hdre.cpp">
+      <Filter>extra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\imgui.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\imgui_demo.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\imgui_draw.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\imgui_widgets.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\imgui_impl_opengl3.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\imgui_impl_sdl.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\ImCurveEdit.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\ImGradient.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\ImGuizmo.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\ImSequencer.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\renderer.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gltf_loader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\prefab.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\camera.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\material.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\extra\textparser.h">
+      <Filter>extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\coldet\box.h">
+      <Filter>extra\coldet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\coldet\coldet.h">
+      <Filter>extra\coldet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\coldet\coldetimpl.h">
+      <Filter>extra\coldet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\coldet\math3d.h">
+      <Filter>extra\coldet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\coldet\mytritri.h">
+      <Filter>extra\coldet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\coldet\sysdep.h">
+      <Filter>extra\coldet</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\picopng.h">
+      <Filter>extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fbo.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\texture.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\shader.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\mesh.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\framework.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\includes.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\input.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\application.h" />
+    <ClInclude Include="..\..\src\extra\hdre.h">
+      <Filter>extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\imconfig.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\imgui.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\imgui_internal.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\imgui_impl_sdl.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\imgui_impl_opengl3.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\ImCurveEdit.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\ImGradient.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\ImGuizmo.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\ImSequencer.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\PerlinNoise.hpp">
+      <Filter>extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\renderer.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gltf_loader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\prefab.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\camera.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\material.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="extra">
+      <UniqueIdentifier>{0193360c-cb30-415b-af36-3a964b4283cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="extra\coldet">
+      <UniqueIdentifier>{9fb2af86-1d0f-47da-9841-0d09fb2479f8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="gfx">
+      <UniqueIdentifier>{12f641db-a3cf-408b-ba79-f173c3a1594d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{feb78646-9d96-43df-8d00-2397429ea3ef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="extra\imgui">
+      <UniqueIdentifier>{82a43214-a04a-466f-9f66-6d4e78e6772c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pipeline">
+      <UniqueIdentifier>{fe388127-614b-4a49-b829-ae6e56f88a34}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
