@@ -65,7 +65,7 @@ bool FBO::create( int width, int height, int num_textures, int format, int type,
 	{
 		Texture* colortex = textures[i] = new Texture(width, height, format, type, false); //,NULL, format == GL_RGBA ? GL_RGBA8 : GL_RGB8 
 		glBindTexture(colortex->texture_type, colortex->texture_id);	//we activate this id to tell opengl we are going to use this texture
-		glTexParameteri(colortex->texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR);	//set the min filter
+		glTexParameteri(colortex->texture_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);	//set the min filter
 		glTexParameteri(colortex->texture_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);   //set the mag filter
 		glTexParameteri(colortex->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(colortex->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -130,7 +130,7 @@ bool FBO::setTextures(std::vector<Texture*> textures, Texture* depth_texture, in
 			glGenRenderbuffers(1, &renderbuffer_depth);
 		glBindRenderbuffer(GL_RENDERBUFFER, renderbuffer_depth);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbuffer_depth);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderbuffer_depth);
 	}
 	checkGLErrors();
 
@@ -150,12 +150,19 @@ bool FBO::setTextures(std::vector<Texture*> textures, Texture* depth_texture, in
 			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubemap_face, texture ? texture->texture_id : NULL, 0);
 		}
 		else
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_2D, texture ? texture->texture_id : NULL, 0);
-		bufs[i] = GL_COLOR_ATTACHMENT0_EXT + i;
+        {
+            glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_2D, texture ? texture->texture_id : NULL, 0);
+        }
+        if(texture)
+            bufs[i] = GL_COLOR_ATTACHMENT0_EXT + i;
+        else
+            bufs[i] = GL_NONE;
 		color_textures[i] = texture;
 		if (texture)
 			num_color_textures++;
 	}
+    
+    glDrawBuffers(4, bufs);
 
 	checkGLErrors();
 
@@ -228,7 +235,7 @@ void FBO::unbind()
 void FBO::enableSingleBuffer(int num)
 {
 	assert(num < this->num_color_textures);
-	GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 + num };
+    GLenum DrawBuffers[1] = {static_cast<GLenum>( (int)GL_COLOR_ATTACHMENT0) + num };
 	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
 }
 
@@ -236,3 +243,26 @@ void FBO::enableAllBuffers()
 {
 	glDrawBuffers(4, bufs);
 }
+
+
+/*
+ glGenFramebuffers(1, &FramebufferName);
+ glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+ GLuint renderedTexture;
+ glGenTextures(1, &renderedTexture);
+ glBindTexture(GL_TEXTURE_2D, renderedTexture);
+ glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 1024, 768, 0,GL_RGB, GL_UNSIGNED_BYTE, 0);
+ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+ // The depth buffer
+ GLuint depthrenderbuffer;
+ glGenRenderbuffers(1, &depthrenderbuffer);
+ glBindRenderbuffer(GL_RENDERBUFFER, depthrenderbuffer);
+ glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, 1024, 768);
+ glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthrenderbuffer);
+ glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, renderedTexture, 0);
+ GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+ glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
+ if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+ exit(1);
+ */

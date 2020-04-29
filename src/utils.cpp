@@ -123,7 +123,10 @@ bool readFile(const std::string& filename, std::string& content)
 
 bool checkGLErrors()
 {
-	#ifdef _DEBUG
+	#ifndef _DEBUG
+        return true;
+    #endif
+    
 	GLenum errCode;
 	const GLubyte *errString;
 
@@ -133,7 +136,6 @@ bool checkGLErrors()
         assert(0);
 		return false;
 	}
-	#endif
 
 	return true;
 }
@@ -153,6 +155,13 @@ std::vector<std::string> split(const std::string &s, char delim) {
     return elems;
 }
 
+std::string join(std::vector<std::string>& strings, const char* delim)
+{
+	std::string str;
+	for (int i = 0; i < strings.size(); ++i)
+		str += strings[i] + (i < strings.size() - 1 ? std::string(delim) : "");
+	return str;
+}
 
 Vector2 getDesktopSize( int display_index )
 {

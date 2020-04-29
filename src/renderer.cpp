@@ -52,6 +52,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	//in case there is nothing to do
 	if (!mesh || !mesh->getNumVertices() || !material )
 		return;
+    assert(glGetError() == GL_NO_ERROR);
 
 	//define locals to simplify coding
 	Shader* shader = NULL;
@@ -77,12 +78,14 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 		glDisable(GL_CULL_FACE);
 	else
 		glEnable(GL_CULL_FACE);
+    assert(glGetError() == GL_NO_ERROR);
 
 	//chose a shader
 	if (texture)
 		shader = Shader::Get("texture");
 	else
 		shader = Shader::Get("flat");
+    assert(glGetError() == GL_NO_ERROR);
 
 	//no shader? then nothing to render
 	if (!shader)

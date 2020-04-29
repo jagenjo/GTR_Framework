@@ -45,7 +45,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	//loads and compiles several shaders from one single file
     //change to "data/shader_atlas_osx.txt" if you are in XCODE
-	if(!Shader::LoadAtlas("data/shader_atlas.txt"))
+	if(!Shader::LoadAtlas("data/shader_atlas_osx.txt"))
         exit(1);
     checkGLErrors();
 
@@ -59,7 +59,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	//Lets load some object to render
 	prefab_car = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
-
+    
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
 }
@@ -74,13 +74,15 @@ void Application::render(void)
 	glClearColor(bg_color.x, bg_color.y, bg_color.z, bg_color.w );
 
 	// Clear the color and the depth buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    checkGLErrors();
+    
 	//set the camera as default (used by some functions in the framework)
 	camera->enable();
 
 	//set default flags
 	glDisable(GL_BLEND);
+    
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	if(render_wireframe)
@@ -96,6 +98,10 @@ void Application::render(void)
 	if(render_debug)
 		drawGrid();
 
+    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glDisable(GL_DEPTH_TEST);
+    //render anything in the gui after this
+    
 	//the swap buffers is done in the main loop after this function
 }
 

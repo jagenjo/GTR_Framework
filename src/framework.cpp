@@ -1276,3 +1276,114 @@ BoundingBox transformBoundingBox(const Matrix44 m, const BoundingBox& box)
 	Vector3 halfsize = (box_max - box_min) * 0.5;
 	return BoundingBox(box_max - halfsize, halfsize );
 }
+
+//from https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c
+bool RayBoundingBoxCollision(const BoundingBox& box, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& coll)
+{
+	const int NUMDIM = 3;
+	const int RIGHT = 0;
+	const int LEFT = 1;
+	const int MIDDLE = 2;
+
+	char inside = TRUE;
+	char quadrant[NUMDIM];
+	register int i;
+	int whichPlane;
+	double maxT[NUMDIM];
+	double candidatePlane[NUMDIM];
+	Vector3 minB = box.center - box.halfsize;
+	Vector3 maxB = box.center + box.halfsize;
+
+	/* Find candidate planes; this loop can be avoided if
+	rays cast all from the eye(assume perpsective view) */
+	for (i = 0; i < NUMDIM; i++)
+		if (ray_origin.v[i] < minB[i]) {
+			quadrant[i] = LEFT;
+			candidatePlane[i] = minB[i];
+			inside = FALSE;
+		}
+		else if (ray_origin.v[i] > maxB[i]) {
+			quadrant[i] = RIGHT;
+			candidatePlane[i] = maxB[i];
+			inside = FALSE;
+		}
+		else {
+			quadrant[i] = MIDDLE;
+		}
+
+	/* Ray origin inside bounding box */
+	if (inside) {
+		coll = ray_origin;
+		return (TRUE);
+	}
+
+
+	/* Calculate T distances to candidate planes */
+	for (i = 0; i < NUMDIM; i++)
+		if (quadrant[i] != MIDDLE && ray_dir.v[i] != 0.)
+			maxT[i] = (candidatePlane[i] - ray_origin.v[i]) / ray_dir.v[i];
+		else
+			maxT[i] = -1.;
+
+	/* Get largest of the maxT's for final choice of intersection */
+	whichPlane = 0;
+	for (i = 1; i < NUMDIM; i++)
+		if (maxT[whichPlane] < maxT[i])
+			whichPlane = i;
+
+	/* Check final candidate actually inside box */
+	if (maxT[whichPlane] < 0.) return (FALSE);
+	for (i = 0; i < NUMDIM; i++)
+		if (whichPlane != i) {
+			coll.v[i] = ray_origin.v[i] + maxT[whichPlane] * ray_dir.v[i];
+			if (coll.v[i] < minB[i] || coll[i] > maxB[i])
+				return (FALSE);
+		}
+		else {
+			coll.v[i] = candidatePlane[i];
+		}
+	return (TRUE);				/* ray hits box */
+}
+
+bool BoundingBoxSphereOverlap(const BoundingBox& box, const Vector3& center, float radius)
+{
+	// arvo's algorithm from gamasutra
+	// http://www.gamasutra.com/features/19991018/Gomez_4.htm
+
+	float s, d = 0.0;
+	//find the square of the distance
+	//from the sphere to the box
+	Vector3 vmin = box.center - box.halfsize;
+	Vector3 vmax = box.center + box.halfsize;
+	for (int i = 0; i < 3; ++i)
+	{
+		if (center.v[i] < vmin.v[i])
+		{
+			s = center.v[i] - vmin.v[i];
+			d += s * s;
+		}
+		else if (center.v[i] > vmax.v[i])
+		{
+			s = center.v[i] - vmax.v[i];
+			d += s * s;
+		}
+	}
+	//return d <= r*r
+
+	float radiusSquared = radius * radius;
+	if (d <= radiusSquared)
+	{
+		return true; //overlaps
+		/*
+		// this is used just to know if it overlaps or is just inside, but I dont care
+		// make an aabb aabb test with the sphere aabb to test inside state
+		var halfsize = vec3.fromValues( radius, radius, radius );
+		var sphere_bbox = BBox.fromCenterHalfsize( center, halfsize );
+		if ( geo.testBBoxBBox(bbox, sphere_bbox) )
+			return INSIDE;
+		return OVERLAP;
+		*/
+	}
+
+	return false; //OUTSIDE;
+}

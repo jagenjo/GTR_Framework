@@ -718,6 +718,7 @@ typedef struct
 	int material_range[4];
 	Matrix44 bind_matrix;
 	char streams[8]; //Normal|Uvs|Color|Indices|Bones|Weights|Extra
+	char material_names[256];
 	char extra[32]; //unused
 } sMeshInfo;
 
@@ -825,6 +826,11 @@ bool Mesh::readBin(const char* filename)
 	box.halfsize = info.halfsize;
 	radius = info.radius;
 	bind_matrix = info.bind_matrix;
+	if (info.material_names[0])
+	{
+		std::string names = info.material_names;
+		material_name = split(names, '|');
+	}
 
 	for (int i = 0; i < 4; i++)
 		if (info.material_range[i] != -1)
@@ -867,6 +873,10 @@ bool Mesh::writeBin(const char* filename)
 	info.radius = radius;
 	info.num_bones = bones_info.size();
 	info.bind_matrix = bind_matrix;
+	std::string names = join(material_name, "|");
+	memset(info.material_names, 0, 255);
+	memcpy(info.material_names, names.c_str(), fmin( names.size(),255) );
+	info.material_names[255] = 0;
 
 	info.streams[0] = interleaved.size() ? 'I' : 'V';
 	info.streams[1] = normals.size() ? 'N' : ' ';
@@ -1107,11 +1117,14 @@ bool Mesh::loadOBJ(const char* filename)
 			Vector3 v((float)atof(tokens[1].c_str()), (float)atof(tokens[2].c_str()), (float)atof(tokens[3].c_str()) );
 			indexed_normals.push_back(v);
 		}
-		else if (tokens[0] == "s") //surface? it appears one time before the faces
+		else if (tokens[0] == "usemtl") //surface? it appears one time before the faces
 		{
-			//process mesh
-			//if (uvs.size() == 0 && indexed_uvs.size() )
-			//	uvs.resize(1);
+			material_name.push_back(tokens[1]);
+		}
+		else if (tokens[0] == "g") //surface? it appears one time before the faces
+		{
+			if(vertices.size())
+				material_range.push_back((unsigned int)(vertices.size() / 3.0));
 		}
 		else if (tokens[0] == "f" && tokens.size() >= 4)
 		{
