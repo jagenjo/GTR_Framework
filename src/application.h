@@ -39,6 +39,7 @@ public:
 	void update( double dt );
 
 	void renderDebugGUI(void);
+	void renderDebugGizmo();
 
 	//events
 	void onKeyDown( SDL_KeyboardEvent event );

@@ -569,6 +569,7 @@ void Shader::setTexture(const char* varname, Texture* tex, int slot)
 	glActiveTexture(GL_TEXTURE0 + slot);
 }
 
+/*
 void Shader::setTexture(const char* varname, unsigned int tex)
 {
 	glActiveTexture(GL_TEXTURE0 + last_slot);
@@ -576,6 +577,15 @@ void Shader::setTexture(const char* varname, unsigned int tex)
 	setUniform1(varname,last_slot);
 	last_slot = (last_slot + 1) % 8;
 	glActiveTexture(GL_TEXTURE0 + last_slot);
+}
+*/
+
+void Shader::setUniform1(const char* varname, bool input1)
+{
+	GLint loc = getLocation(varname, &locations);
+	CHECK_SHADER_VAR(loc, varname);
+	glUniform1i(loc, input1);
+	assert(glGetError() == GL_NO_ERROR);
 }
 
 void Shader::setUniform1(const char* varname, int input1)
@@ -856,6 +866,44 @@ Shader* Shader::getDefaultShader(std::string name)
 			uniform sampler2D u_texture;\n\
 			void main() {\n\
 				gl_FragColor = texture2D( u_texture, v_uv );\n\
+			}";
+	}
+	else if (name == "linear_depth")
+	{
+		vs = "attribute vec3 a_vertex; \
+			varying vec2 v_uv;\n\
+			void main()\n\
+			{\n\
+				v_uv = a_vertex.xy * 0.5 + vec2(0.5);\n\
+				gl_Position = vec4(a_vertex.xy,0.0,1.0);\n\
+			}";
+		fs = "uniform vec2 u_camera_nearfar;\n\
+		uniform sampler2D u_texture; //depth map\n\
+		varying vec2 v_uv;\n\
+		void main()\n\
+		{\n\
+			float n = u_camera_nearfar.x;\n\
+			float f = u_camera_nearfar.y;\n\
+			float z = texture2D(u_texture, v_uv).x;\n\
+			float color = n * (z + 1.0) / (f + n - z * (f - n));\n\
+			gl_FragColor = vec4(color);\n\
+		}";
+	}
+	else if (name == "screen_depth") //draws a quad fullscreen and clones its depth
+	{
+		vs = "attribute vec3 a_vertex; \
+			varying vec2 v_uv;\n\
+			void main()\n\
+			{\n\
+				v_uv = a_vertex.xy * 0.5 + vec2(0.5);\n\
+				gl_Position = vec4(a_vertex.xy,0.0,1.0);\n\
+			}";
+		fs = "varying vec2 v_uv;\n\
+			uniform sampler2D u_texture;\n\
+			void main() {\n\
+				vec4 color = texture2D( u_texture, v_uv );\n\
+				gl_FragColor = color;\n\
+				gl_FragDepth = color.r * 2.0 - 1.0;\n\
 			}";
 	}
 	else if (name == "quad" || name == "textured_quad") //draws a quad

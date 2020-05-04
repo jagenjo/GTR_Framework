@@ -19,9 +19,10 @@ Application* Application::instance = nullptr;
 Vector4 bg_color(0.5, 0.5, 0.5, 1.0);
 
 Camera* camera = nullptr;
-GTR::Prefab* prefab_car = nullptr;
+GTR::Prefab* prefab = nullptr;
 GTR::Renderer* renderer = nullptr;
 FBO* fbo = nullptr;
+Texture* texture = nullptr;
 
 float cam_speed = 10;
 
@@ -45,7 +46,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	//loads and compiles several shaders from one single file
     //change to "data/shader_atlas_osx.txt" if you are in XCODE
-	if(!Shader::LoadAtlas("data/shader_atlas_osx.txt"))
+	if(!Shader::LoadAtlas("data/shader_atlas.txt"))
         exit(1);
     checkGLErrors();
 
@@ -58,8 +59,8 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
 
 	//Lets load some object to render
-	prefab_car = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
-    
+	prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
+
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
 }
@@ -92,7 +93,7 @@ void Application::render(void)
 
 	//lets render something
 	Matrix44 model;
-	renderer->renderPrefab( model, prefab_car, camera );
+	renderer->renderPrefab( model, prefab, camera );
 
 	//Draw the floor grid, helpful to have a reference point
 	if(render_debug)
@@ -103,33 +104,6 @@ void Application::render(void)
     //render anything in the gui after this
     
 	//the swap buffers is done in the main loop after this function
-}
-
-
-//called to render the GUI from
-void Application::renderDebugGUI(void)
-{
-	#ifndef SKIP_IMGUI //to block this code from compiling if we want
-
-	//System stats
-	ImGui::Text(getGPUStats().c_str());					   // Display some text (you can use a format strings too)
-
-	ImGui::Checkbox("Wireframe", &render_wireframe);
-	ImGui::ColorEdit4("BG color", bg_color.v);
-
-	//add info to the debug panel about the camera
-	if (ImGui::TreeNode(camera,"Camera")) {
-		camera->renderInMenu();
-		ImGui::TreePop();
-	}
-
-	//example to show prefab info: first param must be unique!
-	if (prefab_car && ImGui::TreeNode(prefab_car,"Prefab")) {
-		prefab_car->root.renderInMenu();
-		ImGui::TreePop();
-	}
-
-	#endif
 }
 
 void Application::update(double seconds_elapsed)
@@ -145,21 +119,26 @@ void Application::update(double seconds_elapsed)
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
 
 	//mouse input to rotate the cam
-	if (mouse_locked || Input::mouse_state & SDL_BUTTON(SDL_BUTTON_RIGHT)) //move in first person view
+	#ifndef SKIP_IMGUI
+	if (!ImGuizmo::IsUsing())
+	#endif
 	{
-		camera->rotate(-Input::mouse_delta.x * orbit_speed * 0.5, Vector3(0,1,0));
-		Vector3 right = camera->getLocalVector(Vector3(1, 0, 0));
-		camera->rotate(-Input::mouse_delta.y * orbit_speed * 0.5, right);
-	}
-	else //orbit around center
-	{
-		bool mouse_blocked = false;
-		#ifndef SKIP_IMGUI
-			mouse_blocked = ImGui::IsAnyWindowHovered() || ImGui::IsAnyItemHovered() || ImGui::IsAnyItemActive();
-		#endif
-		if (Input::mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT) && !mouse_blocked) //is left button pressed?
+		if (mouse_locked || Input::mouse_state & SDL_BUTTON(SDL_BUTTON_RIGHT)) //move in first person view
 		{
-			camera->orbit(-Input::mouse_delta.x * orbit_speed, Input::mouse_delta.y * orbit_speed);
+			camera->rotate(-Input::mouse_delta.x * orbit_speed * 0.5, Vector3(0, 1, 0));
+			Vector3 right = camera->getLocalVector(Vector3(1, 0, 0));
+			camera->rotate(-Input::mouse_delta.y * orbit_speed * 0.5, right);
+		}
+		else //orbit around center
+		{
+			bool mouse_blocked = false;
+			#ifndef SKIP_IMGUI
+						mouse_blocked = ImGui::IsAnyWindowHovered() || ImGui::IsAnyItemHovered() || ImGui::IsAnyItemActive();
+			#endif
+			if (Input::mouse_state & SDL_BUTTON(SDL_BUTTON_LEFT) && !mouse_blocked) //is left button pressed?
+			{
+				camera->orbit(-Input::mouse_delta.x * orbit_speed, Input::mouse_delta.y * orbit_speed);
+			}
 		}
 	}
 	
@@ -177,6 +156,101 @@ void Application::update(double seconds_elapsed)
 		Input::centerMouse();
 		//ImGui::SetCursorPos(ImVec2(Input::mouse_position.x, Input::mouse_position.y));
 	}
+}
+
+void Application::renderDebugGizmo()
+{
+	if (!prefab)
+		return;
+
+	//example of matrix we want to edit, change this to the matrix of your entity
+	Matrix44& matrix = prefab->root.model;
+
+	#ifndef SKIP_IMGUI
+
+	static ImGuizmo::OPERATION mCurrentGizmoOperation(ImGuizmo::TRANSLATE);
+	static ImGuizmo::MODE mCurrentGizmoMode(ImGuizmo::WORLD);
+	if (ImGui::IsKeyPressed(90))
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	if (ImGui::IsKeyPressed(69))
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+	if (ImGui::IsKeyPressed(82)) // r Key
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+	if (ImGui::RadioButton("Translate", mCurrentGizmoOperation == ImGuizmo::TRANSLATE))
+		mCurrentGizmoOperation = ImGuizmo::TRANSLATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Rotate", mCurrentGizmoOperation == ImGuizmo::ROTATE))
+		mCurrentGizmoOperation = ImGuizmo::ROTATE;
+	ImGui::SameLine();
+	if (ImGui::RadioButton("Scale", mCurrentGizmoOperation == ImGuizmo::SCALE))
+		mCurrentGizmoOperation = ImGuizmo::SCALE;
+	float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+	ImGuizmo::DecomposeMatrixToComponents(matrix.m, matrixTranslation, matrixRotation, matrixScale);
+	ImGui::InputFloat3("Tr", matrixTranslation, 3);
+	ImGui::InputFloat3("Rt", matrixRotation, 3);
+	ImGui::InputFloat3("Sc", matrixScale, 3);
+	ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation, matrixScale, matrix.m);
+
+	if (mCurrentGizmoOperation != ImGuizmo::SCALE)
+	{
+		if (ImGui::RadioButton("Local", mCurrentGizmoMode == ImGuizmo::LOCAL))
+			mCurrentGizmoMode = ImGuizmo::LOCAL;
+		ImGui::SameLine();
+		if (ImGui::RadioButton("World", mCurrentGizmoMode == ImGuizmo::WORLD))
+			mCurrentGizmoMode = ImGuizmo::WORLD;
+	}
+	static bool useSnap(false);
+	if (ImGui::IsKeyPressed(83))
+		useSnap = !useSnap;
+	ImGui::Checkbox("", &useSnap);
+	ImGui::SameLine();
+	static Vector3 snap;
+	switch (mCurrentGizmoOperation)
+	{
+	case ImGuizmo::TRANSLATE:
+		//snap = config.mSnapTranslation;
+		ImGui::InputFloat3("Snap", &snap.x);
+		break;
+	case ImGuizmo::ROTATE:
+		//snap = config.mSnapRotation;
+		ImGui::InputFloat("Angle Snap", &snap.x);
+		break;
+	case ImGuizmo::SCALE:
+		//snap = config.mSnapScale;
+		ImGui::InputFloat("Scale Snap", &snap.x);
+		break;
+	}
+	ImGuiIO& io = ImGui::GetIO();
+	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+	ImGuizmo::Manipulate(camera->view_matrix.m, camera->projection_matrix.m, mCurrentGizmoOperation, mCurrentGizmoMode, matrix.m, NULL, useSnap ? &snap.x : NULL);
+	#endif
+}
+
+
+//called to render the GUI from
+void Application::renderDebugGUI(void)
+{
+#ifndef SKIP_IMGUI //to block this code from compiling if we want
+
+	//System stats
+	ImGui::Text(getGPUStats().c_str());					   // Display some text (you can use a format strings too)
+
+	ImGui::Checkbox("Wireframe", &render_wireframe);
+	ImGui::ColorEdit4("BG color", bg_color.v);
+
+	//add info to the debug panel about the camera
+	if (ImGui::TreeNode(camera, "Camera")) {
+		camera->renderInMenu();
+		ImGui::TreePop();
+	}
+
+	//example to show prefab info: first param must be unique!
+	if (prefab && ImGui::TreeNode(prefab, "Prefab")) {
+		prefab->root.renderInMenu();
+		ImGui::TreePop();
+	}
+
+#endif
 }
 
 //Keyboard event handler (sync input)

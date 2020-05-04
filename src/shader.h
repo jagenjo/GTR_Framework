@@ -52,6 +52,8 @@ public:
 	virtual bool IsAttribute(const char* varname) { return (getAttribLocation(varname) != -1); } //attribute exist
 
 	//upload
+	void setUniform(const char* varname, bool input) { assert(current == this); setUniform1(varname, input); }
+	void setUniform(const char* varname, int input) { assert(current == this); setUniform1(varname, input); }
 	void setUniform(const char* varname, float input) { assert(current == this); setUniform1(varname, input); }
 	void setUniform(const char* varname, const Vector2& input) { assert(current == this); setUniform2(varname, input.x, input.y ); }
 	void setUniform(const char* varname, const Vector3& input) { assert(current == this); setUniform3(varname, input.x, input.y, input.z); }
@@ -80,6 +82,8 @@ public:
 	virtual void setUniform3Array(const char* varname, const int* input, const int count) ;
 	virtual void setUniform4Array(const char* varname, const int* input, const int count) ;
 
+	virtual void setUniform1(const char* varname, const bool input1);
+
 	virtual void setUniform1(const char* varname, const int input1) ;
 	virtual void setUniform2(const char* varname, const int input1, const int input2) ;
 	virtual void setUniform3(const char* varname, const int input1, const int input2, const int input3) ;
@@ -92,7 +96,7 @@ public:
 	virtual void setUniform4(const char* varname, const Vector4& input) { setUniform4(varname, input.x, input.y, input.z, input.w); }
 	virtual void setUniform4(const char* varname, const float input1, const float input2, const float input3, const float input4) ;
 
-	virtual void setTexture(const char* varname, const unsigned int tex) ;
+	//virtual void setTexture(const char* varname, const unsigned int tex) ;
 	virtual void setTexture(const char* varname, Texture* texture, int slot);
 
 	virtual int getAttribLocation(const char* varname);

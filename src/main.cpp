@@ -96,6 +96,9 @@ void renderDebug(SDL_Window* window, Application * app)
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL2_NewFrame(window);
 	ImGui::NewFrame();
+	ImGuizmo::BeginFrame();
+
+	app->renderDebugGizmo();
 
 	if (app->render_debug)
 	{

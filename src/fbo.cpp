@@ -83,7 +83,7 @@ bool FBO::create( int width, int height, int num_textures, int format, int type,
 bool FBO::setTexture(Texture* texture, int cubemap_face )
 {
 	std::vector<Texture*> textures;
-	if(texture->type == GL_DEPTH_COMPONENT)
+	if(texture->format == GL_DEPTH_COMPONENT)
 		setTextures(textures, texture, cubemap_face);
 	else
 	{
@@ -160,6 +160,17 @@ bool FBO::setTextures(std::vector<Texture*> textures, Texture* depth_texture, in
 		color_textures[i] = texture;
 		if (texture)
 			num_color_textures++;
+	}
+
+	//add a render buffer for the color
+	if (num_color_textures == 0)
+	{
+		if(!renderbuffer_color)
+			glGenRenderbuffersEXT(1, &renderbuffer_color);
+		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, renderbuffer_color);
+		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_RGB, width, height);
+		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER_EXT, renderbuffer_color);
+		bufs[0] = GL_COLOR_ATTACHMENT0_EXT;
 	}
     
     glDrawBuffers(4, bufs);

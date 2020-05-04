@@ -63,6 +63,8 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	//texture = material->metallic_roughness_texture;
 	//texture = material->normal_texture;
 	//texture = material->occlusion_texture;
+	if (texture == NULL)
+		texture = Texture::getWhiteTexture(); //a 1x1 white texture
 
 	//select the blending
 	if (material->alpha_mode == GTR::AlphaMode::BLEND)
@@ -81,10 +83,8 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
     assert(glGetError() == GL_NO_ERROR);
 
 	//chose a shader
-	if (texture)
-		shader = Shader::Get("texture");
-	else
-		shader = Shader::Get("flat");
+	shader = Shader::Get("texture");
+
     assert(glGetError() == GL_NO_ERROR);
 
 	//no shader? then nothing to render

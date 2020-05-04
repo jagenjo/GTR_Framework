@@ -448,12 +448,22 @@ Texture* Texture::getWhiteTexture()
 	return white;
 }
 
-void Texture::blit(Texture* destination, Shader* shader)
+void Texture::copyTo(Texture* destination, Shader* shader)
 {
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 	FBO* fbo = getGlobalFBO(destination);
 	fbo->bind();
+	if (!shader && format == GL_DEPTH_COMPONENT)
+	{
+		shader = Shader::getDefaultShader("screen_depth");
+		glDepthFunc(GL_ALWAYS);
+		glEnable(GL_DEPTH_TEST);
+	}
 	toViewport(shader);
 	fbo->unbind();
+	glDisable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 }
 
 void Image::fromScreen(int width, int height)

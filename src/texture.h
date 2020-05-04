@@ -110,7 +110,7 @@ public:
 
 	static void UnbindAll();
 
-	
+	void operator = (const Texture& tex) { assert("textures cannot be cloned like this!");  }
 
 	//load without using the manager
 	bool load(const char* filename, bool mipmaps = true, bool wrap = true, unsigned int type = GL_UNSIGNED_BYTE);
@@ -124,7 +124,7 @@ public:
 	//show the texture on the current viewport
 	void toViewport( Shader* shader = NULL );
 	//copy to another texture
-	void blit(Texture* destination, Shader* shader = NULL);
+	void copyTo(Texture* destination, Shader* shader = NULL);
 
 	static FBO* getGlobalFBO(Texture* texture);
 	static Texture* getBlackTexture();
