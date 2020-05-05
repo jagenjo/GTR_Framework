@@ -60,10 +60,12 @@ bool FBO::create( int width, int height, int num_textures, int format, int type,
 
 	num_color_textures = num_textures;
 
+	int internalFormat = 0; //GL_RGB
+
 	std::vector<Texture*> textures(4);
 	for (int i = 0; i < num_textures; ++i)
 	{
-		Texture* colortex = textures[i] = new Texture(width, height, format, type, false); //,NULL, format == GL_RGBA ? GL_RGBA8 : GL_RGB8 
+		Texture* colortex = textures[i] = new Texture(width, height, format, type, false, NULL, internalFormat );
 		glBindTexture(colortex->texture_type, colortex->texture_id);	//we activate this id to tell opengl we are going to use this texture
 		glTexParameteri(colortex->texture_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);	//set the min filter
 		glTexParameteri(colortex->texture_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);   //set the mag filter

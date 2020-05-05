@@ -216,7 +216,6 @@ bool Texture::load(const char* filename, bool mipmaps, bool wrap, unsigned int t
 	this->filename = filename;
 
 	unsigned int internal_format = 0;
-
 	if (type == GL_FLOAT)
 		internal_format = (image->bytes_per_pixel == 3 ? GL_RGB32F : GL_RGBA32F);
 
@@ -246,6 +245,14 @@ void Texture::upload( unsigned int format, unsigned int type, bool mipmaps, Uint
 	assert(texture_type == GL_TEXTURE_2D && "Texture type does not match.");
 
 	glBindTexture(this->texture_type, texture_id);	//we activate this id to tell opengl we are going to use this texture
+
+	if (internal_format == 0)
+	{
+		if (type == GL_FLOAT)
+			internal_format = format == GL_RGB ? GL_RGB32F : GL_RGBA32F;
+		else if (type == GL_HALF_FLOAT)
+			internal_format = format == GL_RGB ? GL_RGB16F : GL_RGBA16F;
+	}
 
 	glTexImage2D(this->texture_type, 0, internal_format == 0 ? format : internal_format, width, height, 0, format, type, data);
 
