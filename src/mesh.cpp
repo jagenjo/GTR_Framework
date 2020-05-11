@@ -12,13 +12,14 @@
 
 #include "camera.h"
 #include "texture.h"
-//#include "animation.h"
+#include "animation.h"
 #include "extra/coldet/coldet.h"
 
+bool Mesh::use_binary = true;			//checks if there is .wbin, it there is one tries to read it instead of the other file
+bool Mesh::auto_upload_to_vram = true;	//uploads the mesh to the GPU VRAM to speed up rendering
+bool Mesh::interleave_meshes = true;	//places the geometry in an interleaved array
+
 std::map<std::string, Mesh*> Mesh::sMeshesLoaded;
-bool Mesh::use_binary = false;
-bool Mesh::auto_upload_to_vram = true;
-bool Mesh::interleave_meshes = true;
 long Mesh::num_meshes_rendered = 0;
 long Mesh::num_triangles_rendered = 0;
 
@@ -48,9 +49,7 @@ void Mesh::clear()
 		glDeleteBuffersARB(1,&vertices_vbo_id);
 	if (uvs_vbo_id)
 		glDeleteBuffersARB(1,&uvs_vbo_id);
-	if (uvs1_vbo_id)
-		glDeleteBuffersARB(1, &uvs_vbo_id);
-	if (normals_vbo_id)
+	if (normals_vbo_id) 
 		glDeleteBuffersARB(1,&normals_vbo_id);
 	if (colors_vbo_id) 
 		glDeleteBuffersARB(1,&colors_vbo_id);
@@ -62,32 +61,34 @@ void Mesh::clear()
 		glDeleteBuffersARB(1, &bones_vbo_id);
 	if (weights_vbo_id)
 		glDeleteBuffersARB(1, &weights_vbo_id);
+	if (uvs1_vbo_id)
+		glDeleteBuffersARB(1, &uvs1_vbo_id);
 
 	//VBOs ids
-	vertices_vbo_id = uvs_vbo_id = uvs1_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = weights_vbo_id = bones_vbo_id = 0;
+	vertices_vbo_id = uvs_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = weights_vbo_id = bones_vbo_id = uvs1_vbo_id = 0;
 
 	//buffers
 	vertices.clear();
 	normals.clear();
 	uvs.clear();
-	uvs1.clear();
 	colors.clear();
 	interleaved.clear();
 	indices.clear();
 	bones.clear();
 	weights.clear();
+	uvs1.clear();
 
 	if (collision_model)
-		delete collision_model;
+		delete (CollisionModel3D*)collision_model;
 }
 
 int vertex_location = -1;
 int normal_location = -1;
 int uv_location = -1;
-int uv1_location = -1;
 int color_location = -1;
 int bones_location = -1;
 int weights_location = -1;
+int uv1_location = -1;
 
 void Mesh::enableBuffers(Shader* sh)
 {
@@ -117,8 +118,6 @@ void Mesh::enableBuffers(Shader* sh)
 	}
 	else
 		glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].vertex : &vertices[0]);
-
-    checkGLErrors();
 
 	normal_location = -1;
 	if (normals.size() || spacing)
@@ -164,7 +163,7 @@ void Mesh::enableBuffers(Shader* sh)
 			if (uvs1_vbo_id)
 			{
 				glBindBuffer(GL_ARRAY_BUFFER, uvs1_vbo_id);
-				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, spacing, 0);
+				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, spacing, (void*)offset_uv);
 			}
 			else
 				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, spacing, &uvs1[0]);
@@ -221,8 +220,6 @@ void Mesh::enableBuffers(Shader* sh)
 		}
 	}
 
-	assert(glGetError() == GL_NO_ERROR);
-
 }
 
 void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
@@ -247,19 +244,19 @@ void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
 
 void Mesh::drawCall(unsigned int primitive, int submesh_id, int num_instances)
 {
-	int start = 0;
-	int size = vertices.size();
+	int start = 0; //in primitives
+	int size = (int)vertices.size();
 	if (indices.size())
-		size = indices.size();
+		size = (int)indices.size();
 	else if (interleaved.size())
-		size = interleaved.size();
+		size = (int)interleaved.size();
 
-	if (submesh_id > 0)
+	if (submesh_id > -1)
 	{
-		submesh_id -= 1;
-		start = submesh_id == 0 ? 0 : material_range[submesh_id - 1] * 3;
-		if (!material_range.empty())
-			size = material_range[submesh_id] * 3 - start;
+		assert(submesh_id < submeshes.size() && "this mesh doesnt have as many submeshes");
+		sSubmeshInfo& submesh = submeshes[submesh_id];
+		start = submesh.start;
+		size = submesh.start + submesh.length;
 	}
 
 	//DRAW
@@ -292,8 +289,6 @@ void Mesh::drawCall(unsigned int primitive, int submesh_id, int num_instances)
 			glDrawArrays(primitive, start, size);
 	}
 
-	assert(glGetError() == GL_NO_ERROR);
-
 	num_triangles_rendered += (size / 3) * (num_instances ? num_instances : 1);
 	num_meshes_rendered++;
 }
@@ -303,12 +298,10 @@ void Mesh::disableBuffers(Shader* shader)
 	glDisableVertexAttribArray(vertex_location);
 	if (normal_location != -1) glDisableVertexAttribArray(normal_location);
 	if (uv_location != -1) glDisableVertexAttribArray(uv_location);
-	if (uv1_location != -1) glDisableVertexAttribArray(uv1_location);
 	if (color_location != -1) glDisableVertexAttribArray(color_location);
 	if (bones_location != -1) glDisableVertexAttribArray(bones_location);
 	if (weights_location != -1) glDisableVertexAttribArray(weights_location);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);    //if crashes here, COMMENT THIS LINE ****************************
-	assert(glGetError() == GL_NO_ERROR);
 }
 
 GLuint instances_buffer_id = 0;
@@ -408,9 +401,9 @@ void Mesh::renderFixedPipeline(int primitive)
 			glColorPointer(4, GL_FLOAT, 0, &colors[0]);
 	}
 
-	int size = vertices.size();
+	int size = (int)vertices.size();
 	if (!size)
-		size = interleaved.size();
+		size = (int)interleaved.size();
 
 	glDrawArrays(primitive, 0, (GLsizei)size);
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -439,30 +432,6 @@ void Mesh::renderAnimated( unsigned int primitive, Skeleton* skeleton )
 	render(primitive);
 }
 */
-
-void Mesh::updateBoundingBox()
-{
-	if (vertices.size())
-	{
-		aabb_max = aabb_min = vertices[0];
-		for (int i = 1; i < vertices.size(); ++i)
-		{
-			aabb_min.setMin(vertices[i]);
-			aabb_max.setMax(vertices[i]);
-		}
-	}
-	else if (interleaved.size())
-	{
-		aabb_max = aabb_min = interleaved[0].vertex;
-		for (int i = 1; i < vertices.size(); ++i)
-		{
-			aabb_min.setMin(interleaved[i].vertex);
-			aabb_max.setMax(interleaved[i].vertex);
-		}
-	}
-	box.center = (aabb_max + aabb_min) * 0.5f;
-	box.halfsize = aabb_max - box.center;
-}
 
 void Mesh::uploadToVRAM()
 {
@@ -499,15 +468,6 @@ void Mesh::uploadToVRAM()
 			glBufferDataARB(GL_ARRAY_BUFFER_ARB, uvs.size() * sizeof(Vector2), &uvs[0], GL_STATIC_DRAW_ARB);
 		}
 
-		// UVs1
-		if (uvs1.size())
-		{
-			if (uvs1_vbo_id == 0)
-				glGenBuffersARB(1, &uvs1_vbo_id);
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, uvs1_vbo_id);
-			glBufferDataARB(GL_ARRAY_BUFFER_ARB, uvs1.size() * sizeof(Vector2), &uvs1[0], GL_STATIC_DRAW_ARB);
-		}
-
 		// Normals
 		if (normals.size())
 		{
@@ -516,6 +476,15 @@ void Mesh::uploadToVRAM()
 			glBindBufferARB(GL_ARRAY_BUFFER_ARB, normals_vbo_id);
 			glBufferDataARB(GL_ARRAY_BUFFER_ARB, normals.size() * sizeof(Vector3), &normals[0], GL_STATIC_DRAW_ARB);
 		}
+	}
+
+	// UVs
+	if (uvs1.size())
+	{
+		if (uvs1_vbo_id == 0)
+			glGenBuffersARB(1, &uvs1_vbo_id);
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, uvs1_vbo_id);
+		glBufferDataARB(GL_ARRAY_BUFFER_ARB, uvs1.size() * sizeof(Vector2), &uvs1[0], GL_STATIC_DRAW_ARB);
 	}
 
 	// Colors
@@ -570,7 +539,7 @@ bool Mesh::createCollisionModel(bool is_static)
 
 	if (indices.size()) //indexed
 	{
-		collision_model->setTriangleNumber(indices.size());
+		collision_model->setTriangleNumber((int)indices.size());
 
 		if (interleaved.size())
 			for (unsigned int i = 0; i < indices.size(); ++i)
@@ -602,8 +571,8 @@ bool Mesh::createCollisionModel(bool is_static)
 	}
 	else if (vertices.size()) //non interleaved
 	{
-		collision_model->setTriangleNumber(vertices.size() / 3);
-		for (unsigned int i = 0; i < vertices.size(); i+=3)
+		collision_model->setTriangleNumber((int)vertices.size() / 3);
+		for (unsigned int i = 0; i < (int)vertices.size(); i+=3)
 		{
 			auto v1 = vertices[i];
 			auto v2 = vertices[i + 1];
@@ -715,10 +684,9 @@ typedef struct
 	Vector3	halfsize;
 	float radius;
 	int num_bones;
-	int material_range[4];
+	int num_submeshes;
 	Matrix44 bind_matrix;
-	char streams[8]; //Normal|Uvs|Color|Indices|Bones|Weights|Extra
-	char material_names[256];
+	char streams[8]; //Vertex/Interlaved|Normal|Uvs|Color|Indices|Bones|Weights|Extra|Uvs1
 	char extra[32]; //unused
 } sMeshInfo;
 
@@ -734,7 +702,7 @@ bool Mesh::readBin(const char* filename)
 	if (f == NULL)
 		return false;
 
-	unsigned int size = stbuffer.st_size;
+	unsigned int size = (unsigned int)stbuffer.st_size;
 	char* data = new char[size];
 	fread(data,size,1,f);
 	fclose(f);
@@ -763,8 +731,7 @@ bool Mesh::readBin(const char* filename)
 		memcpy((void*)&interleaved[0], pos, sizeof(tInterleaved) * info.size);
 		pos += sizeof(tInterleaved) * info.size;
 	}
-
-	if (info.streams[0] == 'V')
+	else if (info.streams[0] == 'V')
 	{
 		vertices.resize(info.size);
 		memcpy((void*)&vertices[0], pos, sizeof(Vector3) * info.size);
@@ -813,6 +780,13 @@ bool Mesh::readBin(const char* filename)
 		pos += sizeof(Vector4) * info.size;
 	}
 
+	if (info.streams[7] == 'u')
+	{
+		uvs1.resize(info.size);
+		memcpy((void*)&uvs1[0], pos, sizeof(Vector2) * info.size);
+		pos += sizeof(Vector2) * info.size;
+	}
+
 	if (info.num_bones)
 	{
 		bones_info.resize(info.num_bones);
@@ -826,19 +800,10 @@ bool Mesh::readBin(const char* filename)
 	box.halfsize = info.halfsize;
 	radius = info.radius;
 	bind_matrix = info.bind_matrix;
-	if (info.material_names[0])
-	{
-		std::string names = info.material_names;
-		material_name = split(names, '|');
-	}
 
-	for (int i = 0; i < 4; i++)
-		if (info.material_range[i] != -1)
-			material_range.push_back( info.material_range[i] );
-		else
-			break;
-
-	delete[] data;
+	submeshes.resize(info.num_submeshes);
+	memcpy(&submeshes[0], pos, sizeof(sSubmeshInfo) * info.num_submeshes);
+	pos += sizeof(sSubmeshInfo) * info.num_submeshes;
 
 	createCollisionModel();
 	return true;
@@ -873,10 +838,7 @@ bool Mesh::writeBin(const char* filename)
 	info.radius = radius;
 	info.num_bones = bones_info.size();
 	info.bind_matrix = bind_matrix;
-	std::string names = join(material_name, "|");
-	memset(info.material_names, 0, 255);
-	memcpy(info.material_names, names.c_str(), fmin( names.size(),255) );
-	info.material_names[255] = 0;
+	info.num_submeshes = submeshes.size();
 
 	info.streams[0] = interleaved.size() ? 'I' : 'V';
 	info.streams[1] = normals.size() ? 'N' : ' ';
@@ -885,9 +847,7 @@ bool Mesh::writeBin(const char* filename)
 	info.streams[4] = indices.size() ? 'I' : ' ';
 	info.streams[5] = bones.size() ? 'B' : ' ';
 	info.streams[6] = weights.size() ? 'W' : ' ';
-
-	for (unsigned int i = 0; i < 4; i++)
-		info.material_range[i] = material_range.size() > i ? material_range[i] : -1;
+	info.streams[7] = uvs1.size() ? 'u' : ' ';
 
 	//write info
 	fwrite((void*)&info, sizeof(sMeshInfo),1, f);
@@ -916,6 +876,10 @@ bool Mesh::writeBin(const char* filename)
 		fwrite((void*)&weights[0], weights.size() * sizeof(Vector4), 1, f);
 	if (bones_info.size())
 		fwrite((void*)&bones_info[0], bones_info.size() * sizeof(BoneInfo), 1, f);
+	if (uvs1.size())
+		fwrite((void*)&uvs1[0], uvs1.size() * sizeof(Vector2), 1, f);
+
+	fwrite((void*)&submeshes[0], submeshes.size() * sizeof(sSubmeshInfo), 1, f);
 
 	fclose(f);
 	return true;
@@ -968,6 +932,9 @@ bool Mesh::loadASE(const char* filename)
 	
 	int prev_mat = 0;
 
+	sSubmeshInfo submesh;
+	memset(&submesh, 0, sizeof(submesh));
+
 	//load faces
 	for(count=0;count<nFcs;count++)
 	{
@@ -986,12 +953,16 @@ bool Mesh::loadASE(const char* filename)
 		int current_mat = t.getint();
 		if (current_mat != prev_mat)
 		{
-			material_range.push_back( count );
+			submesh.length = count * 3 - submesh.start;
+			submeshes.push_back( submesh );
+			memset(&submesh, 0, sizeof(submesh));
+			submesh.start = count * 3;
 			prev_mat = current_mat;
 		}
 	}
 
-	material_range.push_back(nFcs);
+	submesh.length = count * 3 - submesh.start;
+	submeshes.push_back(submesh);
 
 	t.seek("*MESH_NUMTVERTEX");
 	nVtx = t.getint();
@@ -1078,6 +1049,10 @@ bool Mesh::loadOBJ(const char* filename)
 
 	unsigned int vertex_i = 0;
 
+	sSubmeshInfo submesh_info;
+	int last_submesh_vertex = 0;
+	memset(&submesh_info, 0, sizeof(submesh_info));
+
 	//parse file
 	while(*pos != 0)
 	{
@@ -1107,7 +1082,7 @@ bool Mesh::loadOBJ(const char* filename)
 			aabb_min.setMin( v );
 			aabb_max.setMax( v );
 		}
-		else if (tokens[0] == "vt" && tokens.size() > 2)
+		else if (tokens[0] == "vt" && tokens.size() >= 3)
 		{
 			Vector2 v((float)atof(tokens[1].c_str()), (float)atof(tokens[2].c_str()) );
 			indexed_uvs.push_back(v);
@@ -1117,18 +1092,40 @@ bool Mesh::loadOBJ(const char* filename)
 			Vector3 v((float)atof(tokens[1].c_str()), (float)atof(tokens[2].c_str()), (float)atof(tokens[3].c_str()) );
 			indexed_normals.push_back(v);
 		}
+		else if (tokens[0] == "s") //surface? it appears one time before the faces
+		{
+			//process mesh: ????
+			//if (uvs.size() == 0 && indexed_uvs.size() )
+			//	uvs.resize(1);
+		}
 		else if (tokens[0] == "usemtl") //surface? it appears one time before the faces
 		{
-			material_name.push_back(tokens[1]);
+			if (last_submesh_vertex != vertices.size())
+			{
+				submesh_info.length = vertices.size() - submesh_info.start;
+				last_submesh_vertex = vertices.size();
+				submeshes.push_back(submesh_info);
+				memset(&submesh_info, 0, sizeof(submesh_info));
+				strcpy(submesh_info.name, tokens[1].c_str());
+				submesh_info.start = last_submesh_vertex;
+			}
+			else
+				strcpy(submesh_info.material, tokens[1].c_str());
 		}
 		else if (tokens[0] == "g") //surface? it appears one time before the faces
 		{
-			if(vertices.size())
-				material_range.push_back((unsigned int)(vertices.size() / 3.0));
+			if (last_submesh_vertex != vertices.size())
+			{
+				submesh_info.length = vertices.size() - submesh_info.start;
+				last_submesh_vertex = vertices.size();
+				submeshes.push_back(submesh_info);
+				memset(&submesh_info, 0, sizeof(submesh_info));
+				strcpy( submesh_info.name, tokens[1].c_str());
+				submesh_info.start = last_submesh_vertex;
+			}
 		}
 		else if (tokens[0] == "f" && tokens.size() >= 4)
 		{
-			assert(vertices.size() == normals.size() && vertices.size() == uvs.size());
 			Vector3 v1,v2,v3;
 			v1.parseFromText( tokens[1].c_str(), '/' );
 
@@ -1164,7 +1161,8 @@ bool Mesh::loadOBJ(const char* filename)
 	box.halfsize = (aabb_max - box.center);
 	radius = (float)fmax( aabb_max.length(), aabb_min.length() );
 
-	material_range.push_back( (unsigned int)(vertices.size() / 3.0) );
+	submesh_info.length = vertices.size() - last_submesh_vertex;
+	submeshes.push_back(submesh_info);
 	return true;
 }
 
@@ -1232,7 +1230,7 @@ bool Mesh::loadMESH(const char* filename)
                     #else
                         strcpy_s(bones_info[j].name, 32, word);
                     #endif
-					pos = fetchMatrix44(pos, bones_info[j].bind_pose);
+                    pos = fetchMatrix44(pos, bones_info[j].bind_pose);
 				}
 			}
 			else if (str == "bind_matrix")
@@ -1349,7 +1347,7 @@ void Mesh::createPlane(float size)
 void Mesh::createSubdividedPlane(float size, int subdivisions, bool centered )
 {
 	double isize = size / (double)(subdivisions);
-	float hsize = centered ? size * -0.5f : 0.0f;
+	//float hsize = centered ? size * -0.5f : 0.0f;
 	double iuv = 1 / (double)(subdivisions * size);
 	float sub_size = 1.0f / subdivisions;
 	vertices.clear();
@@ -1432,6 +1430,30 @@ void Mesh::createGrid(float dist)
 	}
 }
 
+void Mesh::updateBoundingBox()
+{
+	if (vertices.size())
+	{
+		aabb_max = aabb_min = vertices[0];
+		for (int i = 1; i < vertices.size(); ++i)
+		{
+			aabb_min.setMin(vertices[i]);
+			aabb_max.setMax(vertices[i]);
+		}
+	}
+	else if (interleaved.size())
+	{
+		aabb_max = aabb_min = interleaved[0].vertex;
+		for (int i = 1; i < vertices.size(); ++i)
+		{
+			aabb_min.setMin(interleaved[i].vertex);
+			aabb_max.setMax(interleaved[i].vertex);
+		}
+	}
+	box.center = (aabb_max + aabb_min) * 0.5f;
+	box.halfsize = aabb_max - box.center;
+}
+
 Mesh* wire_box = NULL;
 
 void Mesh::renderBounding( const Matrix44& model, bool world_bounding )
@@ -1495,11 +1517,7 @@ Mesh* Mesh::Get(const char* filename)
 
 	//detect format
 	char file_format = 0;
-	int pos = name.find_last_of(".");
-	if(pos == -1) //no extension, internal mesh probably
-		return NULL;
-	std::string ext = name.substr(pos+1);
-
+	std::string ext = name.substr(name.find_last_of(".")+1);
 	if (ext == "ase" || ext == "ASE")
 		file_format = FORMAT_ASE;
 	else if (ext == "obj" || ext == "OBJ")
@@ -1508,7 +1526,7 @@ Mesh* Mesh::Get(const char* filename)
 		file_format = FORMAT_MBIN;
 	else if (ext == "mesh" || ext == "MESH")
 		file_format = FORMAT_MESH;
-	else 
+	else
 	{
 		std::cerr << "Unknown mesh format: " << filename << std::endl;
 		return NULL;
@@ -1523,7 +1541,7 @@ Mesh* Mesh::Get(const char* filename)
 		binfilename = binfilename + ".mbin";
 
 	//try loading the binary version
-	if ( m->readBin(binfilename.c_str()) && use_binary )
+	if ( use_binary && m->readBin(binfilename.c_str()) )
 	{
 		if(interleave_meshes && m->interleaved.size() == 0)
 		{
