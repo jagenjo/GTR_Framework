@@ -903,7 +903,7 @@ Shader* Shader::getDefaultShader(std::string name)
 			void main() {\n\
 				vec4 color = texture2D( u_texture, v_uv );\n\
 				gl_FragColor = color;\n\
-				gl_FragDepth = color.r * 2.0 - 1.0;\n\
+				gl_FragDepth = color.r;\n\
 			}";
 	}
 	else if (name == "quad" || name == "textured_quad") //draws a quad
