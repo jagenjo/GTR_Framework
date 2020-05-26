@@ -109,7 +109,7 @@ public:
 	bool testSphereCollision(Matrix44 model, Vector3 center, float radius, Vector3& collision, Vector3& normal);
 
 	//loader
-	static Mesh* Get(const char* filename);
+	static Mesh* Get(const char* filename, bool skip_load = false);
 	void registerMesh(std::string name);
 
 	//create help meshes

@@ -150,9 +150,9 @@ void parseGLTFBufferIndices(std::vector<Vector3u>& container, cgltf_accessor* ac
 	}
 }
 
-Mesh* parseGLTFMesh(cgltf_mesh* meshdata)
+std::vector<Mesh*> parseGLTFMesh(cgltf_mesh* meshdata)
 {
-	Mesh* mesh = new Mesh();
+	std::vector<Mesh*> result;
 
 	if(meshdata->name)
 		std::cout << "MESH: " << meshdata->name << std::endl;
@@ -161,7 +161,22 @@ Mesh* parseGLTFMesh(cgltf_mesh* meshdata)
 	for (int i = 0; i < meshdata->primitives_count; ++i)
 	{
 		cgltf_primitive* primitive = &meshdata->primitives[i];
+		Mesh* mesh = NULL;
 
+		std::string submesh_name;
+		if (meshdata->name)
+		{
+			submesh_name = std::string(meshdata->name) + std::string("::") + std::to_string(i);
+			mesh = Mesh::Get(submesh_name.c_str(),true);
+			if (mesh)
+			{
+				result.push_back(mesh);
+				continue;
+			}
+		}
+
+		mesh = new Mesh();
+		
 		//streams
 		for (int j = 0; j < primitive->attributes_count; ++j)
 		{
@@ -194,23 +209,24 @@ Mesh* parseGLTFMesh(cgltf_mesh* meshdata)
 				parseGLTFBufferIndices(mesh->indices, primitive->indices);
 		}
 
-		break; //only one object supported for now
+		mesh->uploadToVRAM();
+		if (meshdata->name)
+			mesh->registerMesh(submesh_name);
+
+		result.push_back(mesh);
 	}
 
-	
-
-	mesh->uploadToVRAM();
-
-	return mesh;
+	return result;
 }
 
 GTR::Material* parseGLTFMaterial(cgltf_material* matdata)
 {
-	GTR::Material* material = GTR::Material::Get(matdata->name);
+	GTR::Material* material = matdata->name ? GTR::Material::Get(matdata->name) : NULL;
 	if (material)
 		return material;
 	material = new GTR::Material();
-	material->registerMaterial(matdata->name);
+	if(matdata->name)
+		material->registerMaterial(matdata->name);
 	material->alpha_mode = (GTR::AlphaMode)matdata->alpha_mode;
 	material->alpha_cutoff = matdata->alpha_cutoff;
 	material->two_sided = matdata->double_sided;
@@ -294,34 +310,56 @@ void parseGLTFTransform(cgltf_node* node, Matrix44 &model)
 	//model.transpose(); //dont know why
 }
 
-//GLTF PARSING
+//GLTF PARSING: you can pass the node or it will create it
 GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL)
 {
 	if (scenenode == NULL)
 		scenenode = new GTR::Node();
 
 	//std::cout << node->name << std::endl;
-	scenenode->name = node->name;
+	if(node->name)
+		scenenode->name = node->name;
 
 	parseGLTFTransform(node, scenenode->model);
 
 	if (node->mesh)
 	{
+		/*
 		if (node->mesh->name)
 		{
 			//meshname = node->mesh->name;
 			scenenode->mesh = Mesh::Get(node->mesh->name);
 		}
-		if (!scenenode->mesh)
-		{
-			scenenode->mesh = parseGLTFMesh(node->mesh);
-			if(node->mesh->name)
-				scenenode->mesh->registerMesh(node->mesh->name);
-		}
+		*/
 
-		if (node->mesh->primitives->material)
+		if (node->mesh->primitives_count > 1)
 		{
-			scenenode->material = parseGLTFMaterial(node->mesh->primitives->material);
+			std::vector<Mesh*> meshes;
+			meshes = parseGLTFMesh(node->mesh);
+
+			for (int i = 0; i < node->mesh->primitives_count; ++i)
+			{
+				GTR::Node* subnode = new GTR::Node();
+				subnode->mesh = meshes[i];
+				if (node->mesh->primitives[i].material)
+					subnode->material = parseGLTFMaterial(node->mesh->primitives[i].material);
+				scenenode->addChild(subnode);
+			}
+		}
+		else //single primitive
+		{
+			if (node->mesh->name)
+				scenenode->mesh = Mesh::Get(node->mesh->name,true);
+
+			if (!scenenode->mesh)
+			{
+				std::vector<Mesh*> meshes;
+				meshes = parseGLTFMesh(node->mesh);
+				scenenode->mesh = meshes[0];
+			}
+
+			if (node->mesh->primitives->material)
+				scenenode->material = parseGLTFMaterial(node->mesh->primitives->material);
 		}
 	}
 

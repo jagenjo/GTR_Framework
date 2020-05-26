@@ -1505,12 +1505,15 @@ Mesh* Mesh::getQuad()
 	return quad;
 }
 
-Mesh* Mesh::Get(const char* filename)
+Mesh* Mesh::Get(const char* filename, bool skip_load)
 {
 	assert(filename);
 	std::map<std::string, Mesh*>::iterator it = sMeshesLoaded.find(filename);
 	if (it != sMeshesLoaded.end())
 		return it->second;
+
+	if (skip_load)
+		return NULL;
 
 	Mesh* m = new Mesh();
 	std::string name = filename;
