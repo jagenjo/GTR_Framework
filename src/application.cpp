@@ -77,7 +77,7 @@ void Application::render(void)
 	// Clear the color and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     checkGLErrors();
-    
+   
 	//set the camera as default (used by some functions in the framework)
 	camera->enable();
 
@@ -99,10 +99,9 @@ void Application::render(void)
 	if(render_debug)
 		drawGrid();
 
-    //glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
     //render anything in the gui after this
-    
+
 	//the swap buffers is done in the main loop after this function
 }
 

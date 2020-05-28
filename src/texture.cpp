@@ -66,7 +66,7 @@ Texture::Texture(unsigned int width, unsigned int height, unsigned int format, u
 Texture::Texture(Image* img)
 {
 	texture_id = 0;
-	create(img->width, img->height, img->bytes_per_pixel == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, true, img->data);
+	create(img->width, img->height, img->num_channels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, true, img->data);
 }
 
 Texture::~Texture()
@@ -217,10 +217,10 @@ bool Texture::load(const char* filename, bool mipmaps, bool wrap, unsigned int t
 
 	unsigned int internal_format = 0;
 	if (type == GL_FLOAT)
-		internal_format = (image->bytes_per_pixel == 3 ? GL_RGB32F : GL_RGBA32F);
+		internal_format = (image->num_channels == 3 ? GL_RGB32F : GL_RGBA32F);
 
 	//upload to VRAM
-	create(image->width, image->height, (image->bytes_per_pixel == 3 ? GL_RGB : GL_RGBA), type, mipmaps, image->data, 0 );
+	create(image->width, image->height, (image->num_channels == 3 ? GL_RGB : GL_RGBA), type, mipmaps, image->data, 0 );
 
 	glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_S, this->mipmaps && wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 	glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_T, this->mipmaps && wrap ? GL_REPEAT : GL_CLAMP_TO_EDGE);
@@ -235,8 +235,15 @@ bool Texture::load(const char* filename, bool mipmaps, bool wrap, unsigned int t
 
 void Texture::upload(Image* img)
 {
-	create(img->width, img->height, img->bytes_per_pixel == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, true, img->data);
+	create(img->width, img->height, img->num_channels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, true, img->data);
 }
+
+void Texture::upload(FloatImage* img)
+{
+	create(img->width, img->height, img->num_channels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT, true);
+	upload(this->format, this->type, false, (Uint8*)img->data);
+}
+
 
 //uploads the bytes of a texture to the VRAM
 void Texture::upload( unsigned int format, unsigned int type, bool mipmaps, Uint8* data, unsigned int internal_format)
@@ -333,11 +340,11 @@ void Texture::uploadAsArray(unsigned int texture_size, bool mipmaps)
 
 	texture_type = GL_TEXTURE_2D_ARRAY;
 	type = GL_UNSIGNED_BYTE;
-	int dataFormat = (image.bytes_per_pixel == 3 ? GL_RGB : GL_RGBA);
-	format = (image.bytes_per_pixel == 3 ? GL_RGB8 : GL_RGBA8);
+	int dataFormat = (image.num_channels == 3 ? GL_RGB : GL_RGBA);
+	format = (image.num_channels == 3 ? GL_RGB8 : GL_RGBA8);
 	this->width = (float)width;
 	this->height = (float)height;
-	int bytes_per_pixel = image.bytes_per_pixel;
+	int bytes_per_pixel = image.num_channels;
 	this->mipmaps = mipmaps && isPowerOfTwo((int)width) && isPowerOfTwo((int)height);
 	uint8* data = NULL;
 
@@ -502,6 +509,7 @@ void Image::fromTexture(Texture* texture)
 		data = new uint8[width * height * 4];
 	}
 	
+	texture->bind();
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
@@ -533,14 +541,14 @@ bool Image::loadTGA(const char* filename)
 
     width = header[1] * 256 + header[0];
     height = header[3] * 256 + header[2];
-	bytes_per_pixel = header[4] / 8;
+	num_channels = header[4] / 8;
 
 	bool error = false;
 
-	if (bytes_per_pixel != 3 && bytes_per_pixel != 4)
+	if (num_channels != 3 && num_channels != 4)
 	{
 		error = true;
-		std::cerr << "File format not supported: " << bytes_per_pixel << " bytes per pixel" << std::endl;
+		std::cerr << "File format not supported: " << num_channels << " bytes per pixel" << std::endl;
 	}
     
     if (width <= 0 || height <= 0)
@@ -555,7 +563,7 @@ bool Image::loadTGA(const char* filename)
         return false;
     }
 
-    imageSize = width * height * bytes_per_pixel;
+    imageSize = width * height * num_channels;
     
     data = new GLubyte[imageSize];
     if (data == NULL || fread(data, 1, imageSize, file) != imageSize)
@@ -571,7 +579,7 @@ bool Image::loadTGA(const char* filename)
     
 	//flip BGR to RGB pixels
 	#pragma omp simd
-    for (GLuint i = 0; i < int(imageSize); i += bytes_per_pixel)
+    for (GLuint i = 0; i < int(imageSize); i += num_channels)
     {
         uint8 temp = data[i];
         data[i] = data[i + 2];
@@ -615,7 +623,7 @@ bool Image::loadPNG(const char* filename, bool flip_y)
 
 	data = new Uint8[ out_image.size() ];
 	memcpy( data, &out_image[0], out_image.size() );
-	bytes_per_pixel = 4;
+	num_channels = 4;
 
 	//flip pixels in Y
 	if (flip_y)
@@ -666,11 +674,12 @@ bool Image::saveTGA(const char* filename, bool flip_y)
 	return true;
 }
 
-void Image::flipY()
+template<typename T>
+void tImage<T>::flipY()
 {
 	assert(data);
-	int row_size = 4 * width;
-	uint8* temp_row = new uint8[row_size];
+	int row_size = num_channels * width;
+	T* temp_row = new T[row_size];
 #pragma omp simd
 	for (int y = 0; y < height*0.5; y += 1)
 	{
@@ -682,6 +691,65 @@ void Image::flipY()
 	}
 	delete[] temp_row;
 }
+
+struct tImageHeader {
+	int width;
+	int height;
+	int layers;
+	uint8 channels;
+	uint8 bytesperchannel;
+	uint8 flags[17]; //32 bytes header
+};
+
+bool FloatImage::saveIBIN(const char* filename)
+{
+	tImageHeader header;
+	header.width = width;
+	header.height = height;
+	header.layers = 1;
+	header.bytesperchannel = 4;
+	header.channels = 3;
+	FILE* file = fopen(filename, "wb");
+	if (file == NULL)
+	{
+		fclose(file);
+		return false;
+	}
+	fwrite(&header, 1, sizeof(header), file);
+	fwrite(data, 1, sizeof(float) * width * height * num_channels * header.layers, file);
+	fclose(file);
+	return true;
+}
+
+bool FloatImage::loadIBIN(const char* filename)
+{
+	FILE* file = fopen(filename, "rb");
+	if (file == NULL)
+		return false;
+	tImageHeader header;
+	fread(&header, 1, sizeof(header), file);
+	resize(header.width, header.height, header.channels);
+	fread(data, 1, sizeof(float) * width * height * num_channels * header.layers, file);
+	fclose(file);
+	return true;
+}
+
+void FloatImage::fromTexture(Texture* texture)
+{
+	assert(texture);
+	assert(texture->type == GL_FLOAT);
+	if (data && (width != texture->width || height != texture->height))
+		clear();
+	if (!data)
+	{
+		width = texture->width;
+		height = texture->height;
+		data = new float[width * height * num_channels];
+	}
+	texture->bind();
+	glGetTexImage(GL_TEXTURE_2D, 0, num_channels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT, data);
+}
+
 
 bool isPowerOfTwo( int n )
 {

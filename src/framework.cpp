@@ -221,7 +221,7 @@ void Matrix44::transpose()
 
 Vector3 Matrix44::rotateVector(const Vector3& v) const
 {
-	return (*this * Vector4(v,0.0)).xyz;
+	return (*this * Vector4(v,0.0)).xyz();
 }
 
 void Matrix44::translateGlobal(float x, float y, float z)
@@ -1240,7 +1240,7 @@ Vector3 normalize(Vector3 n)
 
 int planeBoxOverlap( const Vector4& plane, const Vector3& center, const Vector3& halfsize )
 {
-	Vector3 n = plane.xyz;
+	Vector3 n = plane.xyz();
 	float d = plane.w;
 	float radius = abs(halfsize.x * n[0]) + abs(halfsize.y * n[1]) + abs(halfsize.z * n[2]);
 	float distance = dot(n, center) + d;
@@ -1253,7 +1253,7 @@ int planeBoxOverlap( const Vector4& plane, const Vector3& center, const Vector3&
 
 float signedDistanceToPlane( const Vector4& plane, const Vector3& point )
 {
-	return dot(plane.xyz, point) + plane.w;
+	return dot(plane.xyz(), point) + plane.w;
 }
 
 const Vector3 corners[] = { {1,1,1},  {1,1,-1},  {1,-1,1},  {1,-1,-1},  {-1,1,1},  {-1,1,-1},  {-1,-1,1},  {-1,-1,-1} };
@@ -1275,6 +1275,18 @@ BoundingBox transformBoundingBox(const Matrix44 m, const BoundingBox& box)
 
 	Vector3 halfsize = (box_max - box_min) * 0.5;
 	return BoundingBox(box_max - halfsize, halfsize );
+}
+
+BoundingBox mergeBoundingBoxes(const BoundingBox& a, const BoundingBox& b)
+{
+	BoundingBox result;
+	Vector3 bbmin = (a.center - a.halfsize);
+	Vector3 bbmax = (a.center + a.halfsize);
+	bbmin.setMin(b.center - b.halfsize);
+	bbmax.setMax(b.center + b.halfsize);
+	result.center = (bbmax + bbmin) * 0.5;
+	result.halfsize = bbmax - result.center;
+	return result;
 }
 
 //from https://github.com/erich666/GraphicsGems/blob/master/gems/RayBox.c

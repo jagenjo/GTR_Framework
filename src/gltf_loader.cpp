@@ -19,7 +19,6 @@ std::string base_folder;
 	bool load_textures = true; //must textures be loadead?
 #endif
 
-
 void parseGLTFBufferVector3(std::vector<Vector3>& container, cgltf_accessor* acc, cgltf_accessor* indices_acc = NULL)
 {
 	int i = 0;
@@ -212,7 +211,6 @@ std::vector<Mesh*> parseGLTFMesh(cgltf_mesh* meshdata)
 		mesh->uploadToVRAM();
 		if (meshdata->name)
 			mesh->registerMesh(submesh_name);
-
 		result.push_back(mesh);
 	}
 
@@ -332,7 +330,7 @@ GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL)
 		}
 		*/
 
-		if (node->mesh->primitives_count > 1)
+		if (node->mesh->primitives_count > 1 && 1)
 		{
 			std::vector<Mesh*> meshes;
 			meshes = parseGLTFMesh(node->mesh);
@@ -355,7 +353,8 @@ GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL)
 			{
 				std::vector<Mesh*> meshes;
 				meshes = parseGLTFMesh(node->mesh);
-				scenenode->mesh = meshes[0];
+				if(meshes.size())
+					scenenode->mesh = meshes[0];
 			}
 
 			if (node->mesh->primitives->material)
@@ -424,6 +423,7 @@ GTR::Prefab* loadGLTF(const char* filename)
 	parseGLTFNode(node, &prefab->root);
 	prefab->root.model = model;
 	prefab->updateNodesByName();
+	prefab->updateBounding();
 
 	//frees all data, including bin
 	cgltf_free(data);

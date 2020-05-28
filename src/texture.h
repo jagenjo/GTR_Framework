@@ -15,32 +15,36 @@ class FBO;
 class Texture;
 
 //Simple class to handle images (stores RGBA always)
-class Image
+template <typename T> class tImage
 {
 public:
 	unsigned int width;
 	unsigned int height;
-	unsigned int bytes_per_pixel; //bits per pixel
+	unsigned int num_channels; //bits per pixel
 	bool origin_topleft;
-	Uint8* data; //bytes with the pixel information
+	T* data; //bytes with the pixel information
 
-	Image() { width = height = 0; data = NULL; bytes_per_pixel = 3; }
-	Image(int w, int h, int bytes_per_pixel = 3) { data = NULL; resize(w, h, bytes_per_pixel); }
-	~Image() { if (data) delete []data; data = NULL; }
+	tImage() { width = height = 0; data = NULL; num_channels = 3; }
+	tImage(int w, int h, int num_channels = 3) { data = NULL; resize(w, h, num_channels); }
+	~tImage() { if (data) delete[]data; data = NULL; }
 
-	void resize(int w, int h, int bytes_per_pixel = 3) { if (data) delete[] data; width = w; height = h; this->bytes_per_pixel = bytes_per_pixel; data = new uint8[w*h*bytes_per_pixel]; memset(data, 0, w*h*bytes_per_pixel); }
+	void resize(int w, int h, int num_channels = 3) { if (data) delete[] data; width = w; height = h; this->num_channels = num_channels; data = new T[w * h * num_channels]; memset(data, 0, w * h * sizeof(T) * num_channels); }
 	void clear() { if (data) delete[]data; data = NULL; width = height = 0; }
 	void flipY();
+};
 
+class Image : public tImage<uint8>
+{
+public:
 	Color getPixel(int x, int y) {
 		assert(x >= 0 && x < (int)width && y >= 0 && y < (int)height && "reading of memory");
-		int pos = y*width*bytes_per_pixel + x*bytes_per_pixel;
-		return Color(data[pos], data[pos + 1], data[pos + 2], bytes_per_pixel == 4 ? 255 : data[pos + 3]);
+		int pos = y*width* num_channels + x* num_channels;
+		return Color(data[pos], data[pos + 1], data[pos + 2], num_channels == 4 ? 255 : data[pos + 3]);
 	};
 	void setPixel(int x, int y, Color v) {
 		assert(x >= 0 && x < (int)width && y >= 0 && y < (int)height && "writing of memory");
-		int pos = y*width*bytes_per_pixel + x*bytes_per_pixel;
-		data[pos] = v.x; data[pos + 1] = v.y; data[pos + 2] = v.z; if (bytes_per_pixel == 4) data[pos + 3] = v.w;
+		int pos = y*width*num_channels + x* num_channels;
+		data[pos] = v.x; data[pos + 1] = v.y; data[pos + 2] = v.z; if (num_channels == 4) data[pos + 3] = v.w;
 	};
 
 	Color getPixelInterpolated(float x, float y, bool repeat = false);
@@ -52,6 +56,26 @@ public:
 	bool loadTGA(const char* filename);
 	bool loadPNG(const char* filename, bool flip_y = false);
 	bool saveTGA(const char* filename, bool flip_y = true);
+};
+
+class FloatImage : public tImage<float>
+{
+public:
+	Vector4 getPixel(int x, int y) {
+		assert(x >= 0 && x < (int)width&& y >= 0 && y < (int)height && "reading of memory");
+		int pos = y * width * num_channels + x * num_channels;
+		return Vector4(data[pos], data[pos + 1], data[pos + 2], num_channels == 3 ? 1 : data[pos + 3]);
+	};
+	void setPixel(int x, int y, Vector4 v) {
+		assert(x >= 0 && x < (int)width&& y >= 0 && y < (int)height && "writing of memory");
+		int pos = y * width * num_channels + x * num_channels;
+		data[pos] = v.x; data[pos + 1] = v.y; data[pos + 2] = v.z;
+		if(num_channels == 4)
+			data[pos + 3] = v.w;
+	};
+	void fromTexture(Texture* texture);
+	bool loadIBIN(const char* filename);
+	bool saveIBIN(const char* filename);
 };
 
 
@@ -98,6 +122,7 @@ public:
 	void createCubemap(unsigned int width, unsigned int height, Uint8** data = NULL, unsigned int format = GL_RGBA, unsigned int type = GL_FLOAT, bool mipmaps = true, unsigned int internal_format = GL_RGBA32F);
 
 	void upload(Image* img);
+	void upload(FloatImage* img);
 	void upload(unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
 	void upload3D(unsigned int format = GL_RED, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
 	void uploadCubemap(unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8** data = NULL, unsigned int internal_format = 0);

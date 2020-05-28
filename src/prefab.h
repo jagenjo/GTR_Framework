@@ -39,14 +39,13 @@ namespace GTR {
 		//dtor
 		virtual ~Node();
 
+		BoundingBox getBoundingBox();
+
 		//render GUI info
 		void renderInMenu();
 
 		//add node to children list
 		void addChild(Node* child) { assert(child->parent == NULL);  children.push_back(child); child->parent = this; }
-		void removeChildren();
-
-		virtual Node* clone(Node* target = NULL);
 
 		//compute the global matrix taking into account its parent
 		Matrix44 getGlobalMatrix(bool fast = false) { 
@@ -63,17 +62,19 @@ namespace GTR {
 	class Prefab
 	{
 	public:
+
 		std::string name;
 		std::map<std::string, Node*> nodes_by_name;
-
 		//root node which contains the tree
 		Node root;
+		BoundingBox bounding;
 
 		//dtor
 		virtual ~Prefab();
 
-		Node* getNodeByName(const char* name);
+		void updateBounding();
 		void updateNodesByName();
+		Node* getNodeByName(const char* name);
 
 		//Manager to cache loaded prefabs
 		static std::map<std::string, Prefab*> sPrefabsLoaded;

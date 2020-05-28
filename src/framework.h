@@ -117,7 +117,11 @@ public:
 	void parseFromText(const char* text, const char separator);
 
 	float& operator [] (int n) { return v[n]; }
+	void operator += (const Vector3& v) { x += v.x; y += v.y; z += v.z; }
+	void operator -= (const Vector3& v) { x -= v.x; y -= v.y; z -= v.z; }
+	void operator /= (const Vector3& v) { x /= v.x; y /= v.y; z /= v.z; }
 	void operator *= (float v) { x *= v; y *= v; z *= v; }
+	void operator /= (float v) { x /= v; y /= v; z /= v; }
 	void operator = (float* v) { x = v[0]; y = v[1]; z = v[2]; }
 };
 
@@ -139,13 +143,14 @@ public:
 	{
 		struct { float x,y,z,w; };
 		float v[4];
-		struct { Vector3 xyz; };
 	};
 
 	Vector4() { x = y = z = w = 0.0; }
 	Vector4(float x, float y, float z, float w) { this->x = x; this->y = y; this->z = z; this->w = w; }
 	Vector4(const Vector3& v, float w) { x = v.x; y = v.y; z = v.z; this->w = w; }
 	Vector4(const float* v) { x = v[0]; x = v[1]; x = v[2]; x = v[3]; }
+
+	Vector3 xyz() const { return Vector3(x, y, z); }
 	void set(float x, float y, float z, float w) { this->x = x; this->y = y; this->z = z; this->w = w; }
 	void operator = (float* v) { x = v[0]; y = v[1]; z = v[2]; w = v[3]; }
 };
@@ -359,6 +364,7 @@ public:
 };
 
 //applies a transform to a AABB from object to world
+BoundingBox mergeBoundingBoxes(const BoundingBox& a, const BoundingBox& b);
 BoundingBox transformBoundingBox(const Matrix44 m, const BoundingBox& box);
 
 float signedDistanceToPlane(const Vector4& plane, const Vector3& point);
