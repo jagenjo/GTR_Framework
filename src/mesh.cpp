@@ -31,7 +31,7 @@ long Mesh::num_triangles_rendered = 0;
 Mesh::Mesh()
 {
 	radius = 0;
-	vertices_vbo_id = uvs_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = bones_vbo_id = weights_vbo_id = 0;
+	vertices_vbo_id = uvs_vbo_id = uvs1_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = bones_vbo_id = weights_vbo_id = 0;
 	collision_model = NULL;
 	clear();
 }
@@ -163,7 +163,7 @@ void Mesh::enableBuffers(Shader* sh)
 			if (uvs1_vbo_id)
 			{
 				glBindBuffer(GL_ARRAY_BUFFER, uvs1_vbo_id);
-				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, spacing, (void*)offset_uv);
+				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, spacing, (void*)0);
 			}
 			else
 				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, spacing, &uvs1[0]);
@@ -298,6 +298,7 @@ void Mesh::disableBuffers(Shader* shader)
 	glDisableVertexAttribArray(vertex_location);
 	if (normal_location != -1) glDisableVertexAttribArray(normal_location);
 	if (uv_location != -1) glDisableVertexAttribArray(uv_location);
+	if (uv1_location != -1) glDisableVertexAttribArray(uv1_location);
 	if (color_location != -1) glDisableVertexAttribArray(color_location);
 	if (bones_location != -1) glDisableVertexAttribArray(bones_location);
 	if (weights_location != -1) glDisableVertexAttribArray(weights_location);
@@ -847,7 +848,7 @@ bool Mesh::writeBin(const char* filename)
 	info.streams[4] = indices.size() ? 'I' : ' ';
 	info.streams[5] = bones.size() ? 'B' : ' ';
 	info.streams[6] = weights.size() ? 'W' : ' ';
-	info.streams[7] = uvs1.size() ? 'u' : ' ';
+	info.streams[7] = uvs1.size() ? 'u' : ' '; //uv second set
 
 	//write info
 	fwrite((void*)&info, sizeof(sMeshInfo),1, f);
