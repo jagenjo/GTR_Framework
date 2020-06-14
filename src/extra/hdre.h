@@ -32,7 +32,7 @@ typedef struct {
 	int width;
 	int height;
 
-	float * data;
+	float* data;
 	float** faces;
 
 } sHDRELevel;
@@ -40,18 +40,22 @@ typedef struct {
 class HDRE {
 
 private:
-	
-	float * data; // only f32 now
-	float * pixels[N_LEVELS][N_FACES]; // Xpos, Xneg, Ypos, Yneg, Zpos, Zneg
-	float * faces_array[N_LEVELS];
 
-	sHDREHeader header;
+	float* data; // only f32 now
+	float* pixels[N_LEVELS][N_FACES]; // Xpos, Xneg, Ypos, Yneg, Zpos, Zneg
+	float* faces_array[N_LEVELS];
+
+	bool clean();
 
 public:
 
+	sHDREHeader header;
 	int width;
 	int height;
 
+	float version;
+
+	HDRE();
 	HDRE(const char* filename);
 	~HDRE();
 
@@ -59,7 +63,7 @@ public:
 
 	// useful methods
 	float getMaxLuminance() { return this->header.maxLuminance; };
-    float* getSHCoeffs() { if(this->header.numCoeffs > 0) return this->header.coeffs; return NULL; }
+	float* getSHCoeffs() { if (this->header.numCoeffs > 0) return this->header.coeffs; }
 
 	float* getData(); // All pixel data
 	float* getFace(int level, int face);	// Specific level and face
@@ -67,4 +71,3 @@ public:
 
 	sHDRELevel getLevel(int level = 0);
 };
-

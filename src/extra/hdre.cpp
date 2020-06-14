@@ -6,22 +6,34 @@
 
 #include "hdre.h"
 
+HDRE::HDRE()
+{
+	data = NULL;
+	width = height = 0;
+}
+
 HDRE::HDRE(const char* filename)
 {
+	data = NULL;
 	load(filename);
 }
 
 HDRE::~HDRE()
 {
-	
+	clean();
 }
 
 sHDRELevel HDRE::getLevel(int n)
 {
 	sHDRELevel level;
 
-	level.width = std::max(8, (int)(this->width / pow(2.0, n)));
-	level.height = std::max(8, (int)(this->height / pow(2.0, n)));
+	float size = std::max(8, (int)(this->width / pow(2.0, n)));
+
+	if (this->version > 2.0)
+		size = (int)(this->width / pow(2.0, n));
+
+	level.width = size;
+	level.height = size; // cubemap sizes!
 	level.data = this->faces_array[n];
 	level.faces = this->getFaces(n);
 
@@ -45,11 +57,10 @@ float** HDRE::getFaces(int level)
 
 bool HDRE::load(const char* filename)
 {
-	FILE *f;
+	FILE* f;
 	assert(filename);
 
-	//fopen_s(&f, filename, "rb");
-	f = fopen(filename, "rb");
+	fopen_s(&f, filename, "rb");
 	if (f == NULL)
 		return false;
 
@@ -78,7 +89,11 @@ bool HDRE::load(const char* filename)
 	{
 		int mip_level = i + 1;
 		dataSize += w * w * N_FACES * HDREHeader.numChannels;
+
 		w = std::max(8, (int)(width / pow(2.0, mip_level)));
+
+		if (this->version > 2.0)
+			w = (int)(width / pow(2.0, mip_level));
 	}
 
 	this->data = new float[dataSize];
@@ -92,13 +107,13 @@ bool HDRE::load(const char* filename)
 
 	w = width;
 	int mapOffset = 0;
-	
+
 	for (int i = 0; i < N_LEVELS; i++)
 	{
 		int mip_level = i + 1;
 		int faceSize = w * w * HDREHeader.numChannels;
 		int mapSize = faceSize * N_FACES;
-		
+
 		int faceOffset = 0;
 		int facePixel = 0;
 
@@ -121,14 +136,45 @@ bool HDRE::load(const char* filename)
 
 			// update face offset
 			faceOffset += faceSize;
-		}	
+		}
 
 		// update level offset
 		mapOffset += mapSize;
 		// reassign width for next level
 		w = std::max(8, (int)(width / pow(2.0, mip_level)));
+
+		if (this->version > 2.0)
+			w = (int)(width / pow(2.0, mip_level));
 	}
 
-	std::cout << std::endl << " + '" << filename << "' loaded successfully" << std::endl;
+	std::cout << std::endl << " + '" << filename << "' (v" << this->version << ") loaded successfully" << std::endl;
 	return true;
+}
+
+bool HDRE::clean()
+{
+	try
+	{
+		if(data)
+			delete data;
+
+		for (int i = 0; i < N_LEVELS; i++)
+		{
+			delete faces_array[i];
+
+			for (int j = 0; j < N_FACES; j++)
+			{
+				delete pixels[i][j];
+			}
+		}
+
+		return true;
+	}
+	catch (const std::exception&)
+	{
+		std::cout << std::endl << "Error cleaning" << std::endl;
+		return false;
+	}
+
+	return false;
 }
