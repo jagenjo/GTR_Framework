@@ -297,23 +297,38 @@ void Texture::upload3D(unsigned int format, unsigned int type, bool mipmaps, Uin
 	assert(checkGLErrors() && "Error uploading texture");
 }
 
-void Texture::uploadCubemap(unsigned int format, unsigned int type, bool mipmaps, Uint8** data, unsigned int internal_format) {
+void Texture::uploadCubemap(unsigned int format, unsigned int type, bool mipmaps, Uint8** data, unsigned int internal_format, int level) {
 	
 	assert(texture_id && "Must create texture before uploading data.");
 	assert(texture_type == GL_TEXTURE_CUBE_MAP && "Texture type does not match.");
 
 	glBindTexture(this->texture_type, texture_id);	//we activate this id to tell opengl we are going to use this texture
 
+	int width = ((int)this->width) >> level;
+	int height = ((int)this->height) >> level;
+
+	if (internal_format == 0)
+	{
+		if (type == GL_FLOAT)
+			internal_format = format == GL_RGB ? GL_RGB32F : GL_RGBA32F;
+		else if (type == GL_HALF_FLOAT)
+			internal_format = format == GL_RGB ? GL_RGB16F : GL_RGBA16F;
+		this->internal_format = internal_format;
+	}
+
 	for (int i = 0; i < 6; i++)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format == 0 ? format : internal_format, width, height, 0, format, type, data ? data[i] : NULL );
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, level, internal_format == 0 ? format : internal_format, width, height, 0, format, type, data ? data[i] : NULL );
 
-	glTexParameteri(this->texture_type, GL_TEXTURE_MAG_FILTER, Texture::default_mag_filter);	//set the min filter
-	glTexParameteri(this->texture_type, GL_TEXTURE_MIN_FILTER, this->mipmaps ? Texture::default_min_filter : GL_LINEAR);   //set the mag filter
-	glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_S, this->wrapS);
-	glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_T, this->wrapT);
+	if (level == 0 && mipmaps)
+	{
+		glTexParameteri(this->texture_type, GL_TEXTURE_MAG_FILTER, Texture::default_mag_filter);	//set the min filter
+		glTexParameteri(this->texture_type, GL_TEXTURE_MIN_FILTER, this->mipmaps ? Texture::default_min_filter : GL_LINEAR);   //set the mag filter
+		glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_S, this->wrapS);
+		glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_T, this->wrapT);
 
-	if (data && this->mipmaps)
-		generateMipmaps();
+		if (data && this->mipmaps)
+			generateMipmaps();
+	}
 
 	glBindTexture(this->texture_type, 0);
 	assert(glGetError() == GL_NO_ERROR && "Error creating texture");
@@ -464,6 +479,17 @@ Texture* Texture::getWhiteTexture()
 
 void Texture::copyTo(Texture* destination, Shader* shader)
 {
+	if (!destination)
+	{
+		glDepthFunc(GL_ALWAYS);
+		glEnable(GL_DEPTH_TEST);
+		shader = Shader::getDefaultShader("screen_depth");
+		toViewport(shader);
+		glDisable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		return;
+	}
+
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 	FBO* fbo = getGlobalFBO(destination);

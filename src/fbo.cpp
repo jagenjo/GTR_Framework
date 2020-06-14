@@ -60,12 +60,10 @@ bool FBO::create( int width, int height, int num_textures, int format, int type,
 
 	num_color_textures = num_textures;
 
-	int internalFormat = 0; //GL_RGB
-
 	std::vector<Texture*> textures(4);
 	for (int i = 0; i < num_textures; ++i)
 	{
-		Texture* colortex = textures[i] = new Texture(width, height, format, type, false, NULL, internalFormat );
+		Texture* colortex = textures[i] = new Texture(width, height, format, type, false); //,NULL, format == GL_RGBA ? GL_RGBA8 : GL_RGB8 
 		glBindTexture(colortex->texture_type, colortex->texture_id);	//we activate this id to tell opengl we are going to use this texture
 		glTexParameteri(colortex->texture_type, GL_TEXTURE_MAG_FILTER, GL_NEAREST);	//set the min filter
 		glTexParameteri(colortex->texture_type, GL_TEXTURE_MIN_FILTER, GL_NEAREST);   //set the mag filter
@@ -146,17 +144,19 @@ bool FBO::setTextures(std::vector<Texture*> textures, Texture* depth_texture, in
 		assert(!texture || (texture->width == width && texture->height == height)); //incorrect size, textures must have same size
 		assert(!texture || (texture->type == type && texture->format == format)); //incorrect texture format
 
-		if (texture && texture->texture_type == GL_TEXTURE_CUBE_MAP)
+		if (texture)
 		{
-			assert(cubemap_face != -1); //MUST SPECIFY CUBEMAP FACE
-			glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubemap_face, texture ? texture->texture_id : NULL, 0);
+			if (texture->texture_type == GL_TEXTURE_CUBE_MAP)
+			{
+				assert(cubemap_face != -1); //MUST SPECIFY CUBEMAP FACE
+				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_CUBE_MAP_POSITIVE_X + cubemap_face, texture ? texture->texture_id : NULL, 0);
+			}
+			else
+			{
+				glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_2D, texture ? texture->texture_id : NULL, 0);
+			}
+			bufs[i] = GL_COLOR_ATTACHMENT0_EXT + i;
 		}
-		else
-        {
-            glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT + i, GL_TEXTURE_2D, texture ? texture->texture_id : NULL, 0);
-        }
-        if(texture)
-            bufs[i] = GL_COLOR_ATTACHMENT0_EXT + i;
         else
             bufs[i] = GL_NONE;
 		color_textures[i] = texture;

@@ -61,6 +61,8 @@ public:
 class FloatImage : public tImage<float>
 {
 public:
+	//~FloatImage(); //no need, the tImage dtor is valid
+
 	Vector4 getPixel(int x, int y) {
 		assert(x >= 0 && x < (int)width&& y >= 0 && y < (int)height && "reading of memory");
 		int pos = y * width * num_channels + x * num_channels;
@@ -119,13 +121,13 @@ public:
 
 	void create(unsigned int width, unsigned int height, unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
 	void create3D(unsigned int width, unsigned int height, unsigned int depth, unsigned int format = GL_RED, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
-	void createCubemap(unsigned int width, unsigned int height, Uint8** data = NULL, unsigned int format = GL_RGBA, unsigned int type = GL_FLOAT, bool mipmaps = true, unsigned int internal_format = GL_RGBA32F);
+	void createCubemap(unsigned int width, unsigned int height, Uint8** data = NULL, unsigned int format = GL_RGBA, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, unsigned int internal_format = GL_RGBA32F);
 
 	void upload(Image* img);
 	void upload(FloatImage* img);
 	void upload(unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
 	void upload3D(unsigned int format = GL_RED, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
-	void uploadCubemap(unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8** data = NULL, unsigned int internal_format = 0);
+	void uploadCubemap(unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8** data = NULL, unsigned int internal_format = 0, int level = 0);
 	void uploadAsArray(unsigned int texture_size, bool mipmaps = true);
 
 	void bind();
