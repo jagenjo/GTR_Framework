@@ -7,6 +7,7 @@
 #include "prefab.h"
 #include "material.h"
 #include "utils.h"
+#include "extra/hdre.h"
 
 using namespace GTR;
 
@@ -112,4 +113,21 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 
 	//set the render state as it was before to avoid problems with future renders
 	glDisable(GL_BLEND);
+}
+
+
+Texture* GTR::CubemapFromHDRE(const char* filename)
+{
+	HDRE* hdre = new HDRE();
+	if (!hdre->load(filename))
+	{
+		delete hdre;
+		return NULL;
+	}
+
+	Texture* texture = new Texture();
+	texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFaces(0), hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT );
+	for(int i = 1; i < 6; ++i)
+		texture->uploadCubemap(texture->format, texture->type, false, (Uint8**)hdre->getFaces(i), GL_RGBA32F, i);
+	return texture;
 }

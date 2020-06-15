@@ -29,4 +29,6 @@ namespace GTR {
 		void renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera);
 	};
 
+	Texture* CubemapFromHDRE(const char* filename);
+
 };
