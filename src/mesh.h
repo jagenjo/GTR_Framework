@@ -44,7 +44,7 @@ public:
 	std::vector< Vector3 > vertices; //here we store the vertices
 	std::vector< Vector3 > normals;	 //here we store the normals
 	std::vector< Vector2 > uvs;	 //here we store the texture coordinates
-	std::vector< Vector2 > uvs1; //secondary sets of uvs
+	std::vector< Vector2 > m_uvs1; //secondary sets of uvs
 	std::vector< Vector4 > colors; //here we store the colors
 	
 	struct tInterleaved {
@@ -55,7 +55,7 @@ public:
 
 	std::vector< tInterleaved > interleaved; //to render interleaved
 
-	std::vector< Vector3u > indices; //for indexed meshes
+	std::vector<unsigned int> m_indices; //for indexed meshes
 
 	//for animated meshes
 	std::vector< Vector4ub > bones; //tells which bones afect the vertex (4 max)
@@ -95,7 +95,7 @@ public:
 	void drawCall(unsigned int primitive, int submesh_id, int num_instances);
 	void disableBuffers(Shader* shader);
 
-	bool readBin(const char* filename);
+	bool readBin(const char* filename, bool bFromNetwork);
 	bool writeBin(const char* filename);
 
 	unsigned int getNumSubmeshes() { return (unsigned int)submeshes.size(); }
@@ -109,7 +109,8 @@ public:
 	bool testSphereCollision(Matrix44 model, Vector3 center, float radius, Vector3& collision, Vector3& normal);
 
 	//loader
-	static Mesh* Get(const char* filename, bool skip_load = false);
+	static Mesh* Get(const char* filename, bool bFromNetwork, bool skip_load = false);
+	static void Release();
 	void registerMesh(std::string name);
 
 	//create help meshes

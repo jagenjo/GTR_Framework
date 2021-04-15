@@ -78,6 +78,7 @@ SDL_Window* createWindow(const char* caption, int width, int height, bool fullsc
 	int window_width, window_height;
 	SDL_GetWindowSize(sdl_window, &window_width, &window_height);
 	std::cout << " * Window size: " << window_width << " x " << window_height << std::endl;
+	std::cout << " * OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
 	std::cout << " * Path: " << getPath() << std::endl;
 	std::cout << std::endl;
 

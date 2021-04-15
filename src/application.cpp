@@ -19,8 +19,10 @@ Application* Application::instance = nullptr;
 Vector4 bg_color(0.5, 0.5, 0.5, 1.0);
 
 Camera* camera = nullptr;
+GTR::Scene* scene = nullptr;
 GTR::Prefab* prefab = nullptr;
 GTR::Renderer* renderer = nullptr;
+GTR::BaseEntity* selected_entity = nullptr;
 FBO* fbo = nullptr;
 Texture* texture = nullptr;
 
@@ -58,6 +60,10 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	//This class will be the one in charge of rendering all 
 	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
 
+	scene = new GTR::Scene();
+	if (!scene->load("data/scene.json"))
+		exit(1);
+
 	//Lets load some object to render
 	prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
 
@@ -93,7 +99,9 @@ void Application::render(void)
 
 	//lets render something
 	Matrix44 model;
-	renderer->renderPrefab( model, prefab, camera );
+	//renderer->renderPrefab( model, prefab, camera );
+
+	renderer->renderScene(scene, camera);
 
 	//Draw the floor grid, helpful to have a reference point
 	if(render_debug)
@@ -159,11 +167,11 @@ void Application::update(double seconds_elapsed)
 
 void Application::renderDebugGizmo()
 {
-	if (!prefab)
+	if (!selected_entity || !render_debug)
 		return;
 
 	//example of matrix we want to edit, change this to the matrix of your entity
-	Matrix44& matrix = prefab->root.model;
+	Matrix44& matrix = selected_entity->model;
 
 	#ifndef SKIP_IMGUI
 
@@ -243,12 +251,30 @@ void Application::renderDebugGUI(void)
 		ImGui::TreePop();
 	}
 
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.75f, 0.75f, 0.75f, 1.0f));
+
 	//example to show prefab info: first param must be unique!
-	if (prefab && ImGui::TreeNode(prefab, "Prefab")) {
-		prefab->root.renderInMenu();
-		ImGui::TreePop();
+	for (int i = 0; i < scene->entities.size(); ++i)
+	{
+		GTR::BaseEntity* entity = scene->entities[i];
+
+		if(selected_entity == entity)
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 1.0f));
+
+		if (ImGui::TreeNode(entity, entity->name.c_str()))
+		{
+			entity->renderInMenu();
+			ImGui::TreePop();
+		}
+
+		if (selected_entity == entity)
+			ImGui::PopStyleColor();
+
+		if (ImGui::IsItemClicked(0))
+			selected_entity = entity;
 	}
 
+	ImGui::PopStyleColor();
 #endif
 }
 
@@ -261,6 +287,7 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_F1: render_debug = !render_debug; break;
 		case SDLK_f: camera->center.set(0, 0, 0); camera->updateViewMatrix(); break;
 		case SDLK_F5: Shader::ReloadAll(); break;
+		case SDLK_F6: scene->clear(); scene->load(scene->filename.c_str()); break;
 	}
 }
 

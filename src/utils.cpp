@@ -121,6 +121,22 @@ bool readFile(const std::string& filename, std::string& content)
 	return true;
 }
 
+bool readFileBin(const std::string& filename, std::vector<unsigned char>& buffer)
+{
+	buffer.clear();
+	FILE* fp = nullptr;
+	fp = fopen(filename.c_str(), "rb");
+	if (fp == nullptr)
+		return false;
+	fseek(fp, 0L, SEEK_END);
+	int size = ftell(fp);
+	rewind(fp);
+	buffer.resize(size);
+	fread(&buffer[0], sizeof(char), buffer.size(), fp);
+	fclose(fp);
+	return true;
+}
+
 bool checkGLErrors()
 {
 	#ifndef _DEBUG
@@ -138,6 +154,11 @@ bool checkGLErrors()
 	}
 
 	return true;
+}
+
+void stdlog(std::string str)
+{
+	std::cout << str << std::endl;
 }
 
 std::vector<std::string>& split(const std::string &s, char delim, std::vector<std::string> &elems) {
@@ -449,6 +470,17 @@ char* fetchBufferVec3u(char* data, std::vector<Vector3u>& vector)
 	return data;
 }
 
+char* fetchBufferVec3u(char* data, std::vector<unsigned int>& vector)
+{
+	int pos = 0;
+	std::vector<float> floats;
+	data = fetchBufferFloat(data, floats);
+	vector.resize(floats.size());
+	for (int i = 0; i < floats.size(); i++)
+		vector[i] = (unsigned int)(floats[i]);
+	return data;
+}
+
 char* fetchBufferVec4ub(char* data, std::vector<Vector4ub>& vector)
 {
 	int pos = 0;
@@ -468,4 +500,63 @@ char* fetchBufferVec4(char* data, std::vector<Vector4>& vector)
 	vector.resize(floats.size() / 4);
 	memcpy(&vector[0], &floats[0], sizeof(float)*floats.size());
 	return data;
+}
+
+float readJSONNumber(cJSON* obj, const char* name, float default_value)
+{
+	cJSON* str_json = cJSON_GetObjectItemCaseSensitive((cJSON*)obj, name);
+	if (!str_json || str_json->type != cJSON_Number)
+		return default_value;
+	return str_json->valuedouble;
+}
+
+std::string readJSONString(cJSON* obj, const char* name, const char* default_str)
+{
+	cJSON* str_json = cJSON_GetObjectItemCaseSensitive((cJSON*)obj, name);
+	if (!str_json || str_json->type != cJSON_String)
+		return default_str;
+	return str_json->valuestring;
+}
+
+bool readJSONVector(cJSON* obj, const char* name, std::vector<float>& dst)
+{
+	cJSON* array_json = cJSON_GetObjectItemCaseSensitive((cJSON*)obj, name);
+	if (!array_json)
+		return false;
+	if (!cJSON_IsArray(array_json))
+		return false;
+
+	dst.resize(cJSON_GetArraySize(array_json));
+	for (int i = 0; i < dst.size(); ++i)
+	{
+		cJSON* value_json = cJSON_GetArrayItem(array_json, i);
+		if (value_json)
+			dst[i] = value_json->valuedouble;
+		else
+			dst[i] = 0;
+	}
+
+	return true;
+}
+
+Vector3 readJSONVector3(cJSON* obj, const char* name, Vector3 default_value)
+{
+	std::vector<float> dst;
+	if (readJSONVector(obj, name, dst))
+	{
+		if (dst.size() == 3)
+			return Vector3(dst[0], dst[1], dst[2]);
+	}
+	return default_value;
+}
+
+Vector4 readJSONVector4(cJSON* obj, const char* name)
+{
+	std::vector<float> dst;
+	if (readJSONVector(obj, name, dst))
+	{
+		if (dst.size() == 4)
+			return Vector4(dst[0], dst[1], dst[2], dst[3]);
+	}
+	return Vector4();
 }

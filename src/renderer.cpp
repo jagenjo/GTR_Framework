@@ -7,13 +7,34 @@
 #include "prefab.h"
 #include "material.h"
 #include "utils.h"
+#include "scene.h"
 #include "extra/hdre.h"
 
+
 using namespace GTR;
+
+void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
+{
+	for (int i = 0; i < scene->entities.size(); ++i)
+	{
+		BaseEntity* ent = scene->entities[i];
+		if (!ent->visible)
+			continue;
+
+		//is a prefab!
+		if (ent->entity_type == PREFAB)
+		{
+			PrefabEntity* pent = (GTR::PrefabEntity*)ent;
+			if(pent->prefab)
+				renderPrefab(ent->model, pent->prefab, camera);
+		}
+	}
+}
 
 //renders all the prefab
 void Renderer::renderPrefab(const Matrix44& model, GTR::Prefab* prefab, Camera* camera)
 {
+	assert(prefab && "PREFAB IS NULL");
 	//assign the model to the root node
 	renderNode(model, &prefab->root, camera);
 }
@@ -59,7 +80,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	Shader* shader = NULL;
 	Texture* texture = NULL;
 
-	texture = material->color_texture;
+	texture = material->color_texture.texture;
 	//texture = material->emissive_texture;
 	//texture = material->metallic_roughness_texture;
 	//texture = material->normal_texture;
@@ -68,7 +89,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 		texture = Texture::getWhiteTexture(); //a 1x1 white texture
 
 	//select the blending
-	if (material->alpha_mode == GTR::AlphaMode::BLEND)
+	if (material->alpha_mode == GTR::eAlphaMode::BLEND)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -103,7 +124,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 		shader->setUniform("u_texture", texture, 0);
 
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
-	shader->setUniform("u_alpha_cutoff", material->alpha_mode == GTR::AlphaMode::MASK ? material->alpha_cutoff : 0);
+	shader->setUniform("u_alpha_cutoff", material->alpha_mode == GTR::eAlphaMode::MASK ? material->alpha_cutoff : 0);
 
 	//do the draw call that renders the mesh into the screen
 	mesh->render(GL_TRIANGLES);
@@ -125,9 +146,12 @@ Texture* GTR::CubemapFromHDRE(const char* filename)
 		return NULL;
 	}
 
+	/*
 	Texture* texture = new Texture();
 	texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFaces(0), hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT );
 	for(int i = 1; i < 6; ++i)
 		texture->uploadCubemap(texture->format, texture->type, false, (Uint8**)hdre->getFaces(i), GL_RGBA32F, i);
 	return texture;
+	*/
+	return NULL;
 }

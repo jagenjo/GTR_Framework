@@ -14,6 +14,18 @@ class Shader;
 class FBO;
 class Texture;
 
+#ifndef OPENGL_ES3
+#define GL_RGBA32F 0x8814
+#define GL_RGB32F 0x8815
+#define GL_HALF_FLOAT 0x140B
+#define GL_RGB16F 0x881B
+#define GL_RGBA16F 0x881A
+#endif
+
+#ifndef GL_TEXTURE_EXTERNAL_OES
+	#define GL_TEXTURE_EXTERNAL_OES 0x8D65
+#endif
+
 //Simple class to handle images (stores RGBA always)
 template <typename T> class tImage
 {
@@ -54,8 +66,11 @@ public:
 	void fromScreen(int width, int height);
 
 	bool loadTGA(const char* filename);
-	bool loadPNG(const char* filename, bool flip_y = false);
-	bool saveTGA(const char* filename, bool flip_y = true);
+	bool loadPNG(const char* filename, bool flip_y = true);
+	bool loadPNG(std::vector<unsigned char>& buffer, bool flip_y = false);
+	bool loadJPG(const char* filename, bool flip_y = false);
+	bool loadJPG(std::vector<unsigned char>& buffer, bool flip_y = false);
+	bool saveTGA(const char* filename, bool flip_y = false);
 };
 
 class FloatImage : public tImage<float>
@@ -117,16 +132,19 @@ public:
 	Texture(Image* img);
 	~Texture();
 
+	static void Release();
+
+
 	void clear();
 
 	void create(unsigned int width, unsigned int height, unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
-	void create3D(unsigned int width, unsigned int height, unsigned int depth, unsigned int format = GL_RED, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
-	void createCubemap(unsigned int width, unsigned int height, Uint8** data = NULL, unsigned int format = GL_RGBA, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, unsigned int internal_format = GL_RGBA32F);
+	//void create3D(unsigned int width, unsigned int height, unsigned int depth, unsigned int format = GL_RED, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
+	void createCubemap(unsigned int width, unsigned int height, Uint8** data = NULL, unsigned int format = GL_RGBA, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, unsigned int internal_format = 0);
 
 	void upload(Image* img);
 	void upload(FloatImage* img);
 	void upload(unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
-	void upload3D(unsigned int format = GL_RED, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
+	//void upload3D(unsigned int format = GL_RED, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8* data = NULL, unsigned int internal_format = 0);
 	void uploadCubemap(unsigned int format = GL_RGB, unsigned int type = GL_UNSIGNED_BYTE, bool mipmaps = true, Uint8** data = NULL, unsigned int internal_format = 0, int level = 0);
 	void uploadAsArray(unsigned int texture_size, bool mipmaps = true);
 
@@ -141,10 +159,15 @@ public:
 
 	//load without using the manager
 	bool load(const char* filename, bool mipmaps = true, bool wrap = true, unsigned int type = GL_UNSIGNED_BYTE);
+	void loadFromImage(Image* image, bool mipmaps = true, bool wrap = true, unsigned int type = GL_UNSIGNED_BYTE);
 
 	//load using the manager (caching loaded ones to avoid reloading them)
 	static Texture* Get(const char* filename, bool mipmaps = true, bool wrap = true);
-	void setName(const char* name) { sTexturesLoaded[name] = this; }
+	static Texture* Find(const char* filename);
+	void setName(const char* name) {
+		filename = name;
+		sTexturesLoaded[filename] = this;
+	}
 
 	void generateMipmaps();
 

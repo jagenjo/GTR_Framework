@@ -363,6 +363,13 @@ public:
 	float getArea() { return halfsize.x * halfsize.y * halfsize.z * 2.0f; }
 };
 
+class Ray
+{
+public:
+	Vector3 origin;
+	Vector3 direction;
+};
+
 //applies a transform to a AABB from object to world
 BoundingBox mergeBoundingBoxes(const BoundingBox& a, const BoundingBox& b);
 BoundingBox transformBoundingBox(const Matrix44 m, const BoundingBox& box);
@@ -371,7 +378,7 @@ float signedDistanceToPlane(const Vector4& plane, const Vector3& point);
 int planeBoxOverlap( const Vector4& plane, const Vector3& center, const Vector3& halfsize );
 float ComputeSignedAngle( Vector2 a, Vector2 b); //returns the angle between both vectors in radians
 inline float ease(float f) { return f*f*f*(f*(f*6.0f - 15.0f) + 10.0f); }
-Vector3 RayPlaneCollision( const Vector3& plane_pos, const Vector3& plane_normal, const Vector3& ray_origin, const Vector3& ray_dir );
+bool RayPlaneCollision( const Vector3& plane_pos, const Vector3& plane_normal, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& result );
 bool RayBoundingBoxCollision(const BoundingBox& box, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& coll);
 bool BoundingBoxSphereOverlap(const BoundingBox& box, const Vector3& center, float radius );
 Vector3 reflect(const Vector3& I, const Vector3& N);
@@ -380,7 +387,7 @@ Vector3 reflect(const Vector3& I, const Vector3& N);
 inline float random(float range = 1.0f, int offset = 0) { return ((rand() % 1000) / (1000.0f)) * range + offset; }
 
 
-typedef Vector3 vec2;
+typedef Vector2 vec2;
 typedef Vector3 vec3;
 typedef Vector4 vec4;
 typedef Matrix44 mat4;

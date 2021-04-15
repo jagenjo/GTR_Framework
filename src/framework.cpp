@@ -1,6 +1,7 @@
 #include "framework.h"
 
-#include "includes.h"
+//#include "includes.h"
+
 #include <cassert>
 #include <cmath> //for sqrt (square root) function
 #include <math.h> //atan2
@@ -147,7 +148,7 @@ void Vector3::parseFromText(const char* text, const char separator)
 			strncpy(num, start, current - start);
 			num[current - start] = '\0';
 			start = current + 1;
-			if (num[0] != 'x') //¿?
+			if (num[0] != 'x') //ï¿½?
 				switch(pos)
 				{
 					case 0: x = (float)atof(num); break;
@@ -175,6 +176,12 @@ Vector3 cross(const Vector3& a, const Vector3& b)
 	return Vector3(a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x);
 }
 
+Vector3 lerp(const Vector3& a, const Vector3& b, float v)
+{
+	return a * (1.0 - v) + b * v;
+}
+
+
 //*********************************
 const Matrix44 Matrix44::IDENTITY;
 
@@ -188,6 +195,7 @@ Matrix44::Matrix44(const float* v)
 	memcpy( (void*)m, (void*)v, sizeof(float) * 16);
 }
 
+#ifdef FIXEDPIPELINE
 void Matrix44::set()
 {
 	glMatrixMode( GL_MODELVIEW );
@@ -199,6 +207,7 @@ void Matrix44::load()
 	glMatrixMode( GL_MODELVIEW );
 	glLoadMatrixf(m);
 }
+#endif
 
 void Matrix44::clear()
 {
@@ -367,6 +376,9 @@ bool Matrix44::getXYZ(float* euler) const
 void Matrix44::lookAt(Vector3& eye, Vector3& center, Vector3& up)
 {
 	Vector3 front = (center - eye);
+	if (fabs(front.length()) <= 0.00001)
+		return;
+
 	front.normalize();
 	Vector3 right = front.cross(up);
 	right.normalize();
@@ -605,6 +617,7 @@ bool Matrix44::inverse()
    return true;
 }
 
+#ifdef FIXEDPIPELINE
 void Matrix44::multGL()
 {
 	glMultMatrixf(m);
@@ -614,7 +627,7 @@ void Matrix44::loadGL()
 {
 	glLoadMatrixf(m);
 }
-
+#endif
 
 
 Quaternion::Quaternion()
@@ -868,6 +881,43 @@ float Quaternion::squaredLength() const
 
 void Quaternion::toMatrix(Matrix44& matrix) const
 {
+	//from glmatrix
+	float r = x;
+	float e = z;
+	float a = y;
+	float u = w;
+	float o = r + r;
+	float i = a + a;
+	float s = e + e;
+	float c = r * o;
+	float f = a * o;
+	float M = a * i;
+	float h = e * o;
+	float l = e * i;
+	float v = e * s;
+	float d = u * o;
+	float b = u * i;
+	float m = u * s;
+	matrix.m[0] = 1 - M - v;
+	matrix.m[1] = f + m;
+	matrix.m[2] = h - b,
+	matrix.m[3] = 0;
+	matrix.m[4] = f - m;
+	matrix.m[5] = 1 - c - v;
+	matrix.m[6] = l + d;
+	matrix.m[7] = 0;
+	matrix.m[8] = h + b;
+	matrix.m[9] = l - d;
+	matrix.m[10] = 1 - c - M;
+	matrix.m[11] = 0;
+	matrix.m[12] = 0;
+	matrix.m[13] = 0;
+	matrix.m[14] = 0;
+	matrix.m[15] = 1;
+	return;
+
+
+
 	/*
 	If q is guaranteed to be a unit quaternion, s will always
 	be 2.  In that case, this calculation can be optimized out.
@@ -875,11 +925,10 @@ void Quaternion::toMatrix(Matrix44& matrix) const
 	//const float	norm = x*x + y*y + z*z + w*w;
 	//const float s = (norm > 0) ? 2/norm : 0;
 
+	/*
 	const float s = 2;
 
-	/*
-	Precalculate coordinate products
-	*/
+	//Precalculate coordinate products
 	const float xx = x * x * s;
 	const float yy = y * y * s;
 	const float zz = z * z * s;
@@ -890,13 +939,9 @@ void Quaternion::toMatrix(Matrix44& matrix) const
 	const float wy = w * y * s;
 	const float wz = w * z * s;
 
-	/*
-	Calculate 3x3 matrix from orthonormal basis
-	*/
+	//Calculate 3x3 matrix from orthonormal basis
 
-	/*
-	x axis
-	*/
+	//	x axis
 	// >>
 	matrix.M[0][0] = 1.0f - (yy + zz);
 	//matrix.M[0][0] = x*x-y*y-z*z+w*w;
@@ -904,9 +949,7 @@ void Quaternion::toMatrix(Matrix44& matrix) const
 	matrix.M[1][0] = xy + wz;
 	matrix.M[2][0] = xz - wy;
 
-	/*
-	y axis
-	*/
+	//	y axis
 	matrix.M[0][1] = xy - wz;
 	// >>
 	matrix.M[1][1] = 1.0f - (xx + zz);
@@ -914,9 +957,7 @@ void Quaternion::toMatrix(Matrix44& matrix) const
 	// <<
 	matrix.M[2][1] = yz + wx;
 
-	/*
-	z axis
-	*/
+	//	z axis
 	matrix.M[0][2] = xz + wy;
 	matrix.M[1][2] = yz - wx;
 	matrix.M[2][2] = 1.0f - (xx + yy);
@@ -924,6 +965,7 @@ void Quaternion::toMatrix(Matrix44& matrix) const
 	matrix._14 = matrix._24 = matrix._34 = 0;
 	matrix._41 = matrix._42 = matrix._43 = 0;
 	matrix._44 = 1;
+	*/
 }
 
 Vector3 transformQuat(const Vector3& a, const Quaternion& q)
@@ -1224,13 +1266,18 @@ float ComputeSignedAngle(Vector2 a, Vector2 b)
 	return atan2(a.perpdot(b), a.dot(b));
 }
 
-Vector3 RayPlaneCollision(const Vector3& plane_pos, const Vector3& plane_normal, const Vector3& ray_origin, const Vector3& ray_dir)
+bool RayPlaneCollision(const Vector3& plane_pos, const Vector3& plane_normal, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& result)
 {
 	double D = plane_pos.dot(plane_normal);
-	double numer = plane_normal.dot(ray_origin) + D;
+	double numer = D - plane_normal.dot(ray_origin);
 	double denom = plane_normal.dot(ray_dir);
-	double t = -(numer / denom);
-	return ray_origin + ray_dir * t;
+	if (abs(denom) < 0.00001)//parallel
+		return false;
+	double t = (numer / denom);
+	if (t < 0)//back
+		return false;
+	result = ray_origin + ray_dir * t;
+	return true;
 }
 
 Vector3 normalize(Vector3 n)
@@ -1297,9 +1344,9 @@ bool RayBoundingBoxCollision(const BoundingBox& box, const Vector3& ray_origin, 
 	const int LEFT = 1;
 	const int MIDDLE = 2;
 
-	char inside = TRUE;
+	char inside = true;
 	char quadrant[NUMDIM];
-	register int i;
+	int i;
 	int whichPlane;
 	double maxT[NUMDIM];
 	double candidatePlane[NUMDIM];
@@ -1312,12 +1359,12 @@ bool RayBoundingBoxCollision(const BoundingBox& box, const Vector3& ray_origin, 
 		if (ray_origin.v[i] < minB[i]) {
 			quadrant[i] = LEFT;
 			candidatePlane[i] = minB[i];
-			inside = FALSE;
+			inside = false;
 		}
 		else if (ray_origin.v[i] > maxB[i]) {
 			quadrant[i] = RIGHT;
 			candidatePlane[i] = maxB[i];
-			inside = FALSE;
+			inside = false;
 		}
 		else {
 			quadrant[i] = MIDDLE;
@@ -1326,7 +1373,7 @@ bool RayBoundingBoxCollision(const BoundingBox& box, const Vector3& ray_origin, 
 	/* Ray origin inside bounding box */
 	if (inside) {
 		coll = ray_origin;
-		return (TRUE);
+		return (true);
 	}
 
 
@@ -1344,17 +1391,17 @@ bool RayBoundingBoxCollision(const BoundingBox& box, const Vector3& ray_origin, 
 			whichPlane = i;
 
 	/* Check final candidate actually inside box */
-	if (maxT[whichPlane] < 0.) return (FALSE);
+	if (maxT[whichPlane] < 0.) return (false);
 	for (i = 0; i < NUMDIM; i++)
 		if (whichPlane != i) {
 			coll.v[i] = ray_origin.v[i] + maxT[whichPlane] * ray_dir.v[i];
 			if (coll.v[i] < minB[i] || coll[i] > maxB[i])
-				return (FALSE);
+				return (false);
 		}
 		else {
 			coll.v[i] = candidatePlane[i];
 		}
-	return (TRUE);				/* ray hits box */
+	return (true);				/* ray hits box */
 }
 
 bool BoundingBoxSphereOverlap(const BoundingBox& box, const Vector3& center, float radius)

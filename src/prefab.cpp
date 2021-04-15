@@ -10,26 +10,40 @@
 #include "gltf_loader.h"
 #include "utils.h"
 #include "framework.h"
+#include "application.h"
 
 #include <iostream>
 
 using namespace GTR;
 
+int Node::s_NodeID = 0;
+
 Node::Node() : parent(NULL), mesh(NULL), material(NULL), visible(true), layers(0xFF)
 {
-
+	m_Id = s_NodeID++;
 }
 
 Node::~Node()
 {
 	assert(parent == NULL); //cannot delete a node that has a parent
+	clear();
 
+	//delete mesh;
+	//delete material;
+
+	mesh = nullptr;
+	material = nullptr;
+}
+
+void Node::clear()
+{
 	//delete children
 	for (int i = 0; i < children.size(); ++i)
 	{
 		children[i]->parent = NULL;
 		delete children[i];
 	}
+	children.resize(0);
 }
 
 BoundingBox Node::getBoundingBox()
@@ -43,8 +57,96 @@ BoundingBox Node::getBoundingBox()
 	return transformBoundingBox(model, aabb);
 }
 
+void Node::removeChild(Node* child)
+{
+	assert(child->parent == this);
+	for (int i = 0; i < children.size(); ++i)
+	{
+		Node* node = children[i];
+		if (node != child)
+			continue;
+		child->parent = NULL;
+		children.erase(children.begin() + i);
+		return;
+	}
+}
+
+Node* Node::findNode(const char* name)
+{
+	if (this->name == name)
+		return this;
+
+	for (int i = 0; i < children.size(); ++i)
+	{
+		Node* node = children[i];
+		if (node->name == name)
+			return node;
+
+		if (!node->children.size())
+			continue;
+
+		Node* found = node->findNode(name);
+		if (found)
+			return found;
+	}
+
+	return nullptr;
+}
+
+bool Node::testRay(const Ray& ray, Vector3& result, int layers, float max_dist)
+{
+	Vector3 collision;
+	Vector3 normal;
+	bool collided = false;
+	if (mesh)
+	{
+		collided = mesh->testRayCollision( getGlobalMatrix(), ray.origin, ray.direction, collision, normal, max_dist );
+		if (collided)
+			max_dist = ray.origin.distance(collision);
+	}
+
+	for (int i = 0; i < children.size(); ++i)
+	{
+		Vector3 child_collision;
+		if (!children[i]->testRay(ray, child_collision, layers, max_dist))
+			continue;
+		collided = true;
+		collision = child_collision;
+		max_dist = ray.origin.distance(collision);
+	}
+
+	if (collided)
+		result = collision;
+
+	return collided;
+}
+
+void Node::operator = (const Node& node)
+{
+	Node* old_parent = parent;
+	clear(); //remove any children
+
+	mesh = node.mesh;
+	material = node.material;
+	name = node.name;
+	visible = node.visible;
+	layers = node.layers;
+	model = node.model;
+	aabb = node.aabb;
+
+	//clone children
+	for (int i = 0; i < node.children.size(); ++i)
+	{
+		Node* child = node.children[i];
+		Node* new_child = new Node();
+		*new_child = *child;
+		addChild(new_child);
+	}
+}
+
 void Node::renderInMenu()
 {
+#ifndef SKIP_IMGUI
 	ImGui::Text("Name: %s", name.c_str()); // Edit 3 floats representing a color
 
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.75f, 0.75f, 0.75f, 1.0f));
@@ -72,6 +174,11 @@ void Node::renderInMenu()
 			ImGui::TreePop();
 		}
 	}
+#endif
+}
+
+Prefab::Prefab()
+{
 }
 
 Prefab::~Prefab()
@@ -79,8 +186,8 @@ Prefab::~Prefab()
 	if (name.size())
 	{
 		auto it = sPrefabsLoaded.find(name);
-		if (it != sPrefabsLoaded.end());
-		sPrefabsLoaded.erase(it);
+		if (it != sPrefabsLoaded.end())
+			sPrefabsLoaded.erase(it);
 	}
 }
 
@@ -98,11 +205,14 @@ Prefab* Prefab::Get(const char* filename)
 	if (it != sPrefabsLoaded.end())
 		return it->second;
 
-	Prefab* prefab = loadGLTF(filename);
-	if (!prefab)
+	Prefab* prefab = nullptr;
 	{
-		std::cout << "[ERROR]: Prefab not found" << std::endl;
-		return NULL;
+		if (!prefab)
+			prefab = loadGLTF(filename);
+		if (!prefab) {
+			std::cout << "[ERROR]: Prefab not found" << std::endl;
+			return NULL;
+		}
 	}
 
 	std::string name = filename;
@@ -124,6 +234,7 @@ Node* Prefab::getNodeByName(const char* name)
 		return it->second;
 	return NULL;
 }
+
 
 void updateInDepth(std::map<std::string, GTR::Node*>& container, GTR::Node* node)
 {

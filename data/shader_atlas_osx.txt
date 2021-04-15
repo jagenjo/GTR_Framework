@@ -7,7 +7,7 @@ texture basic.vs texture.fs
 
 attribute vec3 a_vertex;
 attribute vec3 a_normal;
-attribute vec2 a_uv;
+attribute vec2 a_coord;
 attribute vec4 a_color;
 
 uniform vec3 u_camera_pos;
@@ -35,7 +35,7 @@ void main()
 	v_color = a_color;
 
 	//store the texture coordinates
-	v_uv = a_uv;
+	v_uv = a_coord;
 
 	//calcule the position of the vertex using the matrices
 	gl_Position = u_viewprojection * vec4( v_world_position, 1.0 );
@@ -80,12 +80,12 @@ void main()
 \quad.vs
 
 attribute vec3 a_vertex;
-attribute vec2 a_uv;
+attribute vec2 a_coord;
 varying vec2 v_uv;
 
 void main()
 {	
-	v_uv = a_uv;
+	v_uv = a_coord;
 	gl_Position = vec4( a_vertex, 1.0 );
 }
 
@@ -142,7 +142,7 @@ void main()
 
 attribute vec3 a_vertex;
 attribute vec3 a_normal;
-attribute vec2 a_uv;
+attribute vec2 a_coord;
 
 attribute mat4 u_model;
 
@@ -166,7 +166,7 @@ void main()
 	v_world_position = (u_model * vec4( a_vertex, 1.0) ).xyz;
 	
 	//store the texture coordinates
-	v_uv = a_uv;
+	v_uv = a_coord;
 
 	//calcule the position of the vertex using the matrices
 	gl_Position = u_viewprojection * vec4( v_world_position, 1.0 );

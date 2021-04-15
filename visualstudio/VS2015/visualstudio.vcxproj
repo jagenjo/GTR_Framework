@@ -133,6 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\camera.cpp" />
+    <ClCompile Include="..\..\src\extra\cJSON.c" />
     <ClCompile Include="..\..\src\extra\coldet\box.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\box_bld.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\coldet.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="..\..\src\extra\imgui\imgui_impl_sdl.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\ImSequencer.cpp" />
+    <ClCompile Include="..\..\src\extra\jpgd.cpp" />
     <ClCompile Include="..\..\src\extra\picopng.cpp" />
     <ClCompile Include="..\..\src\extra\textparser.cpp" />
     <ClCompile Include="..\..\src\fbo.cpp" />
@@ -168,12 +170,14 @@
     <ClCompile Include="..\..\src\mesh.cpp" />
     <ClCompile Include="..\..\src\renderer.cpp" />
     <ClCompile Include="..\..\src\prefab.cpp" />
+    <ClCompile Include="..\..\src\scene.cpp" />
     <ClCompile Include="..\..\src\shader.cpp" />
     <ClCompile Include="..\..\src\texture.cpp" />
     <ClCompile Include="..\..\src\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\camera.h" />
+    <ClInclude Include="..\..\src\extra\cJSON.h" />
     <ClInclude Include="..\..\src\extra\coldet\box.h" />
     <ClInclude Include="..\..\src\extra\coldet\coldet.h" />
     <ClInclude Include="..\..\src\extra\coldet\coldetimpl.h" />
@@ -202,6 +206,7 @@
     </ClInclude>
     <ClInclude Include="..\..\src\extra\imgui\imgui_internal.h" />
     <ClInclude Include="..\..\src\extra\imgui\ImSequencer.h" />
+    <ClInclude Include="..\..\src\extra\jpgd.h" />
     <ClInclude Include="..\..\src\extra\PerlinNoise.hpp" />
     <ClInclude Include="..\..\src\extra\picopng.h" />
     <ClInclude Include="..\..\src\extra\textparser.h" />
@@ -215,6 +220,7 @@
     <ClInclude Include="..\..\src\mesh.h" />
     <ClInclude Include="..\..\src\renderer.h" />
     <ClInclude Include="..\..\src\prefab.h" />
+    <ClInclude Include="..\..\src\scene.h" />
     <ClInclude Include="..\..\src\shader.h" />
     <ClInclude Include="..\..\src\texture.h" />
     <ClInclude Include="..\..\src\utils.h" />

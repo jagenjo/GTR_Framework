@@ -102,6 +102,15 @@
     <ClCompile Include="..\..\src\material.cpp">
       <Filter>pipeline</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\extra\jpgd.cpp">
+      <Filter>extra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\scene.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\cJSON.c">
+      <Filter>extra</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\extra\textparser.h">
@@ -200,6 +209,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\material.h">
       <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\jpgd.h">
+      <Filter>extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\scene.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\cJSON.h">
+      <Filter>extra</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

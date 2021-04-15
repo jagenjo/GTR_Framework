@@ -1,0 +1,17 @@
+{
+	"entities":[
+		{
+			"name":"car1",
+			"type":"PREFAB",
+			"filename":"prefabs/gmc/scene.gltf",
+			"position":[0,0,0]
+		},
+		{
+			"name":"car2",
+			"type":"PREFAB",
+			"filename":"prefabs/gmc/scene.gltf",
+			"position":[300,0,0],
+			"angle":45
+		}
+	]
+}
