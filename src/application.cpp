@@ -52,20 +52,21 @@ Application::Application(int window_width, int window_height, SDL_Window* window
         exit(1);
     checkGLErrors();
 
+
 	// Create camera
 	camera = new Camera();
 	camera->lookAt(Vector3(-150.f, 150.0f, 250.f), Vector3(0.f, 0.0f, 0.f), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective( 45.f, window_width/(float)window_height, 1.0f, 10000.f);
 
-	//This class will be the one in charge of rendering all 
-	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
+	//Example of loading a prefab
+	//prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
 
 	scene = new GTR::Scene();
 	if (!scene->load("data/scene.json"))
 		exit(1);
 
-	//Lets load some object to render
-	prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
+	//This class will be the one in charge of rendering all 
+	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -98,7 +99,7 @@ void Application::render(void)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	//lets render something
-	Matrix44 model;
+	//Matrix44 model;
 	//renderer->renderPrefab( model, prefab, camera );
 
 	renderer->renderScene(scene, camera);

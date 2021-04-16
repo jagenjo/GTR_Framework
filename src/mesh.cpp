@@ -1274,7 +1274,7 @@ bool Mesh::loadMESH(const char* filename)
 				for (int j = 0; j < bones_info.size(); ++j)
 				{
 					pos = fetchWord(pos, word);
-                    #if defined(__APPLE__) || defined( ANDROID ) || _PLATFORM_WASM
+                    #if defined(GCC) || defined(__APPLE__) || defined( ANDROID ) || _PLATFORM_WASM
                         strcpy(bones_info[j].name, word);
                     #else
                         strcpy_s(bones_info[j].name, 32, word);

@@ -147,8 +147,10 @@ bool checkGLErrors()
 	const GLubyte *errString;
 
 	if ((errCode = glGetError()) != GL_NO_ERROR) {
+		#ifndef GCC
 		errString = gluErrorString(errCode);
-		std::cerr << "OpenGL Error: " << (errString ? (const char*)errString : "NO ERROR STRING")<< std::endl;
+			std::cerr << "OpenGL Error: " << (errString ? (const char*)errString : "NO ERROR STRING")<< std::endl;
+		#endif
         assert(0);
 		return false;
 	}

@@ -26,9 +26,6 @@
     <ClCompile Include="..\..\src\extra\coldet\sysdep.cpp">
       <Filter>extra\coldet</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\extra\coldet\tritri.c">
-      <Filter>extra\coldet</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\extra\picopng.cpp">
       <Filter>extra</Filter>
     </ClCompile>
@@ -108,8 +105,11 @@
     <ClCompile Include="..\..\src\scene.cpp">
       <Filter>pipeline</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\extra\cJSON.c">
+    <ClCompile Include="..\..\src\extra\cJSON.cpp">
       <Filter>extra</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\coldet\tritri.cpp">
+      <Filter>extra\coldet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

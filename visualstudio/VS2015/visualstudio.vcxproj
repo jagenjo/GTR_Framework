@@ -133,7 +133,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\camera.cpp" />
-    <ClCompile Include="..\..\src\extra\cJSON.c" />
+    <ClCompile Include="..\..\src\extra\cJSON.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\box.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\box_bld.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\coldet.cpp" />
@@ -141,7 +141,7 @@
     <ClCompile Include="..\..\src\extra\coldet\math3d.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\mytritri.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\sysdep.cpp" />
-    <ClCompile Include="..\..\src\extra\coldet\tritri.c" />
+    <ClCompile Include="..\..\src\extra\coldet\tritri.cpp" />
     <ClCompile Include="..\..\src\extra\hdre.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\ImCurveEdit.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\ImGradient.cpp" />

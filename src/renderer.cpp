@@ -118,6 +118,8 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model );
+	float t = getTime();
+	shader->setUniform("u_time", t );
 
 	shader->setUniform("u_color", material->color);
 	if(texture)

@@ -5,7 +5,10 @@
 #include <cassert>
 #include <cmath> //for sqrt (square root) function
 #include <math.h> //atan2
-
+#include <vector>
+#include <cstring>
+#include <algorithm>
+#include <iostream>
 
 #define M_PI_2 1.57079632679489661923
 

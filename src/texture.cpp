@@ -652,7 +652,7 @@ bool Image::loadTGA(const char* filename)
     GLuint imageSize;
     //GLuint type = GL_RGBA;
 
-    FILE * file = fopen(filename, false);
+    FILE * file = fopen(filename, "rb");
     
     if ( file == NULL || fread(TGAcompare, 1, sizeof(TGAcompare), file) != sizeof(TGAcompare) ||
         memcmp(TGAheader, TGAcompare, sizeof(TGAheader)) != 0 ||

@@ -7,6 +7,8 @@
 #include <string>
 #include <map>
 
+typedef unsigned char byte;
+
 typedef struct {
 
 	char signature[4];
