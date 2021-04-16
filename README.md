@@ -12,10 +12,14 @@ Open the solution in the Visual Studio folder using Visual Studio 2019.
 Open the XCode solution
 
 ### Linux
+
+to install libraries
+```sh
 apt-get install libsdl2-dev
-
 apt-get install libglew-dev
+```
 
-Use the makefile:
+and to compile
+```sh
 make
-
+```
