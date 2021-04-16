@@ -13,6 +13,7 @@ Open the XCode solution
 
 ### Linux
 apt-get install libsdl2-dev
+
 apt-get install libglew-dev
 
 Use the makefile:
