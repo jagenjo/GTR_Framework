@@ -42,12 +42,12 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "../src/application.cpp"
-            timestampString = "608909573.314137"
+            timestampString = "640435676.5947551"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "70"
-            endingLineNumber = "70"
-            landmarkName = "Application::render(void)"
+            startingLineNumber = "75"
+            endingLineNumber = "75"
+            landmarkName = "Application::Application(int window_width, int window_height, SDL_Window* window)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

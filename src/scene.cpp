@@ -111,6 +111,7 @@ GTR::BaseEntity* GTR::Scene::createEntity(std::string type)
 {
 	if (type == "PREFAB")
 		return new GTR::PrefabEntity();
+    return NULL;
 }
 
 void GTR::BaseEntity::renderInMenu()

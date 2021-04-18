@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		12789214262C448700178A4E /* cJSON.h in Sources */ = {isa = PBXBuildFile; fileRef = 1278920F262C448600178A4E /* cJSON.h */; };
+		12789215262C448700178A4E /* jpgd_idct.h in Sources */ = {isa = PBXBuildFile; fileRef = 12789210262C448600178A4E /* jpgd_idct.h */; };
+		12789216262C448700178A4E /* cJSON.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12789211262C448600178A4E /* cJSON.cpp */; };
+		12789217262C448700178A4E /* jpgd.h in Sources */ = {isa = PBXBuildFile; fileRef = 12789212262C448700178A4E /* jpgd.h */; };
+		12789218262C448700178A4E /* jpgd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12789213262C448700178A4E /* jpgd.cpp */; };
+		1278921B262C451500178A4E /* tritri.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1278921A262C451400178A4E /* tritri.cpp */; };
+		1278921E262C454100178A4E /* scene.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 1278921C262C454100178A4E /* scene.cpp */; };
+		1278921F262C454100178A4E /* scene.h in Sources */ = {isa = PBXBuildFile; fileRef = 1278921D262C454100178A4E /* scene.h */; };
 		128DBA331AD692C1002B8C0C /* data in Resources */ = {isa = PBXBuildFile; fileRef = 128DBA321AD692C1002B8C0C /* data */; };
 		12BE84BE1981D8180090DDBD /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12BE84BD1981D8180090DDBD /* Cocoa.framework */; };
 		12BE84C81981D8180090DDBD /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 12BE84C61981D8180090DDBD /* InfoPlist.strings */; };
@@ -16,7 +24,6 @@
 		12D3D2D419903A8200779234 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12D3D2D319903A8200779234 /* GLUT.framework */; };
 		12D3D2D619903A9A00779234 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 12D3D2D519903A9A00779234 /* OpenGL.framework */; };
 		12E51D1A244B39650023C412 /* utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51CFB244B39600023C412 /* utils.cpp */; };
-		12E51D1B244B39650023C412 /* rendertotexture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51CFC244B39600023C412 /* rendertotexture.cpp */; };
 		12E51D1C244B39650023C412 /* shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51CFD244B39600023C412 /* shader.cpp */; };
 		12E51D1D244B39650023C412 /* renderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51CFE244B39600023C412 /* renderer.cpp */; };
 		12E51D1E244B39650023C412 /* animation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D00244B39610023C412 /* animation.cpp */; };
@@ -36,7 +43,6 @@
 		12E51D36244B39CE0023C412 /* picopng.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D31244B39CE0023C412 /* picopng.cpp */; };
 		12E51D46244B3A0E0023C412 /* mytritri.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D39244B3A0D0023C412 /* mytritri.cpp */; };
 		12E51D47244B3A0E0023C412 /* box.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D3A244B3A0D0023C412 /* box.cpp */; };
-		12E51D48244B3A0E0023C412 /* tritri.c in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D3B244B3A0D0023C412 /* tritri.c */; };
 		12E51D49244B3A0E0023C412 /* sysdep.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D3C244B3A0D0023C412 /* sysdep.cpp */; };
 		12E51D4A244B3A0E0023C412 /* box_bld.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D3D244B3A0D0023C412 /* box_bld.cpp */; };
 		12E51D4B244B3A0E0023C412 /* coldet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D40244B3A0D0023C412 /* coldet.cpp */; };
@@ -45,6 +51,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1278920F262C448600178A4E /* cJSON.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = cJSON.h; path = ../src/extra/cJSON.h; sourceTree = "<group>"; };
+		12789210262C448600178A4E /* jpgd_idct.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = jpgd_idct.h; path = ../src/extra/jpgd_idct.h; sourceTree = "<group>"; };
+		12789211262C448600178A4E /* cJSON.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = cJSON.cpp; path = ../src/extra/cJSON.cpp; sourceTree = "<group>"; };
+		12789212262C448700178A4E /* jpgd.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = jpgd.h; path = ../src/extra/jpgd.h; sourceTree = "<group>"; };
+		12789213262C448700178A4E /* jpgd.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = jpgd.cpp; path = ../src/extra/jpgd.cpp; sourceTree = "<group>"; };
+		1278921A262C451400178A4E /* tritri.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = tritri.cpp; path = ../src/extra/coldet/tritri.cpp; sourceTree = "<group>"; };
+		1278921C262C454100178A4E /* scene.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = scene.cpp; path = ../src/scene.cpp; sourceTree = "<group>"; };
+		1278921D262C454100178A4E /* scene.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = scene.h; path = ../src/scene.h; sourceTree = "<group>"; };
 		128DBA321AD692C1002B8C0C /* data */ = {isa = PBXFileReference; lastKnownFileType = folder; name = data; path = ../../data; sourceTree = "<group>"; };
 		12BE84BA1981D8180090DDBD /* TJE_XCODE.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TJE_XCODE.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		12BE84BD1981D8180090DDBD /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
@@ -61,7 +75,6 @@
 		12D3D2D519903A9A00779234 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		12E51CFA244B39600023C412 /* utils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = utils.h; path = ../src/utils.h; sourceTree = "<group>"; };
 		12E51CFB244B39600023C412 /* utils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = utils.cpp; path = ../src/utils.cpp; sourceTree = "<group>"; };
-		12E51CFC244B39600023C412 /* rendertotexture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = rendertotexture.cpp; path = ../src/rendertotexture.cpp; sourceTree = "<group>"; };
 		12E51CFD244B39600023C412 /* shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = shader.cpp; path = ../src/shader.cpp; sourceTree = "<group>"; };
 		12E51CFE244B39600023C412 /* renderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = renderer.cpp; path = ../src/renderer.cpp; sourceTree = "<group>"; };
 		12E51CFF244B39610023C412 /* material.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = material.h; path = ../src/material.h; sourceTree = "<group>"; };
@@ -89,7 +102,6 @@
 		12E51D15244B39640023C412 /* animation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = animation.h; path = ../src/animation.h; sourceTree = "<group>"; };
 		12E51D16244B39650023C412 /* fbo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = fbo.cpp; path = ../src/fbo.cpp; sourceTree = "<group>"; };
 		12E51D17244B39650023C412 /* fbo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = fbo.h; path = ../src/fbo.h; sourceTree = "<group>"; };
-		12E51D18244B39650023C412 /* rendertotexture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = rendertotexture.h; path = ../src/rendertotexture.h; sourceTree = "<group>"; };
 		12E51D19244B39650023C412 /* camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = camera.h; path = ../src/camera.h; sourceTree = "<group>"; };
 		12E51D2B244B39CE0023C412 /* hdre.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = hdre.h; path = ../src/extra/hdre.h; sourceTree = "<group>"; };
 		12E51D2C244B39CE0023C412 /* picopng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = picopng.h; path = ../src/extra/picopng.h; sourceTree = "<group>"; };
@@ -134,6 +146,14 @@
 		12BE84B11981D8180090DDBD = {
 			isa = PBXGroup;
 			children = (
+				1278921C262C454100178A4E /* scene.cpp */,
+				1278921D262C454100178A4E /* scene.h */,
+				1278921A262C451400178A4E /* tritri.cpp */,
+				12789211262C448600178A4E /* cJSON.cpp */,
+				1278920F262C448600178A4E /* cJSON.h */,
+				12789210262C448600178A4E /* jpgd_idct.h */,
+				12789213262C448700178A4E /* jpgd.cpp */,
+				12789212262C448700178A4E /* jpgd.h */,
 				12E51D2A244B399C0023C412 /* extra */,
 				12E51D00244B39610023C412 /* animation.cpp */,
 				12E51D15244B39640023C412 /* animation.h */,
@@ -159,8 +179,6 @@
 				12E51D0D244B39630023C412 /* prefab.h */,
 				12E51CFE244B39600023C412 /* renderer.cpp */,
 				12E51D0E244B39630023C412 /* renderer.h */,
-				12E51CFC244B39600023C412 /* rendertotexture.cpp */,
-				12E51D18244B39650023C412 /* rendertotexture.h */,
 				12E51CFD244B39600023C412 /* shader.cpp */,
 				12E51D0F244B39630023C412 /* shader.h */,
 				12E51D03244B39610023C412 /* texture.cpp */,
@@ -329,9 +347,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1278921E262C454100178A4E /* scene.cpp in Sources */,
+				1278921F262C454100178A4E /* scene.h in Sources */,
+				1278921B262C451500178A4E /* tritri.cpp in Sources */,
+				12789214262C448700178A4E /* cJSON.h in Sources */,
+				12789215262C448700178A4E /* jpgd_idct.h in Sources */,
+				12789216262C448700178A4E /* cJSON.cpp in Sources */,
+				12789217262C448700178A4E /* jpgd.h in Sources */,
+				12789218262C448700178A4E /* jpgd.cpp in Sources */,
 				12E51D4B244B3A0E0023C412 /* coldet.cpp in Sources */,
 				12E51D1D244B39650023C412 /* renderer.cpp in Sources */,
-				12E51D48244B3A0E0023C412 /* tritri.c in Sources */,
 				12E51D46244B3A0E0023C412 /* mytritri.cpp in Sources */,
 				12E51D4D244B3A0E0023C412 /* math3d.cpp in Sources */,
 				12E51D1E244B39650023C412 /* animation.cpp in Sources */,
@@ -347,7 +372,6 @@
 				12E51D28244B39650023C412 /* main.cpp in Sources */,
 				12E51D4C244B3A0E0023C412 /* coldet_bld.cpp in Sources */,
 				12E51D4A244B3A0E0023C412 /* box_bld.cpp in Sources */,
-				12E51D1B244B39650023C412 /* rendertotexture.cpp in Sources */,
 				12E51D21244B39650023C412 /* texture.cpp in Sources */,
 				12E51D34244B39CE0023C412 /* textparser.cpp in Sources */,
 				12E51D1A244B39650023C412 /* utils.cpp in Sources */,

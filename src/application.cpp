@@ -48,7 +48,12 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	//loads and compiles several shaders from one single file
     //change to "data/shader_atlas_osx.txt" if you are in XCODE
-	if(!Shader::LoadAtlas("data/shader_atlas.txt"))
+#ifdef __APPLE__
+    const char* shader_atlas_filename = "data/shader_atlas_osx.txt";
+#else
+    const char* shader_atlas_filename = "data/shader_atlas.txt";
+#endif
+	if(!Shader::LoadAtlas(shader_atlas_filename))
         exit(1);
     checkGLErrors();
 
