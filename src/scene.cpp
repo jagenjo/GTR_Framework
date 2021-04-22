@@ -58,7 +58,8 @@ bool GTR::Scene::load(const char* filename)
 		if (!ent)
 		{
 			std::cout << " - ENTITY TYPE UNKNOWN: " << type_str << std::endl;
-			continue;
+			//continue;
+			ent = new BaseEntity();
 		}
 
 		addEntity(ent);
