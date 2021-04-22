@@ -48,6 +48,10 @@ bool GTR::Scene::load(const char* filename)
 		return false;
 	}
 
+	//read global properties
+	background_color = readJSONVector3(json, "background_color", background_color);
+	ambient_light = readJSONVector3(json, "ambient_light", ambient_light );
+
 	//entities
 	cJSON* entities_json = cJSON_GetObjectItemCaseSensitive(json, "entities");
 	cJSON* entity_json;

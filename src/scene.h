@@ -58,6 +58,9 @@ namespace GTR {
 	public:
 		static Scene* instance;
 
+		Vector3 background_color;
+		Vector3 ambient_light;
+
 		Scene();
 
 		std::string filename;

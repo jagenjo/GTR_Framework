@@ -16,7 +16,6 @@
 #include <cstdio>
 
 Application* Application::instance = nullptr;
-Vector4 bg_color(0.5, 0.5, 0.5, 1.0);
 
 Camera* camera = nullptr;
 GTR::Scene* scene = nullptr;
@@ -83,13 +82,6 @@ void Application::render(void)
 	//be sure no errors present in opengl before start
 	checkGLErrors();
 
-	//set the clear color (the background color)
-	glClearColor(bg_color.x, bg_color.y, bg_color.z, bg_color.w );
-
-	// Clear the color and the depth buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-    checkGLErrors();
-   
 	//set the camera as default (used by some functions in the framework)
 	camera->enable();
 
@@ -249,7 +241,8 @@ void Application::renderDebugGUI(void)
 	ImGui::Text(getGPUStats().c_str());					   // Display some text (you can use a format strings too)
 
 	ImGui::Checkbox("Wireframe", &render_wireframe);
-	ImGui::ColorEdit4("BG color", bg_color.v);
+	ImGui::ColorEdit4("BG color", scene->background_color.v);
+	ImGui::ColorEdit4("Ambient Light", scene->ambient_light.v);
 
 	//add info to the debug panel about the camera
 	if (ImGui::TreeNode(camera, "Camera")) {

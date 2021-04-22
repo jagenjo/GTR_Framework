@@ -15,6 +15,14 @@ using namespace GTR;
 
 void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 {
+	//set the clear color (the background color)
+	glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0);
+
+	// Clear the color and the depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	checkGLErrors();
+
+	//render entities
 	for (int i = 0; i < scene->entities.size(); ++i)
 	{
 		BaseEntity* ent = scene->entities[i];
