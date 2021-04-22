@@ -15,6 +15,14 @@ using namespace GTR;
 
 void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 {
+	//set the clear color (the background color)
+	glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0 );
+
+	// Clear the color and the depth buffer
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	checkGLErrors();
+
+	//render entities
 	for (int i = 0; i < scene->entities.size(); ++i)
 	{
 		BaseEntity* ent = scene->entities[i];
@@ -79,6 +87,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	//define locals to simplify coding
 	Shader* shader = NULL;
 	Texture* texture = NULL;
+	Scene* scene = GTR::Scene::instance;
 
 	texture = material->color_texture.texture;
 	//texture = material->emissive_texture;
@@ -121,7 +130,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, Mesh* mesh, GTR::Mat
 	float t = getTime();
 	shader->setUniform("u_time", t );
 
-	shader->setUniform("u_color", material->color);
+	shader->setUniform("u_color", material->color );
 	if(texture)
 		shader->setUniform("u_texture", texture, 0);
 

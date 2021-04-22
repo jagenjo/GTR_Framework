@@ -9,6 +9,9 @@ GTR::Scene* GTR::Scene::instance = NULL;
 GTR::Scene::Scene()
 {
 	instance = this;
+
+	background_color.set(0.5f, 0.5f, 0.5f);
+	ambient_light.set(1.0f, 1.0f, 1.0f);
 }
 
 void GTR::Scene::clear()
@@ -48,6 +51,10 @@ bool GTR::Scene::load(const char* filename)
 		return false;
 	}
 
+	//global info
+	ambient_light = readJSONVector3(json, "ambient_light", ambient_light);
+	background_color = readJSONVector3(json, "background_color", background_color);
+
 	//entities
 	cJSON* entities_json = cJSON_GetObjectItemCaseSensitive(json, "entities");
 	cJSON* entity_json;
@@ -58,7 +65,8 @@ bool GTR::Scene::load(const char* filename)
 		if (!ent)
 		{
 			std::cout << " - ENTITY TYPE UNKNOWN: " << type_str << std::endl;
-			continue;
+			//continue;
+			ent = new BaseEntity();
 		}
 
 		addEntity(ent);

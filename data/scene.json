@@ -1,18 +1,39 @@
 {
+	"background_color":[0.3,0.3,0.3],
+	"ambient_light":[1,1,1],
 	"entities":[
+		{
+			"name":"floor",
+			"type":"PREFAB",
+			"filename":"prefabs/floor.glb",
+			"position":[0,-0.1,0]
+		},
 		{
 			"name":"car1",
 			"type":"PREFAB",
 			"filename":"prefabs/gmc/scene.gltf",
-			"position":[0,0,0]
+			"position":[-80,0,-100],
+			"angle":-45
 		},
 		{
 			"name":"house",
 			"type":"PREFAB",
 			"filename":"prefabs/house_test/scene.gltf",
-			"position":[300,0,0],
-			"angle":45,
-			"scale":[0.3,0.3,0.3]
+			"position":[300,0,200],
+			"scale":[0.4,0.4,0.4]
+		},
+		{
+			"name":"house",
+			"type":"PREFAB",
+			"filename":"prefabs/house_test/scene.gltf",
+			"position":[300,0,-200],
+			"scale":[0.4,0.4,0.4]
+		},
+		{
+			"name":"lamp",
+			"type":"LIGHT",
+			"position":[0,200,0],
+			"target":[0,0,0.1]
 		}
 	]
 }
