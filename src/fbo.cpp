@@ -224,13 +224,13 @@ bool FBO::setDepthOnly(int width, int height)
 void FBO::bind()
 {
 	assert(glGetError() == GL_NO_ERROR);
-	Texture* tex = color_textures[0] ? color_textures[0] : depth_texture;
+	Texture* tex = color_textures[0] ? color_textures[0] : depth_texture; // hay una texture definida?
 	assert(tex && "framebuffer without texture");
-	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id);
+	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_id);//bindeo
 	checkGLErrors();
-	glPushAttrib(GL_VIEWPORT_BIT);
+	glPushAttrib(GL_VIEWPORT_BIT); //guarda el estado de viewport, de que punta hasta que punta estoy pintando
 	glDrawBuffers(4, bufs);
-	glViewport(0, 0, (int)tex->width, (int)tex->height);
+	glViewport(0, 0, (int)tex->width, (int)tex->height); //asigna el tamaño de la textura
 	assert(glGetError() == GL_NO_ERROR);
 }
 
@@ -239,7 +239,7 @@ GLenum one_buffer = GL_BACK;
 void FBO::unbind()
 {
 	// output goes to the FBO and it’s attached buffers
-	glPopAttrib();
+	glPopAttrib(); // recuperar el estado que he guardado antes?
 	glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	//glDrawBuffers(1, &one_buffer);
 	assert(glGetError() == GL_NO_ERROR);

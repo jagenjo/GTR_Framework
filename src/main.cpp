@@ -82,6 +82,8 @@ SDL_Window* createWindow(const char* caption, int width, int height, bool fullsc
 	std::cout << " * Path: " << getPath() << std::endl;
 	std::cout << std::endl;
 
+	//SDL_SetWindowPosition(sdl_window, 500, 500);
+
 	return sdl_window;
 }
 
@@ -129,12 +131,14 @@ void mainLoop(SDL_Window* window)
 	{
 		//render frame
 		app->render();
+
 		if (app->render_gui)
 			renderDebug(window, app);
-		// swap between front buffer and back buffer
+
+		// swap between front buffer and back buffer to show it
 		SDL_GL_SwapWindow(window);
 
-		//update events
+		//update events ans read the events from the system
 		while(SDL_PollEvent(&sdlEvent))
 		{
 			switch (sdlEvent.type)
@@ -214,7 +218,7 @@ int main(int argc, char **argv)
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	bool fullscreen = false; //change this to go fullscreen
-	Vector2 size(1024,768);
+	Vector2 size(1024,768); //size(800, 500);//
 
 	if(fullscreen)
 		size = getDesktopSize(0);

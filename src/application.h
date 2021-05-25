@@ -32,20 +32,22 @@ public:
 	bool mouse_locked; //tells if the mouse is locked (blocked in the center and not visible)
 	bool render_wireframe; //in case we want to render everything in wireframe mode
 
+	//constructor
 	Application( int window_width, int window_height, SDL_Window* window );
 
-	//main functions
+	//main functions ans methods
 	void render( void );
 	void update( double dt );
 
 	void renderDebugGUI(void);
 	void renderDebugGizmo();
 
-	//events
+	//methods for events
 	void onKeyDown( SDL_KeyboardEvent event );
 	void onKeyUp(SDL_KeyboardEvent event);
 	void onMouseButtonDown( SDL_MouseButtonEvent event );
 	void onMouseButtonUp(SDL_MouseButtonEvent event);
+
 	void onMouseWheel(SDL_MouseWheelEvent event);
 	void onGamepadButtonDown(SDL_JoyButtonEvent event);
 	void onGamepadButtonUp(SDL_JoyButtonEvent event);

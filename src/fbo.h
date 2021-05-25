@@ -1,4 +1,4 @@
-#ifndef FBO_H
+ #ifndef FBO_H
 #define FBO_H
 
 #include "includes.h"

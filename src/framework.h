@@ -184,6 +184,7 @@ public:
 	void set(unsigned char x, unsigned char y, unsigned char z, unsigned char w = 0) { this->x = x; this->y = y; this->z = z; this->w = w; }
 	Vector4ub operator = (const Vector4& a) { x = (unsigned char)a.x; y = (unsigned char)a.y; z = (unsigned char)a.z; w = (unsigned char)a.w; return *this;  }
 	Vector4 toVector4() { return Vector4(x, y, z, w); }
+	Vector3 toVector3() { return Vector3(x, y, z); }
 };
 
 inline Vector4ub operator + (const Vector4ub& a, const Vector4ub& b) { return Vector4ub(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w ); }
@@ -378,6 +379,7 @@ float signedDistanceToPlane(const Vector4& plane, const Vector3& point);
 int planeBoxOverlap( const Vector4& plane, const Vector3& center, const Vector3& halfsize );
 float ComputeSignedAngle( Vector2 a, Vector2 b); //returns the angle between both vectors in radians
 inline float ease(float f) { return f*f*f*(f*(f*6.0f - 15.0f) + 10.0f); }
+
 bool RayPlaneCollision( const Vector3& plane_pos, const Vector3& plane_normal, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& result );
 bool RayBoundingBoxCollision(const BoundingBox& box, const Vector3& ray_origin, const Vector3& ray_dir, Vector3& coll);
 bool BoundingBoxSphereOverlap(const BoundingBox& box, const Vector3& center, float radius );

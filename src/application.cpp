@@ -46,6 +46,10 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	mouse_locked = false;
 
 	//loads and compiles several shaders from one single file
+
+    //change to "data/shader_atlas_osx.txt" if you are in XCODE
+	//if(!Shader::LoadAtlas("data/shader_atlas.txt")) // contiene muchos subficheros
+
     //change to "data/shader_atlas_osx.txt" if you are in XCODE
 #ifdef __APPLE__
     const char* shader_atlas_filename = "data/shader_atlas_osx.txt";
@@ -57,13 +61,19 @@ Application::Application(int window_width, int window_height, SDL_Window* window
     checkGLErrors();
 
 
-	// Create camera
+
+	// We create a global camera and set a position and projection properties
 	camera = new Camera();
 	camera->lookAt(Vector3(-150.f, 150.0f, 250.f), Vector3(0.f, 0.0f, 0.f), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective( 45.f, window_width/(float)window_height, 1.0f, 10000.f);
 
+
+	//This class will be the one in charge of rendering all 
+	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor!
+
 	//Example of loading a prefab
 	//prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
+
 
 	scene = new GTR::Scene();
 	if (!scene->load("data/scene.json"))
@@ -102,11 +112,12 @@ void Application::render(void)
 	//Matrix44 model;
 	//renderer->renderPrefab( model, prefab, camera );
 
-	renderer->renderScene(scene, camera);
+	//renderer->renderScene(scene, camera);
+	renderer->render2FBO(scene, camera);
 
 	//Draw the floor grid, helpful to have a reference point
-	if(render_debug)
-		drawGrid();
+	//if(render_debug)
+	//	drawGrid();
 
     glDisable(GL_DEPTH_TEST);
     //render anything in the gui after this
@@ -125,6 +136,9 @@ void Application::update(double seconds_elapsed)
 	if (Input::isKeyPressed(SDL_SCANCODE_S) || Input::isKeyPressed(SDL_SCANCODE_DOWN)) camera->move(Vector3(0.0f, 0.0f,-1.0f) * speed);
 	if (Input::isKeyPressed(SDL_SCANCODE_A) || Input::isKeyPressed(SDL_SCANCODE_LEFT)) camera->move(Vector3(1.0f, 0.0f, 0.0f) * speed);
 	if (Input::isKeyPressed(SDL_SCANCODE_D) || Input::isKeyPressed(SDL_SCANCODE_RIGHT)) camera->move(Vector3(-1.0f, 0.0f, 0.0f) * speed);
+
+	
+
 
 	//mouse input to rotate the cam
 	#ifndef SKIP_IMGUI
@@ -246,6 +260,9 @@ void Application::renderDebugGUI(void)
 	ImGui::Checkbox("Wireframe", &render_wireframe);
 	ImGui::ColorEdit3("BG color", scene->background_color.v);
 	ImGui::ColorEdit3("Ambient Light", scene->ambient_light.v);
+	ImGui::Combo("Pipeline", (int*) &renderer->pipeline_mode, "FORWARD\0DEFERRED\0", 2);
+
+	
 
 	//add info to the debug panel about the camera
 	if (ImGui::TreeNode(camera, "Camera")) {
@@ -259,6 +276,8 @@ void Application::renderDebugGUI(void)
 	for (int i = 0; i < scene->entities.size(); ++i)
 	{
 		GTR::BaseEntity* entity = scene->entities[i];
+
+		
 
 		if(selected_entity == entity)
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.f, 1.f, 1.f, 1.0f));
@@ -289,13 +308,25 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_F1: render_debug = !render_debug; break;
 		case SDLK_f: camera->center.set(0, 0, 0); camera->updateViewMatrix(); break;
 		case SDLK_F5: Shader::ReloadAll(); break;
-		case SDLK_F6:
-			scene->clear();
-			scene->load(scene->filename.c_str());
-			camera->lookAt(scene->main_camera.eye, scene->main_camera.center, Vector3(0, 1, 0));
-			camera->fov = scene->main_camera.fov;
-			break;
+		case SDLK_F6: scene->clear(); scene->load(scene->filename.c_str()); selected_entity = NULL;  break;
+
+	
+		case SDLK_t: renderer->render_mode = GTR::eRenderMode::SHOW_TEXTURE; break;
+		case SDLK_o: renderer->render_mode = GTR::eRenderMode::SINGLE; break;
+		case SDLK_p: renderer->render_mode = GTR::eRenderMode::MULTI; break;
+		
+		case SDLK_m: renderer->render_mode = GTR::eRenderMode::SHOW_NORMAL; break;
+		case SDLK_n: renderer->render_mode = GTR::eRenderMode::SHOW_OC; break;
+		case SDLK_b: renderer->render_mode = GTR::eRenderMode::SHOW_UVS; break;
+
+	
+
+		case SDLK_g: renderer->show_gbuffers = !renderer->show_gbuffers; break;
+
 	}
+
+
+
 }
 
 void Application::onKeyUp(SDL_KeyboardEvent event)

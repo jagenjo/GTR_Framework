@@ -53,7 +53,7 @@ std::map<std::string, std::string> Shader::s_shaders_atlas;
 
 #endif
 
-std::map<std::string,Shader*> Shader::s_Shaders;
+std:: map < std::string , Shader* > Shader::s_Shaders;
 bool Shader::s_ready = false;
 Shader* Shader::current = NULL;
 
@@ -118,7 +118,8 @@ Shader* Shader::Get(const char* vsf, const char* psf, const char* macros)
 		name = std::string(vsf) + "," + std::string(psf ? psf : "") + (macros ? macros : "");
 	else
 		name = vsf;
-	std::map<std::string,Shader*>::iterator it = s_Shaders.find(name);
+	std::map <std::string,Shader*> :: iterator it = s_Shaders.find(name);
+
 	if (it != s_Shaders.end())
 		return it->second;
 

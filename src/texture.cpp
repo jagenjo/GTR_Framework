@@ -240,6 +240,8 @@ Texture* Texture::Get(const char* filename, bool mipmaps, bool wrap)
 	return texture;
 }
 
+
+
 bool Texture::load(const char* filename, bool mipmaps, bool wrap, unsigned int type)
 {
 	std::string str = filename;
@@ -537,7 +539,7 @@ void Texture::toViewport(Shader* shader)
 	if (!shader)
 		shader = Shader::getDefaultShader("screen");
 	shader->enable();
-	if(shader->getUniformLocation("u_texture") != -1)
+	if(shader->getUniformLocation("u_texture") != -1) //coje el textura del momento
 		shader->setUniform("u_texture", this, 0);
 	assert(glGetError() == GL_NO_ERROR);
 	glDisable(GL_DEPTH_TEST);

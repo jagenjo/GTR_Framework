@@ -17,6 +17,8 @@ namespace GTR {
 		BLEND
 	};
 
+
+
 	enum eChannels {
 		ALBEDO,
 		METALLICROUGHNESS,
@@ -46,6 +48,8 @@ namespace GTR {
 		//parameters to control transparency
 		eAlphaMode alpha_mode;	//could be NO_ALPHA, MASK (alpha cut) or BLEND (alpha blend)
 		float alpha_cutoff;		//pixels with alpha than this value shouldnt be rendered
+
+		
 		bool two_sided;			//render both faces of the triangles
 
 		float _zMin, _zMax;       // Z-Range
@@ -68,11 +72,16 @@ namespace GTR {
 		Material() : alpha_mode(NO_ALPHA), alpha_cutoff(0.5), color(1, 1, 1, 1), _zMin(0.0f), _zMax(1.0f), two_sided(false), roughness_factor(1), metallic_factor(0) {
 			//color_texture = emissive_texture = metallic_roughness_texture = occlusion_texture = normal_texture = NULL;
 		}
-		Material(Texture* texture) : Material() { color_texture.texture = texture; }
+		Material(Texture* texture) : Material() { 
+			color_texture.texture = texture; }
+
 		virtual ~Material();
 
 		static void Release();
 
 		void renderInMenu();
+
+
 	};
+
 };
