@@ -194,7 +194,7 @@ vec4 get_normal(vec3 v_normal, vec3 v_world_position, vec2 v_uv, sampler2D u_nor
 	vec3 n = perturbNormal( N, v_world_position, uv, normal_pixel );
 	n += v_normal; 
 	n = normalize(n);
-	// n = n * 0.5 + 0.5; // revisar!! Suman
+	// n = n * 0.5 + 0.5; // revisar!! Suman------------------------------------------------------------------!!!
 	return vec4( n , 1.0); 
 }
 
@@ -665,7 +665,6 @@ void main()
 	if( screen_pos.z == 1.0)  
 		discard;
 
-
 	vec3 light;
 	vec3 color;
 	color = albedo.xyz; 
@@ -683,26 +682,6 @@ void main()
 		L = normalize(-u_light_vector);
 		NdotL = max( dot(N,L), 0.0);
 		light += NdotL * att_factor * u_light_color * u_light_intensity;
-	}
-	if (u_light_type == 1){  // point or spot
-		
-		L = normalize(u_light_position - world_position);
-		NdotL = max( dot(N,L), 0.0);
-		//att_factor = compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-		light += NdotL * att_factor * u_light_color * u_light_intensity;
-		
-	}
-	if (u_light_type == 2){
-
-		vec3 L_aux = normalize(u_light_position - world_position);
-		float spotCosine = dot( normalize( u_light_vector), -L_aux);
-		spotCosine = max(spotCosine, 0.0); //
-		if ( spotCosine >= u_light_spotCosineCutoff ){
-			//att_factor = compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-			light += spotFactor * att_factor * u_light_color * u_light_intensity ; 
-		}
-		
 	}
 
 	color.xyz *= light;
@@ -737,7 +716,7 @@ uniform vec2 u_iRes;
 //uniform vec3 u_emissive_factor; // hay que guardar en el 4ºcomp...
 //uniform sampler2D u_emissive_texture;
 //uniform sampler2D u_occlusion_texture;
-uniform vec3 u_ambient_light;
+//uniform vec3 u_ambient_light;
 
 #include "get_lights_uniforms"
 #include "get_lights_functions"
@@ -780,14 +759,9 @@ void main()
 	
 	//usar extra como metalic roughnes???
 	//vec4 occ = get_occlusion( v_uv, u_extra_texture, u_occlusion_texture);
-	light +=  u_ambient_light; // * occ.xyz ;
+	//light +=  u_ambient_light; // * occ.xyz ;
 	
-	if( u_light_type == 0){ // directional
-
-		L = normalize(-u_light_vector);
-		NdotL = max( dot(N,L), 0.0);
-		light += NdotL * att_factor * u_light_color * u_light_intensity;
-	}
+	
 	if (u_light_type == 1){  // point or spot
 		
 		L = normalize(u_light_position - world_position);
@@ -796,8 +770,7 @@ void main()
 		light += NdotL * att_factor * u_light_color * u_light_intensity;
 		
 	}
-	if (u_light_type == 2){
-
+	else{
 		vec3 L_aux = normalize(u_light_position - world_position);
 		float spotCosine = dot( normalize( u_light_vector), -L_aux);
 		spotCosine = max(spotCosine, 0.0); //
@@ -806,7 +779,6 @@ void main()
 			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
 			light += spotFactor * att_factor * u_light_color * u_light_intensity ; 
 		}
-		
 	}
 
 

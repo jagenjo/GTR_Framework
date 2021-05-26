@@ -200,8 +200,8 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	gbuffers_fbo.unbind();
 
 	//clear 
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClearColor(0, 0, 0, 0);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//desactivo los flags
 	glDisable(GL_DEPTH_TEST);
@@ -223,8 +223,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 	}
 
-	//start rendering to the illumination fbo ----------------------------------BIND!
-	/*illumination_fbo.bind();
+	illumination_fbo.bind();
 
 	// if we want to clear all in once
 	glClearColor(0, 0, 0, 0);
@@ -239,105 +238,95 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], 1);
 	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], 2);
 	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, 3);
-
 	shader->setUniform("u_ambient_light", scene->ambient_light);
-
-	//shader->setUniform("u_emissive_factor", );
-	// emisive texture
-	// oclustion texture
-	// no se puede leer de model.. solo infor de las texturas...
+	
 
 	Matrix44 inv_vp = camera->viewprojection_matrix;
 	inv_vp.inverse();
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
-	//shader->setUniform("u_iRes", Vector2(1.0 / (float)width, 1.0 / (float)height));
 
-
-	//multipass rendeting
-	for (int i = 0; i < this->light_entities.size() ; i++)
+	LightEntity* light;
+	for (int i = 0; i < this->light_entities.size(); i++)
 	{
-		LightEntity* light = this->light_entities[i];
+		light = this->light_entities[i];
+		//we assume that there is always at least one directional ///luego si da tiempo corregir para el caso de no directional light
+		if (light->light_type == DIRECTIONAL) {
+			light->uploadToShader(shader);
+		
+			quad->render(GL_TRIANGLES);
 
-		light->uploadToShader(shader);
-		//Rendeer fullscreen quad
-		quad->render(GL_TRIANGLES);
-
-		// have to accumulate the light contribution of every light, after 2º light
-		//only one pass ambient light and emissive light
-		shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
-		//shader->setUniform("u_emissive_factor", Vector3(0, 0, 0));
-		glEnable(GL_BLEND);
-		//we must accumulate the light contribution of every light
-		glDepthFunc(GL_LEQUAL);
-		glBlendFunc(GL_ONE, GL_ONE);// sum each pixels with the befors...
-
+			//in case there are more than one directional light:
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
+			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
+		}
+		
+			
 	}
-	//stop rendering to the fbo, render to screen
-	illumination_fbo.unbind();
-
-	//be sure blending is not active
-	glDisable(GL_BLEND);
-
-	//and render the texture into the screen
-	illumination_fbo.color_textures[0]->toViewport();
-
-	*/
-
 	
+	//glDisable(GL_BLEND);
+
 	//using geomrtry
 	// 
 	//we can use a sphere mesh for point lights
 	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", true, false);
-	
-	
+
 	glDisable(GL_CULL_FACE); 
 	
-	
-
 	//this deferred_ws shader uses the basic.vs instead of quad.vs
-	Shader* shader = Shader::Get("deferred_ws");
+	shader = Shader::Get("deferred_ws");
 
 	shader->enable();
 	shader->setTexture("u_color_texture", gbuffers_fbo.color_textures[0], 0);
 	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], 1);
 	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], 2);
 	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, 3);
-	shader->setUniform("u_ambient_light", scene->ambient_light);
-
+	
 	//basic.vs will need the model and the viewproj of the camera
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	Matrix44 inv_vp = camera->viewprojection_matrix;
-	inv_vp.inverse();
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
 	shader->setUniform("u_iRes", Vector2(1.0 / (float)width, 1.0 / (float)height));
-
+	
+	Matrix44 m; Vector3 pos; 
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
-		
-		LightEntity* light = this->light_entities[i];
-
+		light = this->light_entities[i];
 		if (light->light_type == DIRECTIONAL)
 			continue;
-
 		//we must translate the model to the center of the light
-		Matrix44 m;
-		Vector3 pos = light->model.getTranslation();
+		// and scale it according to the max_distance of the light
+		pos = light->model.getTranslation();
 		m.setTranslation(pos.x, pos.y, pos.z);
-		//and scale it according to the max_distance of the light
 		m.scale(light->max_dist, light->max_dist, light->max_dist);
-
-		//pass the model to the shader to render the sphere
-		shader->setUniform("u_model", m);
+		shader->setUniform("u_model", m); //pass the model to render the sphere
 
 		light->uploadToShader(shader);
 		glFrontFace(GL_CW);
-		
 		sphere->render(GL_TRIANGLES);
+		
+		//glEnable(GL_BLEND);
 
+		//only pixels behind a surface are rendered
+		//glEnable(GL_DEPTH_TEST); //no s donde poner
+
+		glDepthFunc(GL_GREATER);
+		glBlendFunc(GL_ONE, GL_ONE);// sum each pixels with the befors...
 	}
-	//set to back
-	glFrontFace(GL_CCW);
 
+
+	//stop rendering to the fbo, render to screen
+	illumination_fbo.unbind();
+
+	//set to back //be sure blending is not active
+	glFrontFace(GL_CCW);
+	glDisable(GL_BLEND);
+
+	//and render the texture into the screen
+	illumination_fbo.color_textures[0]->toViewport();
+
+
+	
+	//quad->render(GL_TRIANGLES);
 
 	
 
@@ -479,10 +468,10 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 
 	//select if render both sides of the triangles
 	if(material->two_sided)
-		glDisable(GL_CULL_FACE); ///////////////////////
+		glDisable(GL_CULL_FACE); 
 	else
 		glEnable(GL_CULL_FACE);
-    assert(glGetError() == GL_NO_ERROR); ///////////////////////
+    assert(glGetError() == GL_NO_ERROR); 
 
 	//select shader with respect to the mode 
 	if (mode == SHOW_TEXTURE)
