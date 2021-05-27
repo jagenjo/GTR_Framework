@@ -292,16 +292,23 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 
 	Matrix44 m; Vector3 pos; 
+	float max_dist = light->max_dist/3; ////
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
 		light = this->light_entities[i];
 		if (light->light_type == DIRECTIONAL)
 			continue;
+		
 		//we must translate the model to the center of the light
 		// and scale it according to the max_distance of the light
 		pos = light->model.getTranslation();
 		m.setTranslation(pos.x, pos.y, pos.z);
-		m.scale(light->max_dist, light->max_dist, light->max_dist);
+
+		if (light->light_type == POINT) {
+			max_dist = light->max_dist;
+			
+		}
+		m.scale(max_dist, max_dist, max_dist);
 		shader->setUniform("u_model", m); //pass the model to render the sphere
 
 		light->uploadToShader(shader);

@@ -687,31 +687,7 @@ void main()
 }
 // -------------------------------------------------------------------------------------------------------------------------
 
-\compute_light_txt
 
-float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-
-//usar extra como metalic roughnes???
-//vec4 occ = get_occlusion( v_uv, u_extra_texture, u_occlusion_texture);
-//light +=  u_ambient_light; // * occ.xyz ;
-
-//luego quitar una funcion de if .....#######################.....#######################.....#######################
-L = normalize(u_light_position - world_position);
-if (u_light_type == 1){  // point or spot
-
-	NdotL = max( dot(N,L), 0.0);
-	light += NdotL * att_factor * u_light_color * u_light_intensity;
-	
-}
-else{
-	//vec3 L_aux = normalize(u_light_position - world_position);
-	float spotCosine = dot( normalize( u_light_vector), -L);
-	spotCosine = max(spotCosine, 0.0); //
-	if ( spotCosine >= u_light_spotCosineCutoff ){
-		float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-		light += spotFactor * att_factor * u_light_color * u_light_intensity ; 
-	}
-}
 
 \get_PBR_functions
 
@@ -771,6 +747,61 @@ vec3 specularBRDF( float roughness, vec3 f0, float NoH, float NoV, float NoL, fl
 	return spec;
 }
 
+/*
+struct matStruct {
+    vec3 light,	
+} materialOfDiffSpec;
+materialOfDiffSpec = matStruct(vec4(0.1, 0.1, 0.1, 1.0),vec4(1.0, 0.0, 0.0, 1.0),vec4(0.7, 0.7, 0.7, 1.0),50.0);
+*/
+
+vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position, vec3 u_camera_position, vec3 N, vec4 extra, vec3 color, float NoL , float att_factor){
+	
+	vec3 V = normalize( u_light_position - u_camera_position);
+	vec3 H = normalize( L + V );
+
+	float NoH = max( dot(H,V) , 0.0); //crear una funcion de NdotL?? y clamp?? 
+	float NoV = max( dot(N,V) , 0.0);
+	float LoH = max( dot(L,H) , 0.0);
+
+	vec3 metalness = extra.xyz ;
+	float roughness = extra.y;
+	//compute fresnel factor
+	//float fresnel = 1.0 - max( dot(N,V), 0.0 );
+
+
+	//make it less linear...
+	//fresnel = pow( fresnel, 2.0 );
+
+	//vec3 Fr_d = specularBRDF( roughness, fresnel,  NoH,  NoV,  NoL,  LoH );
+
+	//------------------------------------------------------------------------------------------
+	//we compute the reflection in base to the color and the metalness
+	vec3 f0 = mix( vec3(0.5), color.xyz, metalness ) ; // es un lerp, lineal interpolation
+
+
+	//metallic materials do not have diffuse. They are inv prop
+	vec3 diffuseColor = (1.0 - metalness) * color.xyz;
+
+
+	//compute the specular //reflectand
+	vec3 Fr_d = specularBRDF( roughness, f0 , NoH, NoV, NoL, LoH );
+
+
+	// Here we use the Burley, but you can replace it by the Lambert. Also, we can use NdotL
+	// linearRoughness = squared roughness
+	// vec3 Fd_d = diffuseColor * Fd_Burley(NoV,NoL,LoH,linearRoughness); 
+	vec3 Fd_d = diffuseColor * NoL; 
+
+	//add diffuse and specular reflection = direct light
+	vec3 direct = Fr_d + Fd_d;
+
+	//shadow_factor = F
+	//compute how much light received the pixel
+	vec3 lightParams = u_light_color * u_light_intensity * att_factor ;
+
+	//modulate direct light by light received
+	return direct * lightParams; 
+}
 
 
 \deferred_ws.fs
@@ -809,7 +840,7 @@ void main()
 	
 	//reconstruct world position from depth and inv. viweproj
 	float depth_fact = depth.x ;
-	vec4 screen_pos = vec4( uv.x *2.0 -1.0, uv.y * 2.0 -1.0, depth_fact*2.0-1.0, 1.0 ); // conv todo de -1 a 1
+	vec4 screen_pos = vec4( uv.x *2.0 -1.0, uv.y * 2.0 -1.0, depth_fact * 2.0 -1.0, 1.0 ); // conv todo de -1 a 1
 	vec4 proj_worldpos = u_inverse_viewprojection * screen_pos;
 	vec3 world_position = proj_worldpos.xyz / proj_worldpos.w ;
 
@@ -820,61 +851,29 @@ void main()
 	vec3 color;
 	color = albedo.xyz; 
 
-	vec3 L;
-	float NdotL;
+	float att_factor =  compute_attfactor( u_light_position, world_position, u_light_maxdist );
 
-	#include "compute_light_txt"
+	vec3 L = normalize(u_light_position - world_position);
 
-	L = normalize(u_light_vector);
-	//N = normal.xyz ; 
-	vec3 V = normalize( u_light_position - u_camera_position); // o usar la otra forma?--->aqui me deje
-	vec3 H = normalize( L + V );
-
-	float NoH = max( dot(H,V) , 0.0); //crear una funcion de NdotL?? y clamp?? 
 	float NoL = max( dot(N,L) , 0.0);
-	float NoV = max( dot(N,V) , 0.0);
-	float LoH = max( dot(L,H) , 0.0);
 
-	vec3 metalness = extra.xyz ;
-	float roughness = extra.y;
-	//compute fresnel factor
-	//float fresnel = 1.0 - max( dot(N,V), 0.0 );
+	vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  extra ,  color,  NoL , att_factor);
+		
+	if (u_light_type == 1){  // point 
 
-	
-	//make it less linear...
-	//fresnel = pow( fresnel, 2.0 );
+		light += NoL * att_factor * u_light_color * u_light_intensity * diffspecular_light ;
+		
+	}
+	else{ // spot
 
-	//vec3 light_specular = specularBRDF( roughness, fresnel,  NoH,  NoV,  NoL,  LoH );
+		float spotCosine = dot( normalize( u_light_vector), -L);
+		spotCosine = max(spotCosine, 0.0); //
+		if ( spotCosine >= u_light_spotCosineCutoff ){
+			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
+			light += NoL * spotFactor * att_factor * u_light_color * u_light_intensity * diffspecular_light ; 
+		}
+	}
 
-	//------------------------------------------------------------------------------------------
-	//we compute the reflection in base to the color and the metalness
-	vec3 f0 = mix( vec3(0.5), color.xyz, metalness ) ; // es un lerp, lineal interpolation
-	
-	
-	//metallic materials do not have diffuse. They are inv prop
-	vec3 diffuseColor = (1.0 - metalness) * color.xyz;
-
-
-	//compute the specular //reflectand
-	vec3 Fr_d = specularBRDF( roughness, f0 , NoH, NoV, NoL, LoH );
-
-	
-	// Here we use the Burley, but you can replace it by the Lambert. Also, we can use NdotL
-	// linearRoughness = squared roughness
-	// vec3 Fd_d = diffuseColor * Fd_Burley(NoV,NoL,LoH,linearRoughness); 
-	vec3 Fd_d = diffuseColor * NdotL; 
-	
-
-	
-	//add diffuse and specular reflection = direct light
-	vec3 direct = Fr_d + Fd_d;
-
-	//shadow_factor = 
-	//compute how much light received the pixel
-	vec3 lightParams = u_light_color * u_light_intensity * att_factor ;
-
-	//modulate direct light by light received
-	light += direct * lightParams; 
 
 	color.xyz *= light;
 	// color.xyz += u_emissive_factor * texture(u_emissive_texture, uv ).xyz ;
@@ -886,8 +885,17 @@ void main()
 
 //--------------------------------------------------------------------------------------------------------------------------
 
-\gget
+\gettt
+//-------------GAMMA CONVERTION FUNCTIONS----------
+
+vec3 degamma(vec3 c){
+	return pow(c,vec3(2)); // we use a integer instead of 2.2
 	
+}
+
+vec3 gamma(vec3 c){
+	return pow(c,vec3(1.0/2));
+}
 	
 	
 
