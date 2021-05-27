@@ -33,6 +33,8 @@ uniform sampler2D u_normal_texture;
 uniform sampler2D u_metallic_roughness_texture;
 uniform sampler2D u_occlusion_texture;
 
+uniform sampler2D u_extra_texture;
+uniform sampler2D u_depth_texture;
 
 \get_lights_uniforms
 uniform int u_light_type; 
@@ -49,8 +51,6 @@ uniform float u_light_area_size;
 
 uniform float u_light_spotCosineCutoff;
 uniform float u_light_spotExponent;
-
-\get_lightslist_uniforms
 
 
 
@@ -182,7 +182,7 @@ float attenuation_ranged( vec3 u_light_position, vec3 v_world_position, float u_
 
 // ----------------------FOR TEXTURE-----------------------------
 
-\get_textures_funcions
+\get_textures_functions
 
 #include "get_functions_utils"
 vec4 get_normal(vec3 v_normal, vec3 v_world_position, vec2 v_uv, sampler2D u_normal_texture){
@@ -217,6 +217,7 @@ vec4 get_metalness( vec2 v_uv, sampler2D u_metallic_roughness_texture )
 	return mr_fac; 
 }
 
+// ----------------------PBR functions-----------------------------
 
 
 // -------------------------------------------------------------------------------------------------------------------------
@@ -334,7 +335,7 @@ uniform sampler2D u_occlusion_texture;
 
 out vec4 FragColor;
 
-#include "get_textures_funcions"
+#include "get_textures_functions"
 
 void main()
 {
@@ -371,7 +372,7 @@ uniform vec3 u_ambient_light;
 #include "get_parm_from_vs"
 #include "get_lights_uniforms"
 #include "get_lights_functions"
-#include "get_textures_funcions"
+#include "get_textures_functions"
 
 out vec4 FragColor;
 
@@ -456,7 +457,7 @@ uniform float u_light_spotCosineCutoffs[MAX_LIGHTS];
 #include "get_parm_from_vs"
 #include "get_lights_uniforms"
 #include "get_lights_functions"
-#include "get_textures_funcions"
+#include "get_textures_functions"
 #include "get_textures_uniforms"
 
 
@@ -563,7 +564,7 @@ uniform float u_alpha_cutoff;
 
 #include "get_textures_uniforms"
 #include "get_parm_from_vs"
-#include "get_textures_funcions"
+#include "get_textures_functions"
 
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 NormalColor;
@@ -621,26 +622,18 @@ void main()
 #version 330 core
 
 in vec2 v_uv;
-//pass here all the uniforms required for illumination...
-uniform sampler2D u_color_texture;
-uniform sampler2D u_normal_texture;
-uniform sampler2D u_extra_texture;
-uniform sampler2D u_depth_texture;
+
 uniform mat4 u_inverse_viewprojection;
+uniform vec3 u_ambient_light;
 uniform vec2 u_iRes;
 
-//uniform vec3 u_emissive_factor; // hay que guardar en el 4ºcomp...
-//uniform sampler2D u_emissive_texture;
-//uniform sampler2D u_occlusion_texture;
-uniform vec3 u_ambient_light;
-
+#include "get_textures_uniforms"
+#include "get_textures_functions"
 #include "get_lights_uniforms"
 #include "get_lights_functions"
-#include "get_textures_funcions"
 
 layout(location=0) out vec4 FragColor;
 
-//out vec4 FragColor;
 
 void main()
 {
@@ -694,37 +687,112 @@ void main()
 }
 // -------------------------------------------------------------------------------------------------------------------------
 
+\compute_light_txt
+
+float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
+
+//usar extra como metalic roughnes???
+//vec4 occ = get_occlusion( v_uv, u_extra_texture, u_occlusion_texture);
+//light +=  u_ambient_light; // * occ.xyz ;
+
+//luego quitar una funcion de if .....#######################.....#######################.....#######################
+L = normalize(u_light_position - world_position);
+if (u_light_type == 1){  // point or spot
+
+	NdotL = max( dot(N,L), 0.0);
+	light += NdotL * att_factor * u_light_color * u_light_intensity;
+	
+}
+else{
+	//vec3 L_aux = normalize(u_light_position - world_position);
+	float spotCosine = dot( normalize( u_light_vector), -L);
+	spotCosine = max(spotCosine, 0.0); //
+	if ( spotCosine >= u_light_spotCosineCutoff ){
+		float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
+		light += spotFactor * att_factor * u_light_color * u_light_intensity ; 
+	}
+}
+
+\get_PBR_functions
+
+#define PI 0.3183098861837697
+
+// Normal Distribution Function using GGX Distribution
+float D_GGX ( const in float NoH, const in float linearRoughness )
+{
+	float a2 = linearRoughness * linearRoughness;
+	float f = (NoH * NoH) * (a2 - 1.0) + 1.0;
+	return a2 / (PI * f * f);
+}
+
+// Fresnel term with scalar optimization(f90=1)
+//float F_Schlick( const in float VoH, const in float f0)
+//{
+//	float f = pow(1.0 - VoH, 5.0);
+//	return f0 + (1.0 - f0) * f;
+//}
+
+// Fresnel term with colorized fresnel
+vec3 F_Schlick( const in float VoH, const in vec3 f0)
+{
+	float f = pow(1.0 - VoH, 5.0);
+	return f0 + (vec3(1.0) - f0) * f;
+}
+
+// Geometry Term: Geometry masking/shadowing due to microfacets
+float GGX(float NdotV, float k){
+	return NdotV / (NdotV * (1.0 - k) + k);
+}
+	
+float G_Smith( float NdotV, float NdotL, float roughness)
+{
+	float k = pow(roughness + 1.0, 2.0) / 8.0;
+	return GGX(NdotL, k) * GGX(NdotV, k);
+}
+
+vec3 specularBRDF( float roughness, vec3 f0, float NoH, float NoV, float NoL, float LoH ){
+
+	float a = roughness * roughness;
+
+	// Normal Distribution Function
+	float D = D_GGX( NoH, a );
+
+	// Fresnel Function
+	//float F = F_Schlick( LoH, f0 );
+	vec3 F = F_Schlick( LoH, f0 );
+
+	// Visibility Function (shadowing/masking)
+	float G = G_Smith( NoV, NoL, roughness );
+		
+	// Norm factor
+	vec3 spec = D * G * F;
+	spec /= (4.0 * NoL * NoV + 1e-6);
+
+	return spec;
+}
+
+
+
 \deferred_ws.fs
 
 #version 330 core
 
-in vec3 v_position; 
-in vec3 v_world_position; 
-in vec3 v_normal; 
-in vec2 v_uv; 
-in vec4 v_color;
-
 //pass here all the uniforms required for illumination...
-uniform sampler2D u_color_texture;
-uniform sampler2D u_normal_texture;
-uniform sampler2D u_extra_texture;
-uniform sampler2D u_depth_texture;
+// textura emisiva, factoremisivo y occ
 
 uniform mat4 u_inverse_viewprojection;
 uniform vec2 u_iRes;
+uniform vec3 u_camera_position;
 
-//uniform vec3 u_emissive_factor; // hay que guardar en el 4ºcomp...
-//uniform sampler2D u_emissive_texture;
-//uniform sampler2D u_occlusion_texture;
-//uniform vec3 u_ambient_light;
-
+#include "get_parm_from_vs"
 #include "get_lights_uniforms"
 #include "get_lights_functions"
-#include "get_textures_funcions"
+#include "get_textures_uniforms"
+#include "get_textures_functions"
 
 layout(location=0) out vec4 FragColor;
 
-//out vec4 FragColor;
+#include "get_PBR_functions"
 
 void main()
 {
@@ -748,48 +816,105 @@ void main()
 	if( screen_pos.z == 1.0)  
 		discard;
 
-
 	vec3 light;
 	vec3 color;
 	color = albedo.xyz; 
 
 	vec3 L;
 	float NdotL;
-	float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-	
-	//usar extra como metalic roughnes???
-	//vec4 occ = get_occlusion( v_uv, u_extra_texture, u_occlusion_texture);
-	//light +=  u_ambient_light; // * occ.xyz ;
-	
-	
-	if (u_light_type == 1){  // point or spot
-		
-		L = normalize(u_light_position - world_position);
-		NdotL = max( dot(N,L), 0.0);
-		//att_factor = compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-		light += NdotL * att_factor * u_light_color * u_light_intensity;
-		
-	}
-	else{
-		vec3 L_aux = normalize(u_light_position - world_position);
-		float spotCosine = dot( normalize( u_light_vector), -L_aux);
-		spotCosine = max(spotCosine, 0.0); //
-		if ( spotCosine >= u_light_spotCosineCutoff ){
-			//att_factor = compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-			light += spotFactor * att_factor * u_light_color * u_light_intensity ; 
-		}
-	}
 
+	#include "compute_light_txt"
+
+	L = normalize(u_light_vector);
+	//N = normal.xyz ; 
+	vec3 V = normalize( u_light_position - u_camera_position); // o usar la otra forma?--->aqui me deje
+	vec3 H = normalize( L + V );
+
+	float NoH = max( dot(H,V) , 0.0); //crear una funcion de NdotL?? y clamp?? 
+	float NoL = max( dot(N,L) , 0.0);
+	float NoV = max( dot(N,V) , 0.0);
+	float LoH = max( dot(L,H) , 0.0);
+
+	vec3 metalness = extra.xyz ;
+	float roughness = extra.y;
+	//compute fresnel factor
+	//float fresnel = 1.0 - max( dot(N,V), 0.0 );
+
+	
+	//make it less linear...
+	//fresnel = pow( fresnel, 2.0 );
+
+	//vec3 light_specular = specularBRDF( roughness, fresnel,  NoH,  NoV,  NoL,  LoH );
+
+	//------------------------------------------------------------------------------------------
+	//we compute the reflection in base to the color and the metalness
+	vec3 f0 = mix( vec3(0.5), color.xyz, metalness ) ; // es un lerp, lineal interpolation
+	
+	
+	//metallic materials do not have diffuse. They are inv prop
+	vec3 diffuseColor = (1.0 - metalness) * color.xyz;
+
+
+	//compute the specular //reflectand
+	vec3 Fr_d = specularBRDF( roughness, f0 , NoH, NoV, NoL, LoH );
+
+	
+	// Here we use the Burley, but you can replace it by the Lambert. Also, we can use NdotL
+	// linearRoughness = squared roughness
+	// vec3 Fd_d = diffuseColor * Fd_Burley(NoV,NoL,LoH,linearRoughness); 
+	vec3 Fd_d = diffuseColor * NdotL; 
+	
+
+	
+	//add diffuse and specular reflection = direct light
+	vec3 direct = Fr_d + Fd_d;
+
+	//shadow_factor = 
+	//compute how much light received the pixel
+	vec3 lightParams = u_light_color * u_light_intensity * att_factor ;
+
+	//modulate direct light by light received
+	light += direct * lightParams; 
 
 	color.xyz *= light;
 	// color.xyz += u_emissive_factor * texture(u_emissive_texture, uv ).xyz ;
 	
 	FragColor = vec4(color, 1.0 ) ;
 	
-
-
 }
+
+
+//--------------------------------------------------------------------------------------------------------------------------
+
+\gget
+	
+	
+	
+
+	
+
+
+
+
+
+/-------------------------------------------------------------------------------------------------
+
+/*
+//compute reflected eye vector
+vec3 R = reflect(N,V);
+
+//compute how aligned is the eye with R
+float RdotV = max( dot(R,V), 0.0 );
+
+//make it less linear using a glossiness factor
+float specular = pow( RdotV, glosiness_factor );
+
+//add it to the final light contribution
+light += light_color * specular * spec_factor;
+
+
+*/
+
 
 
 // -------------------------------------------------------------------------------------------------------------------------
@@ -881,3 +1006,4 @@ void main()
 	//calcule the position of the vertex using the matrices
 	gl_Position = u_viewprojection * vec4( v_world_position, 1.0 );
 }
+

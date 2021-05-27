@@ -139,12 +139,14 @@ void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& r
 
 void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera)
 {
+	int width = Application::instance->window_width;
+	int height = Application::instance->window_height;
 
 	if (gbuffers_fbo.fbo_id == 0) { //this att tell me if it is already created (by default is 0). Memory is reserved?
 
 		//we reserve memory to each textures...
-		gbuffers_fbo.create(this->width, 
-							this->height,
+		gbuffers_fbo.create(width, 
+							height,
 							3, // num of textures to create
 							GL_RGBA, // four channels
 							GL_UNSIGNED_BYTE, //1byte
@@ -214,8 +216,8 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	if (illumination_fbo.fbo_id == 0) {
 
 		//create 3 textures of 4 components
-		illumination_fbo.create(this->width, 
-								this->height,
+		illumination_fbo.create(width, 
+								height,
 								1, 			//three textures
 								GL_RGB, 		//three channels
 								GL_UNSIGNED_BYTE, //1 byte
@@ -269,7 +271,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//using geomrtry
 	// 
 	//we can use a sphere mesh for point lights
-	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", true, false);
+	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", false, false);
 
 	glDisable(GL_CULL_FACE); 
 	
@@ -286,7 +288,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
 	shader->setUniform("u_iRes", Vector2(1.0 / (float)width, 1.0 / (float)height));
-	
+	shader->setUniform("u_camera_position", camera->eye );
+
+
 	Matrix44 m; Vector3 pos; 
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
@@ -326,13 +330,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 
 	
-	//quad->render(GL_TRIANGLES);
-
 	
-
-
-
-
 
 
 

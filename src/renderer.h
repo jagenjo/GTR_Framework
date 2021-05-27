@@ -64,9 +64,7 @@ namespace GTR {
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
 
-		int width = Application::instance->window_width;
-		int height = Application::instance->window_height;
-
+		
 		bool show_gbuffers;
 
 		eRenderMode render_mode;
