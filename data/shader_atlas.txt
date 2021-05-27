@@ -1,4 +1,3 @@
-
 // ----------------------SHADERS-----------------------------
 flat basic.vs flat.fs
 texture basic.vs texture.fs
@@ -56,11 +55,9 @@ uniform float u_light_spotExponent;
 
 // ----------------------GET FUNCTIONS-----------------------------
 
-
 // ----------------------UTILS-----------------------------
 
 \get_functions_utils
-
 
 // fs to compute normal maps
 mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
@@ -124,8 +121,6 @@ float get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, 
 
 	return shadow_factor ;	
 }
-
-
 
 // ----------------------FOR LIGHT-----------------------------
 \get_lights_functions
@@ -194,7 +189,6 @@ vec4 get_normal(vec3 v_normal, vec3 v_world_position, vec2 v_uv, sampler2D u_nor
 	vec3 n = perturbNormal( N, v_world_position, uv, normal_pixel );
 	n += v_normal; 
 	n = normalize(n);
-	// n = n * 0.5 + 0.5; // revisar!! Suman------------------------------------------------------------------!!!
 	return vec4( n , 1.0); 
 }
 
@@ -211,15 +205,13 @@ vec4 get_occlusion( vec2 v_uv, sampler2D u_metallic_roughness_texture, sampler2D
 	return vec4( oc_fac, oc_fac, oc_fac, 1.0 ); 
 }
 
-vec4 get_metalness( vec2 v_uv, sampler2D u_metallic_roughness_texture )
+vec4 get_metallic_roughness( vec2 v_uv, sampler2D u_metallic_roughness_texture )
 {
-	vec4 mr_fac = texture( u_metallic_roughness_texture , v_uv) ; // also we can use .r
+	vec4 mr_fac = texture( u_metallic_roughness_texture , v_uv) ;
 	return mr_fac; 
 }
 
 // ----------------------PBR functions-----------------------------
-
-
 
 \get_PBR_functions
 
@@ -288,7 +280,8 @@ struct matStruct {
 materialOfDiffSpec = matStruct(vec4(0.1, 0.1, 0.1, 1.0),vec4(1.0, 0.0, 0.0, 1.0),vec4(0.7, 0.7, 0.7, 1.0),50.0);
 */
 
-vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position, vec3 u_camera_position, vec3 N, vec4 extra, vec3 color, float NoL , float att_factor){
+
+vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position, vec3 u_camera_position, vec3 N, float metalness, float roughness, vec3 color, float NoL , float att_factor){
 	
 	vec3 V = normalize( u_light_position - u_camera_position);
 	vec3 H = normalize( L + V );
@@ -297,8 +290,6 @@ vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position,
 	float NoV = max( dot(N,V) , 0.0);
 	float LoH = max( dot(L,H) , 0.0);
 
-	vec3 metalness = extra.xyz ;
-	float roughness = extra.y;
 	//compute fresnel factor
 	float fresnel = 1.0 - max( dot(N,V), 0.0 );
 
@@ -381,6 +372,7 @@ void main()
 	//calcule the position of the vertex using the matrices
 	gl_Position = u_viewprojection * vec4( v_world_position, 1.0 );
 }
+
 // -------------------------------------------------------------------------------------------------------------------------
 \quad.vs
 
@@ -677,7 +669,6 @@ void main()
 
 uniform vec4 u_color;
 uniform vec3 u_emissive_factor;
-
 uniform float u_alpha_cutoff;
 
 #include "get_textures_uniforms"
@@ -692,27 +683,25 @@ void main()
 {
 	vec2 uv = v_uv;
 	vec4 color = u_color;
-	color *= texture( u_color_texture, uv );
 
 	if(color.a < u_alpha_cutoff) 
 		discard;
-	
 	//discard some pixels depending on the pixel screen position and its transparency
 	if( color.a < 0.9 && floor(mod(gl_FragCoord.x,2.0)) != floor(mod(gl_FragCoord.y,2.0)) ) //// mirar
 		discard;
 
+	//-----read each textures---
+	color *= texture( u_color_texture, uv );
+	vec3 emissive = u_emissive_factor * texture(u_emissive_texture, uv ).xyz ;
 	vec4 normal = get_normal( v_normal,  v_world_position, v_uv, u_normal_texture);
-	vec3 N = normal.xyz ;
-	//vec3 N = normalize(v_normal);	
-	vec4 metalness = get_metalness(v_uv, u_metallic_roughness_texture);
+	vec3 N = normal.xyz ; //vec3 N = normalize(v_normal);	
+	vec4 metallic_roughness = get_metallic_roughness(v_uv, u_metallic_roughness_texture);
 	
-	color.a = 1.0 ; // we don't need blending for now, so for now we store for now 1 (afterward, store other relev inf)
+	color.a = metallic_roughness.y; //alpha = metalness
+	
 	FragColor = color;
-	
-	
-	NormalColor = vec4(N * 0.5 + vec3(0.5) , 1.0);
-	//ExtraColor = vec4(v_world_position, 1.0);
-	ExtraColor = metalness;
+	NormalColor = vec4( N * 0.5 + vec3(0.5) , metallic_roughness.z ); //alpha = roughness
+	ExtraColor = vec4( emissive,  metallic_roughness.x ); //alpha = occ 
 }
 
 //--------------------------------------------------------------------------------------------------------------------------
@@ -733,6 +722,7 @@ void main()
 	FragColor = vec4( color.a ); 
 
 }
+
 // -------------------------------------------------------------------------------------------------------------------------
 
 \deferred.fs
@@ -760,6 +750,7 @@ void main()
 	// vec2 uv = gl_FragCoord.xy * u_iRes.xy ;
 	vec2 uv = v_uv ;
 
+	//-----read each textures from gbuffers---
 	vec4 albedo = texture(u_color_texture, uv);
 	vec4 normal = texture(u_normal_texture, uv);
 	vec4 extra = texture(u_extra_texture, uv);
@@ -774,49 +765,37 @@ void main()
 	vec4 proj_worldpos = u_inverse_viewprojection * screen_pos;
 	vec3 world_position = proj_worldpos.xyz / proj_worldpos.w ;
 
-	if( screen_pos.z == 1.0)  
+	if( screen_pos.z == 1.0)  //discard background ilumination pixels
 		discard;
 
 	vec3 light;
 	vec3 color;
 	color = albedo.xyz; 
-
 	vec3 L;
+
+	float metalness = albedo.a;
+	float roughness = normal.a;
 	float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-	
-	//usar extra como metalic roughnes???
-	//vec4 occ = get_occlusion( v_uv, u_extra_texture, u_occlusion_texture);
-	light +=  u_ambient_light; // * occ.xyz ;
+	light +=  u_ambient_light * extra.a;
 	
 	if( u_light_type == 0){ // directional
 
-		
-	
 		L = normalize(-u_light_vector);
 		float NoL = max( dot(N,L) , 0.0);
-		vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  extra ,  color,  NoL , att_factor);
-		
+		vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL , att_factor);
 		light += NoL * att_factor * u_light_color * u_light_intensity *  diffspecular_light;
 	}
 
 	color.xyz *= light;
-	// color.xyz += u_emissive_factor * texture(u_emissive_texture, uv ).xyz ;
-
+	color.xyz += extra.xyz; //emissive light
 	FragColor = vec4(color, 1.0 ) ;
 	
-
-
 }
 // -------------------------------------------------------------------------------------------------------------------------
-
-
 
 \deferred_ws.fs
 
 #version 330 core
-
-//pass here all the uniforms required for illumination...
-// textura emisiva, factoremisivo y occ
 
 uniform mat4 u_inverse_viewprojection;
 uniform vec2 u_iRes;
@@ -827,16 +806,16 @@ uniform vec3 u_camera_position;
 #include "get_lights_functions"
 #include "get_textures_uniforms"
 #include "get_textures_functions"
+#include "get_PBR_functions"
 
 layout(location=0) out vec4 FragColor;
-
-#include "get_PBR_functions"
 
 void main()
 {
 	// we can extract uvs from pixel screenpos
 	vec2 uv = gl_FragCoord.xy * u_iRes.xy ;
 	
+	//-----read each textures from gbuffers---
 	vec4 albedo = texture(u_color_texture, uv);
 	vec4 normal = texture(u_normal_texture, uv);
 	vec4 extra = texture(u_extra_texture, uv);
@@ -857,38 +836,31 @@ void main()
 	vec3 light;
 	vec3 color;
 	color = albedo.xyz; 
-
-	float att_factor =  compute_attfactor( u_light_position, world_position, u_light_maxdist );
-
+	float metalness = albedo.a ;
+	float roughness = normal.a;
 	vec3 L = normalize(u_light_position - world_position);
-
 	float NoL = max( dot(N,L) , 0.0);
 
-	vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  extra ,  color,  NoL , att_factor);
-		
+	float att_factor =  compute_attfactor( u_light_position, world_position, u_light_maxdist );
+	vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL , att_factor);		
+	
 	if (u_light_type == 1){  // point 
-
 		light += NoL * att_factor * u_light_color * u_light_intensity * diffspecular_light ;
-		
 	}
 	else{ // spot
 
-		float spotCosine = dot( normalize( u_light_vector), -L);
-		spotCosine = max(spotCosine, 0.0); //
+		float spotCosine = dot( normalize( u_light_vector), -L ); //como alineado entre -L y light_direction
+		spotCosine = max(spotCosine, 0.0 ); 
 		if ( spotCosine >= u_light_spotCosineCutoff ){
 			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
 			light += NoL * spotFactor * att_factor * u_light_color * u_light_intensity * diffspecular_light ; 
 		}
 	}
 
-
 	color.xyz *= light;
-	// color.xyz += u_emissive_factor * texture(u_emissive_texture, uv ).xyz ;
-	
 	FragColor = vec4(color, 1.0 ) ;
 	
 }
-
 
 //--------------------------------------------------------------------------------------------------------------------------
 

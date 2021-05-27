@@ -19,7 +19,7 @@ GTR::Renderer::Renderer()
 {
 	this->render_mode = eRenderMode::MULTI;
 	this->rendering_shadowmap = TRUE;
-	this->pipeline_mode = ePipelineMode::FORWARD;
+	this->pipeline_mode = ePipelineMode::DEFERRED;
 	this->show_gbuffers = false;
 
 	color_buffer = new Texture(Application::instance->window_width, Application::instance->window_height);
@@ -137,34 +137,31 @@ void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& r
 
 }
 
-void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera)
-{
-	int width = Application::instance->window_width;
-	int height = Application::instance->window_height;
+void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCall>& rendercalls, Camera* camera) {
+	
 
 	if (gbuffers_fbo.fbo_id == 0) { //this att tell me if it is already created (by default is 0). Memory is reserved?
 
 		//we reserve memory to each textures...
-		gbuffers_fbo.create(width, 
-							height,
-							3, // num of textures to create
-							GL_RGBA, // four channels
-							GL_UNSIGNED_BYTE, //1byte
-							true); //add depth_texture
+		gbuffers_fbo.create(width,
+			height,
+			3, // num of textures to create
+			GL_RGBA, // four channels
+			GL_UNSIGNED_BYTE, //1byte
+			true); //add depth_texture
 	}
+
 	//start rendeing inside the gbuffers
-	gbuffers_fbo.bind(); 
+	gbuffers_fbo.bind();
 
 	// if we want to clear all in once
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	checkGLErrors();
 
-
-
 	/* //if clear each GB independently
 	//Now we clear in several passes, so we can control the clear color independently for every gbuffer
-	//disable all but the GB0 (and the depth) 
+	//disable all but the GB0 (and the depth)
 	gbuffers_fbo.enableSingleBuffer(0);
 
 	//clear the 1º GB with the color (and depth)
@@ -185,25 +182,64 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//enable all buffers back
 	gbuffers_fbo.enableAllBuffers();
 
-
 	*/
 
-
-	//render all what we want
-	for (int i = 0; i < rendercalls.size(); i++)
+	for (int i = 0; i < rendercalls.size(); i++)//render all
 	{
-		RenderCall& rc = rendercalls[i];
-		// solo queremos que coja los shaders de Gbuffers
-		// no quiero cambiar modo de render -> ahora always este modo
-		renderMeshWithMaterial(eRenderMode::GBUFFERS, rc.model, rc.mesh, rc.material, camera);
+		RenderCall& rc = rendercalls[i]; 
+		renderMeshWithMaterial(eRenderMode::GBUFFERS, rc.model, rc.mesh, rc.material, camera); //always in gbuffer mode
 	}
 
 	//stop rendering to the gbuffers
 	gbuffers_fbo.unbind();
 
-	//clear 
-	//glClearColor(0, 0, 0, 0);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void GTR::Renderer::seeGbuffers(int width, int height, Camera* camera) {
+
+	//to plot just alpha component
+	//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
+	if (!this->show_gbuffers)
+		return;
+
+	//int width = Application::instance->window_width;
+	//int height = Application::instance->window_height;
+
+	//GB0 color
+	glViewport(0, 0, width * 0.5, height * 0.5);
+	gbuffers_fbo.color_textures[0]->toViewport();
+
+	//GB1 normal
+	glViewport(width * 0.5, 0, width * 0.5, height * 0.5);
+	gbuffers_fbo.color_textures[1]->toViewport();
+
+	//GB2 material. properties
+	glViewport(width * 0.5, height * 0.5, width * 0.5, height * 0.5);
+	gbuffers_fbo.color_textures[2]->toViewport();
+
+	//GB3 depth_buffer
+	glViewport(0, height * 0.5, width * 0.5, height * 0.5);
+	//need to pass a linear with shader depth, to be able to see. No se ve-> pq necesita parm
+	// para linealizar necesito el near and far de la camara.
+	Shader* depth_sh = Shader::Get("depth");
+	depth_sh->enable();
+	depth_sh->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
+	//depth_sh->disable();
+	gbuffers_fbo.depth_texture->toViewport(depth_sh);
+
+	//Volver a poner el tamaño de VPort. 0,0 en una textura esta abajo iz!
+	glViewport(0, 0, width, height);
+	
+
+}
+
+void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera)
+{
+	int width = Application::instance->window_width;
+	int height = Application::instance->window_height;
+
+	createGbuffers(width, height, rendercalls, camera);
+	
 
 	//desactivo los flags
 	glDisable(GL_DEPTH_TEST);
@@ -211,8 +247,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 	
 	//---------Ilumination_Pass--------------
-	//create and FBO
-	
+		
 	if (illumination_fbo.fbo_id == 0) {
 
 		//create 3 textures of 4 components
@@ -221,10 +256,16 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 								1, 			//three textures
 								GL_RGB, 		//three channels
 								GL_FLOAT, // to have more precision to accumulate light
-								false);		//add depth_texture
+								true);		//add depth_texture
 
 	}
 
+	//clone the depth buffer content to the other depth buffer so they contain the same
+	// therefore, we can have the contain in the scene deth and block writing it to avoid any modification while render
+	//this->gbuffers_fbo.depth_texture->copyTo(illumination_fbo.depth_texture);
+	//glDepthMask(false); //now we can block writing to it	
+
+	//now if we enable depth_test during the illumination pass it will take into account the scene depth buffer
 	illumination_fbo.bind();
 
 	// if we want to clear all in once
@@ -243,7 +284,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setUniform("u_ambient_light", scene->ambient_light);
 	shader->setUniform("u_camera_position", camera->eye);
 
-
 	Matrix44 inv_vp = camera->viewprojection_matrix;
 	inv_vp.inverse();
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
@@ -257,24 +297,25 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 			light->uploadToShader(shader);
 		
 			quad->render(GL_TRIANGLES);
-
+			
 			//in case there are more than one directional light:
 			glEnable(GL_BLEND);
+			//glDepthFunc(GL_LEQUAL);//---------------------------------------------------------------------------------
 			glBlendFunc(GL_ONE, GL_ONE);
 			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
 		}
 		
 			
 	}
-	
+	//glDepthFunc(GL_LESS);
 	//glDisable(GL_BLEND);
 
-	//using geomrtry
-	// 
+	//---------Using geometry--------------
+	 
 	//we can use a sphere mesh for point lights
 	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", false, false);
 
-	glDisable(GL_CULL_FACE); 
+	//glDisable(GL_CULL_FACE); 
 	
 	//this deferred_ws shader uses the basic.vs instead of quad.vs
 	shader = Shader::Get("deferred_ws");
@@ -291,9 +332,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setUniform("u_iRes", Vector2(1.0 / (float)width, 1.0 / (float)height));
 	shader->setUniform("u_camera_position", camera->eye );
 
-
 	Matrix44 m; Vector3 pos; 
-	
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
 		light = this->light_entities[i];
@@ -314,13 +353,12 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		
 		//glEnable(GL_BLEND);
 
-		//only pixels behind a surface are rendered
-		//glEnable(GL_DEPTH_TEST); //no s donde poner
-
+		//only pixels behind a surface are rendered //only draw if the pixel is behind (therefore we avoid to compute lights floating in the air)
+		// we solve this during the depth test stage, meaning before execte .fs
+		//glEnable(GL_DEPTH_TEST);//----------------------------------------------------------------???????????????????????
 		glDepthFunc(GL_GREATER);
-		glBlendFunc(GL_ONE, GL_ONE);// sum each pixels with the befors...
+		glBlendFunc(GL_ONE, GL_ONE);
 	}
-
 
 	//stop rendering to the fbo, render to screen
 	illumination_fbo.unbind();
@@ -328,53 +366,12 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//set to back //be sure blending is not active
 	glFrontFace(GL_CCW);
 	glDisable(GL_BLEND);
-
+	glDepthFunc(GL_LESS);
 	//and render the texture into the screen
 	illumination_fbo.color_textures[0]->toViewport();
 
 
-	
-	
-
-
-
-	//to plot every textures in the viewport
-	//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));// pq puedo llamar directamente el shader?
-	if (show_gbuffers){
-
-		//int width = Application::instance->window_width;
-		//int height = Application::instance->window_height;
-
-		//GB0 color
-		glViewport(0, 0, width * 0.5, height * 0.5);
-		gbuffers_fbo.color_textures[0]->toViewport();
-
-		//GB1 normal
-		glViewport(width * 0.5, 0, width * 0.5, height * 0.5);
-		gbuffers_fbo.color_textures[1]->toViewport();
-
-		//GB2 material. properties
-		glViewport( width*0.5, height * 0.5, width * 0.5, height * 0.5);
-		gbuffers_fbo.color_textures[2]->toViewport();
-
-		//GB3 depth_buffer
-		glViewport(0, height * 0.5, width * 0.5, height * 0.5);
-		//need to pass a linear with shader depth, to be able to see. No se ve-> pq necesita parm
-		// para linealizar necesito el near and far de la camara.
-		Shader* depth_sh = Shader::Get("depth");
-		depth_sh->enable();
-		depth_sh->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
-		//depth_sh->disable();
-		gbuffers_fbo.depth_texture->toViewport(depth_sh);
-
-		//Volver a poner el tamaño de VPort. 0,0 en una textura esta abajo iz!
-		glViewport(0, 0, width, height);
-	}
-
-
-
-
-
+	seeGbuffers(width, height, camera);//------------------------------------------------------------------????why there
 }
 
 //renders all the prefab

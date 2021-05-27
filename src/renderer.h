@@ -64,7 +64,6 @@ namespace GTR {
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
 
-		
 		bool show_gbuffers;
 
 		eRenderMode render_mode;
@@ -95,6 +94,10 @@ namespace GTR {
 		
 
 		void renderForward(GTR::Scene* scene, std::vector<RenderCall>& rendercalls, Camera* camera);
+
+		void createGbuffers(int width, int height, std::vector<RenderCall>& rendercalls, Camera* camera);
+
+		void seeGbuffers(int width, int height, Camera* camera);
 
 		void renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera);
 
