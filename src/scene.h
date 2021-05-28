@@ -5,7 +5,7 @@
 #include "camera.h"
 #include <string>
 #include "shader.h"
-
+#include "fbo.h"
 
 
 //forward declaration
@@ -80,6 +80,7 @@ namespace GTR {
 		
 		float spot_exp;
 		float spot_cutoff;
+		FBO* shadow_fbo;
 		Camera light_camera;
 
 		//FBO* shadow_fbo;

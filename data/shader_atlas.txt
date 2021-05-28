@@ -200,7 +200,7 @@ vec4 get_uvs( vec2 v_uv)
 vec4 get_occlusion( vec2 v_uv, sampler2D u_metallic_roughness_texture, sampler2D u_occlusion_texture)
 {
 	float oc_fac = texture( u_occlusion_texture, v_uv ).x;
-	float mr_fac = texture( u_metallic_roughness_texture , v_uv).x ; // also we can use .r
+	float mr_fac = texture( u_metallic_roughness_texture , v_uv).x ; 
 	oc_fac *= mr_fac;
 	return vec4( oc_fac, oc_fac, oc_fac, 1.0 ); 
 }
@@ -690,7 +690,7 @@ void main()
 	if( color.a < 0.9 && floor(mod(gl_FragCoord.x,2.0)) != floor(mod(gl_FragCoord.y,2.0)) ) //// mirar
 		discard;
 
-	//-----read each textures---
+	//-----save each textures to each buffers---
 	color *= texture( u_color_texture, uv );
 	vec3 emissive = u_emissive_factor * texture(u_emissive_texture, uv ).xyz ;
 	vec4 normal = get_normal( v_normal,  v_world_position, v_uv, u_normal_texture);
@@ -776,7 +776,7 @@ void main()
 	float metalness = albedo.a;
 	float roughness = normal.a;
 	float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-	light +=  u_ambient_light * extra.a;
+	light +=  u_ambient_light;  //* extra.a;
 	
 	if( u_light_type == 0){ // directional
 
@@ -787,7 +787,7 @@ void main()
 	}
 
 	color.xyz *= light;
-	color.xyz += extra.xyz; //emissive light
+	//color.xyz += extra.xyz; //emissive light
 	FragColor = vec4(color, 1.0 ) ;
 	
 }

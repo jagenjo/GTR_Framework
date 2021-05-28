@@ -321,6 +321,7 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 
 	
 
+
 		case SDLK_g: renderer->show_gbuffers = !renderer->show_gbuffers; break;
 
 	}

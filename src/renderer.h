@@ -104,7 +104,9 @@ namespace GTR {
 		//to render lights in the scene 
 		void renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::Material* material);
 
-		void render2depthbuffer(GTR::Material* material, Camera* camera);
+		void render2depthbuffer(GTR::Material* material, Camera* camera, std::vector<RenderCall>& rendercalls);
+
+		
 	};
 
 	Texture* CubemapFromHDRE(const char* filename);

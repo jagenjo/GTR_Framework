@@ -197,16 +197,19 @@ void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCal
 
 void GTR::Renderer::seeGbuffers(int width, int height, Camera* camera) {
 
+
 	//to plot just alpha component
 	//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
 	if (!this->show_gbuffers)
 		return;
 
-	//int width = Application::instance->window_width;
-	//int height = Application::instance->window_height;
+	//remember to disable ztest when rendering quads
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
 
 	//GB0 color
-	glViewport(0, 0, width * 0.5, height * 0.5);
+	glViewport(0, 0, width * 0.5, height * 0.5); //set area of the screen and render fullscreen quad
 	gbuffers_fbo.color_textures[0]->toViewport();
 
 	//GB1 normal
@@ -239,12 +242,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	int height = Application::instance->window_height;
 
 	createGbuffers(width, height, rendercalls, camera);
-	
-
-	//desactivo los flags
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
-
 	
 	//---------Ilumination_Pass--------------
 		
@@ -431,9 +428,9 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 		return;
     assert(glGetError() == GL_NO_ERROR);
 
-	//flag para deffered en materiales con transparencias.
+	//flag para deffered en materiales con transparencias.//----------------------------------------------
 	if (mode == GBUFFERS && material->alpha_mode == GTR::eAlphaMode::BLEND)
-		return; // luego cambiar con reticula..., usar disering??
+		return; // luego cambiar con  usar diphering--------------------------------------------------
 
 	//define locals to simplify coding
 	Shader* shader = NULL;
@@ -464,7 +461,6 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	if (n_texture == NULL)
 		n_texture = Texture::getWhiteTexture();
 
-
 	//select if render both sides of the triangles
 	if(material->two_sided)
 		glDisable(GL_CULL_FACE); 
@@ -494,10 +490,9 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	}
 	else if (mode == SHOW_UVS) {
 		shader = Shader::Get("sh2debug");
-		shader->enable();
+		shader->enable();///---------------------------------------------
 		shader->setUniform("u_texture_type", 2);
 	}
-	
 	else if (mode == GBUFFERS) 
 		shader = Shader::Get("gbuffers");
 	
@@ -540,16 +535,11 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	if (material->alpha_mode == GTR::eAlphaMode::BLEND)
 	{
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 	}
 	else
 		glDisable(GL_BLEND);
 	
-	/*if (mode != GTR::eRenderMode::SINGLE || mode != GTR::eRenderMode::MULTI) {
-		mesh->render(GL_TRIANGLES);
-		std::cout << "Hello World!";
-		return; 
-	}*/
 	
 	if (mode == GTR::eRenderMode::SINGLE || mode == GTR::eRenderMode::MULTI) {
 		
@@ -666,10 +656,14 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 
 }
 
+/*
 
-void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera) {
+void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera, std::vector<RenderCall>& rendercalls) {
+	
+	int width = Application::instance->window_width;
+	//int height = Application::instance->window_height;
 
-	/*LightEntity* light;
+	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); ++i)
 	{
 		if (this->light_entities[i]->light_type == SPOT) {
@@ -680,10 +674,11 @@ void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera) {
 	//first time we create the FBO
 	if (!light->shadow_fbo)
 	{
-		
+		//we create FBO
 		FBO* fbo = new FBO();
+		
 		light->shadow_fbo = fbo;
-		light->shadow_fbo->setDepthOnly(1024, 1024);
+		light->shadow_fbo->setDepthOnly(width, width); // only create a depth texture
 	}
 
 	//enable it to render inside the texture
@@ -697,8 +692,11 @@ void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera) {
 
 	//whatever we render here will be stored inside a texture, we don't need to do anything fanzy
 	
-	renderPriority(this->rc_data_list, camera);
-
+	for (int i = 0; i < rendercalls.size(); i++)//render all
+	{
+		RenderCall& rc = rendercalls[i];
+		renderMeshWithMaterial(eRenderMode::MULTI, rc.model, rc.mesh, rc.material, camera); //always in gbuffer mode
+	}
 
 	if (material->alpha_mode == BLEND)
 	{
@@ -711,9 +709,16 @@ void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera) {
 	//allow to render back to the color buffer
 	glColorMask(true, true, true, true);
 	
-	*/
+	//color textures are inside this var
+	//light->fbo->color_textures[0];
+
+	//and the depth texture inside this one
+	light->shadow_fbo->depth_texture;
+
+
 }
 
+*/
 
 Texture* GTR::CubemapFromHDRE(const char* filename)
 {
