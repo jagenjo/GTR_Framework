@@ -203,10 +203,6 @@ void GTR::Renderer::seeGbuffers(int width, int height, Camera* camera) {
 	if (!this->show_gbuffers)
 		return;
 
-	//remember to disable ztest when rendering quads
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
-
 
 	//GB0 color
 	glViewport(0, 0, width * 0.5, height * 0.5); //set area of the screen and render fullscreen quad
@@ -243,6 +239,12 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 	createGbuffers(width, height, rendercalls, camera);
 	
+
+	//desactivo los flags
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+
+
 	//---------Ilumination_Pass--------------
 		
 	if (illumination_fbo.fbo_id == 0) {
@@ -258,7 +260,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	}
 
 	//clone the depth buffer content to the other depth buffer so they contain the same
-	// therefore, we can have the contain in the scene deth and block writing it to avoid any modification while render
+	//therefore, we can have the contain in the scene deth and block writing it to avoid any modification while render
 	//this->gbuffers_fbo.depth_texture->copyTo(illumination_fbo.depth_texture);
 	//glDepthMask(false); //now we can block writing to it	
 
@@ -296,8 +298,8 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 			quad->render(GL_TRIANGLES);
 			
 			//in case there are more than one directional light:
-			glEnable(GL_BLEND);
 			//glDepthFunc(GL_LEQUAL);//---------------------------------------------------------------------------------
+			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE);
 			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
 		}
@@ -312,8 +314,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//we can use a sphere mesh for point lights
 	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", false, false);
 
-	//glDisable(GL_CULL_FACE); 
-	
+	glDisable(GL_CULL_FACE); 
+	//glDisable(GL_DEPTH_TEST);
+
 	//this deferred_ws shader uses the basic.vs instead of quad.vs
 	shader = Shader::Get("deferred_ws");
 
@@ -350,7 +353,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		
 		//glEnable(GL_BLEND);
 
-		//only pixels behind a surface are rendered //only draw if the pixel is behind (therefore we avoid to compute lights floating in the air)
+		//only pixels behind a surface are rendered //only draw if the pixel is behind 
 		// we solve this during the depth test stage, meaning before execte .fs
 		//glEnable(GL_DEPTH_TEST);//----------------------------------------------------------------???????????????????????
 		glDepthFunc(GL_GREATER);

@@ -776,7 +776,7 @@ void main()
 	float metalness = albedo.a;
 	float roughness = normal.a;
 	float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-	light +=  u_ambient_light;  //* extra.a;
+	light +=  u_ambient_light * extra.a;
 	
 	if( u_light_type == 0){ // directional
 
@@ -787,7 +787,7 @@ void main()
 	}
 
 	color.xyz *= light;
-	//color.xyz += extra.xyz; //emissive light
+	color.xyz += extra.xyz; //emissive light
 	FragColor = vec4(color, 1.0 ) ;
 	
 }
