@@ -18,18 +18,26 @@ using namespace GTR;
 GTR::Renderer::Renderer()
 {
 	this->render_mode = eRenderMode::MULTI;
-	this->rendering_shadowmap = TRUE;
+	//this->rendering_shadowmap = TRUE;
 	this->pipeline_mode = ePipelineMode::DEFERRED;
+	
+	this->update_shadowmaps = false;
+
+	this->color_buffer = new Texture(Application::instance->window_width, Application::instance->window_height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
+	this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
 	this->show_gbuffers = false;
 
-	color_buffer = new Texture(Application::instance->window_width, Application::instance->window_height);
-	this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
-	
+	this->show_ao = false;
+	this->ao_buffer = NULL;
 }
 
 // render in texture
 void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
+	
+	
 	renderScene(scene, camera);
+
+	//fbo.color_textures[0]->toViewport();
 	//drawGrid();
 	//fbo.bind();
 	//drawGrid(); Cuando tengo que dibujar el grid??? no es al final de renderizar todo? 
@@ -38,6 +46,14 @@ void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
 
 	//color_buffer->toViewport();
 
+	if (this->show_ao && ao_buffer)
+		ao_buffer->toViewport();
+
+	int width = Application::instance->window_width;
+	int height = Application::instance->window_height;
+
+	if (this->show_gbuffers)
+		showGbuffers(width, height, camera); // hay que pasar la camara y w , h...
 	
 }
 
@@ -195,14 +211,13 @@ void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCal
 
 }
 
-void GTR::Renderer::seeGbuffers(int width, int height, Camera* camera) {
+void GTR::Renderer::showGbuffers(int width, int height, Camera* camera) {
 
 
 	//to plot just alpha component
 	//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
-	if (!this->show_gbuffers)
-		return;
-
+	//if (!this->show_gbuffers)
+	//	return;
 
 	//GB0 color
 	glViewport(0, 0, width * 0.5, height * 0.5); //set area of the screen and render fullscreen quad
@@ -238,11 +253,20 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	int height = Application::instance->window_height;
 
 	createGbuffers(width, height, rendercalls, camera);
-	
+	//-----End gbuffers pass
 
-	//desactivo los flags
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_BLEND);
+	// si existe ya la textura pero el tamaño de la textura no es el mismo que el anterior, que te la tire el de anterior y te cree uno nueva -> por resize de las ventas...
+	//!!!!
+
+	if (!ao_buffer) {
+		//GL_LUMINANCE -> los dos guardan 1 canal, pero este represemta la iluminancia total. 
+		//GL_RED tamb solo 1 canal pero puede representar verde o azul... 
+		// los dos guardan 1 byte
+		// si es red, desde la shader lee y pone solo red, mientras otro los 3 canales por el igual
+		ao_buffer = new Texture(width, height, GL_RGB, GL_UNSIGNED_BYTE); // solo usamos un canal
+		// goal-> guardar inf si un pixel esta mas oscurecido o menos...
+	}
+	ssao.applyEffect(gbuffers_fbo.depth_texture, gbuffers_fbo.color_textures[GTR::eChannels::NORMAL], camera, ao_buffer);
 
 
 	//---------Ilumination_Pass--------------
@@ -276,16 +300,23 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	Mesh* quad = Mesh::getQuad(); 
 	Shader* shader = Shader::Get("deferred");
 	shader->enable();
-	shader->setTexture("u_color_texture", gbuffers_fbo.color_textures[0], 0);
-	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], 1);
-	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], 2);
-	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, 3);
+	shader->setTexture("u_color_texture", gbuffers_fbo.color_textures[0], GTR::eChannels::ALBEDO);
+	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], GTR::eChannels::NORMAL);
+	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], GTR::eChannels::EMISSIVE);
+	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, GTR::eChannels::DEPTH);
 	shader->setUniform("u_ambient_light", scene->ambient_light);
+	
 	shader->setUniform("u_camera_position", camera->eye);
 
 	Matrix44 inv_vp = camera->viewprojection_matrix;
 	inv_vp.inverse();
+	Vector2 iRes = Vector2(1.0 / (float)width, 1.0 / (float)height);
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
+	shader->setUniform("u_iRes", iRes );
+
+	//disable depth and blend
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
 
 	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); i++)
@@ -316,20 +347,20 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 	glDisable(GL_CULL_FACE); 
 	//glDisable(GL_DEPTH_TEST);
-
+	//glEnable(GL_DEPTH_TEST);
 	//this deferred_ws shader uses the basic.vs instead of quad.vs
 	shader = Shader::Get("deferred_ws");
 
 	shader->enable();
-	shader->setTexture("u_color_texture", gbuffers_fbo.color_textures[0], 0);
-	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], 1);
-	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], 2);
-	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, 3);
+	shader->setTexture("u_color_texture", gbuffers_fbo.color_textures[0], GTR::eChannels::ALBEDO);
+	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], GTR::eChannels::NORMAL);
+	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], GTR::eChannels::EMISSIVE);
+	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, GTR::eChannels::DEPTH);
 	
 	//basic.vs will need the model and the viewproj of the camera
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
-	shader->setUniform("u_iRes", Vector2(1.0 / (float)width, 1.0 / (float)height));
+	shader->setUniform("u_iRes", iRes);
 	shader->setUniform("u_camera_position", camera->eye );
 
 	Matrix44 m; Vector3 pos; 
@@ -366,12 +397,13 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//set to back //be sure blending is not active
 	glFrontFace(GL_CCW);
 	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
 	//and render the texture into the screen
 	illumination_fbo.color_textures[0]->toViewport();
 
 
-	seeGbuffers(width, height, camera);//------------------------------------------------------------------????why there
+	//showGbuffers(width, height, camera);//------------------------------------------------------------------????why there
 }
 
 //renders all the prefab
@@ -742,4 +774,81 @@ Texture* GTR::CubemapFromHDRE(const char* filename)
 	return NULL;
 }
 
+//---Screen Space Ambient Occlusion
 
+//genera puntos equidistances sobre la esfera
+std::vector<Vector3> generateSpherePoints(int num, float radius, bool hemi)
+{
+	std::vector<Vector3> points;
+	points.resize(num);
+	for (int i = 0; i < num; i += 3)
+	{
+		Vector3& p = points[i];
+		float u = random();
+		float v = random();
+		float theta = u * 2.0 * PI;
+		float phi = acos(2.0 * v - 1.0);
+		//float r = cbrt(random()) * radius;
+		float r = radius;
+		float sinTheta = sin(theta);
+		float cosTheta = cos(theta);
+		float sinPhi = sin(phi);
+		float cosPhi = cos(phi);
+		p.x = r * sinPhi * cosTheta;
+		p.y = r * sinPhi * sinTheta;
+		p.z = r * cosPhi;
+		if (hemi && p.z < 0)
+			p.z *= -1.0;
+	}
+	return points;
+}
+
+SSAOFX::SSAOFX() {
+	this->intensity = 1.0;
+	random_points = generateSpherePoints(64, 1.0, false);
+
+}
+
+void SSAOFX::applyEffect(Texture* Zbuffer, Texture* normal_buffer, Camera* camera, Texture* outputOcc) {
+
+	int width = Application::instance->window_width;
+	int height = Application::instance->window_height;
+
+	FBO* ssao_fbo = Texture::getGlobalFBO(outputOcc);
+	//start rendering inside the ssao texture
+	ssao_fbo->bind();
+
+	glClearColor(0, 0, 0, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	checkGLErrors();
+
+	Mesh* quad = Mesh::getQuad();
+	glDisable(GL_DEPTH_TEST); //pintar quad desactivas los flags...
+	glDisable(GL_BLEND);
+
+	//get the shader for SSAO (remember to create it using the atlas)
+	Shader* shader = Shader::Get("ssao");
+	shader->enable();
+	//send random points so we can fetch around
+	shader->setUniform3Array("u_points", random_points[0].v, random_points.size()); // numero de vectores que hay 
+
+	shader->setTexture("u_normal_texture", normal_buffer, GTR::eChannels::NORMAL);
+	shader->setTexture("u_depth_texture", Zbuffer, GTR::eChannels::DEPTH);
+	
+	//send info to reconstruct the world position nd iRes (pixel size) to center the samples
+	//we will need the viewprojection to obtain the uv in the depthtexture of any random position of our world
+	
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
+	Matrix44 invp = camera->viewprojection_matrix;
+	invp.inverse();
+	shader->setUniform("u_inverse_viewprojection", invp);
+
+	shader->setUniform("u_iRes", Vector2(1.0 / (float)Zbuffer->width, 1.0 / (float)Zbuffer->height));
+	 
+	//render fullscreen quad
+	quad->render(GL_TRIANGLES);
+
+	ssao_fbo->unbind();
+
+
+}

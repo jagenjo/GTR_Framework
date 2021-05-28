@@ -27,6 +27,15 @@ namespace GTR {
 	class Prefab;
 	class Material;
 	
+	class SSAOFX{
+	public:
+		float intensity;
+		std::vector<Vector3> random_points;
+		//ctor
+		SSAOFX();
+		void applyEffect(Texture* Zbuffer, Texture* normal_buffer, Camera* camera, Texture* outputOcc );
+	
+	};
 
 	struct RenderCall 
 	{
@@ -57,18 +66,21 @@ namespace GTR {
 		int max_num_lights;
 		std::vector<LightEntity* > light_entities;
 
-		Texture* color_buffer;
-				
+		SSAOFX ssao;
 
 		FBO fbo;
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
-
 		bool show_gbuffers;
+
+		Texture* color_buffer;
+		Texture* ao_buffer;
+		bool show_ao;
 
 		eRenderMode render_mode;
 		ePipelineMode pipeline_mode;
 
+		bool update_shadowmaps;
 		bool rendering_shadowmap;
 		
 		//ctor
@@ -97,7 +109,7 @@ namespace GTR {
 
 		void createGbuffers(int width, int height, std::vector<RenderCall>& rendercalls, Camera* camera);
 
-		void seeGbuffers(int width, int height, Camera* camera);
+		void showGbuffers(int width, int height, Camera* camera);
 
 		void renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera);
 
@@ -110,6 +122,7 @@ namespace GTR {
 	};
 
 	Texture* CubemapFromHDRE(const char* filename);
+
 
 
 };

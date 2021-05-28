@@ -14,6 +14,7 @@ showAlpha quad.vs showAlpha.fs // es de 2D-> quad. muestra solo el 4º component
 deferred quad.vs deferred.fs
 deferred_ws basic.vs deferred_ws.fs
 
+ssao quad.vs ssao.fs 
 
 // ----------------------GET PARAMETERS-----------------------------
 \get_parm_from_vs
@@ -273,12 +274,12 @@ vec3 specularBRDF( float roughness, float f0, float NoH, float NoV, float NoL, f
 	return vec3(spec);
 }
 
-/*
-struct matStruct {
-    vec3 light,	
-} materialOfDiffSpec;
-materialOfDiffSpec = matStruct(vec4(0.1, 0.1, 0.1, 1.0),vec4(1.0, 0.0, 0.0, 1.0),vec4(0.7, 0.7, 0.7, 1.0),50.0);
-*/
+
+// struct matStruct {
+//    vec3 light,	
+// } materialOfDiffSpec;
+// materialOfDiffSpec = matStruct(vec4(0.1, 0.1, 0.1, 1.0),vec4(1.0, 0.0, 0.0, 1.0),vec4(0.7, 0.7, 0.7, 1.0),50.0);
+//
 
 
 vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position, vec3 u_camera_position, vec3 N, float metalness, float roughness, vec3 color, float NoL , float att_factor){
@@ -292,17 +293,13 @@ vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position,
 
 	//compute fresnel factor
 	float fresnel = 1.0 - max( dot(N,V), 0.0 );
-
-
 	//make it less linear...
 	fresnel = pow( fresnel, 2.0 );
 
 	//vec3 Fr_d = specularBRDF( roughness, fresnel,  NoH,  NoV,  NoL,  LoH );
-
 	//------------------------------------------------------------------------------------------
 	//we compute the reflection in base to the color and the metalness
 	//vec3 f0 = mix( vec3(0.5), color.xyz, metalness ) ; // es un lerp, lineal interpolation
-
 
 	//metallic materials do not have diffuse. They are inv prop
 	vec3 diffuseColor = (1.0 - metalness) * color.xyz;
@@ -326,6 +323,7 @@ vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position,
 
 	//modulate direct light by light received
 	return direct * lightParams; 
+
 }
 
 
@@ -729,8 +727,7 @@ void main()
 
 #version 330 core
 
-in vec2 v_uv;
-
+//in vec2 v_uv;
 uniform vec3 u_camera_position;
 uniform mat4 u_inverse_viewprojection;
 uniform vec3 u_ambient_light;
@@ -747,8 +744,8 @@ layout(location=0) out vec4 FragColor;
 void main()
 {
 	// we can extract uvs from pixel screenpos
-	// vec2 uv = gl_FragCoord.xy * u_iRes.xy ;
-	vec2 uv = v_uv ;
+	vec2 uv = gl_FragCoord.xy * u_iRes.xy ;
+	//vec2 uv = v_uv ;
 
 	//-----read each textures from gbuffers---
 	vec4 albedo = texture(u_color_texture, uv);
@@ -862,48 +859,83 @@ void main()
 	
 }
 
-//--------------------------------------------------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------------------
 
-\gettt
-//-------------GAMMA CONVERTION FUNCTIONS----------
+\ssao.fs
 
-vec3 degamma(vec3 c){
-	return pow(c,vec3(2)); // we use a integer instead of 2.2
-	
+#version 330 core
+
+in vec2 v_uv;
+
+uniform vec2 u_iRes;
+uniform vec3 u_camera_position;
+uniform mat4 u_viewprojection;
+uniform mat4 u_inverse_viewprojection;
+uniform sampler2D u_depth_texture;
+uniform sampler2D u_normal_texture;
+
+#define MAX_POINTS 64 
+uniform vec3 u_points[MAX_POINTS];
+
+out vec4 FragColor;
+
+void main()
+{
+	//we want to center the sample in the center of the pixel
+	vec2 uv = v_uv + u_iRes * 0.5;
+
+	//read depth from depth buffer
+	float depth = texture( u_depth_texture, uv ).x;
+
+	//ignore pixels in the background
+	if(depth >= 1.0)
+	{
+		FragColor = vec4(1.0); //_--------------------------------------mirar para el de arriba
+		return;
+	}
+
+	//create screenpos with the right depth
+	vec4 screen_position = vec4(uv*2.0 - vec2(1.0), depth*2.0 - 1.0,1.0);
+
+	//reproject
+	vec4 proj_worldpos = u_inverse_viewprojection * screen_position;
+	vec3 worldpos = proj_worldpos.xyz / proj_worldpos.w;
+
+	//lets use 64 samples
+	const int samples = MAX_POINTS;
+	int num = samples; //num samples that passed the are outside
+
+	//for every sample around the point
+	for( int i = 0; i < samples; ++i )
+	{
+		//compute is world position using the random
+		vec3 p = worldpos + u_points[i] * 10.0; // este 10 es el radio y lo podemos poner fuera
+
+		//find the uv in the depth buffer of this point
+		vec4 proj = u_viewprojection * vec4(p, 1.0); 
+		proj.xy /= proj.w; //convert to clipspace from homogeneous
+
+		//apply a tiny bias to its z before converting to clip-space
+		proj.z = (proj.z - 0.005) / proj.w;
+		proj.xyz = proj.xyz * 0.5 + vec3(0.5); //to [0..1]
+
+		//read p true depth
+		float pdepth = texture( u_depth_texture, proj.xy ).x;
+
+		//compare true depth with its depth
+		if( pdepth < proj.z ) //if true depth smaller, is inside
+			num--; //remove this point from the list of visible
+			//Acumular cuantos pixeles que estaban detras que esta tapando y los quito...
+
+	}
+
+	//finally, compute the AO factor as the ratio of visible points
+	float ao = float(num) / float(samples);
+
+	FragColor = vec4( ao ); // occure coherencia temporal, no debe cambiar entre frames siguientes...
+
+	//FragColor = vec4( worldpos * 0.01, 1.0); ///  1:17:00 min !!!:
 }
-
-vec3 gamma(vec3 c){
-	return pow(c,vec3(1.0/2));
-}
-	
-	
-
-	
-
-
-
-
-
-/-------------------------------------------------------------------------------------------------
-
-/*
-//compute reflected eye vector
-vec3 R = reflect(N,V);
-
-//compute how aligned is the eye with R
-float RdotV = max( dot(R,V), 0.0 );
-
-//make it less linear using a glossiness factor
-float specular = pow( RdotV, glosiness_factor );
-
-//add it to the final light contribution
-light += light_color * specular * spec_factor;
-
-
-*/
-
-
-
 // -------------------------------------------------------------------------------------------------------------------------
 
 \multi.fs
