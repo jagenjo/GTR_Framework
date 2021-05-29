@@ -16,6 +16,7 @@ deferred_ws basic.vs deferred_ws.fs
 
 ssao quad.vs ssao.fs 
 
+
 // ----------------------GET PARAMETERS-----------------------------
 \get_parm_from_vs
 
@@ -732,6 +733,8 @@ uniform vec3 u_camera_position;
 uniform mat4 u_inverse_viewprojection;
 uniform vec3 u_ambient_light;
 uniform vec2 u_iRes;
+uniform sampler2D u_ao_texture;
+uniform bool u_ao_show;
 
 #include "get_textures_uniforms"
 #include "get_textures_functions"
@@ -752,6 +755,10 @@ void main()
 	vec4 normal = texture(u_normal_texture, uv);
 	vec4 extra = texture(u_extra_texture, uv);
 	vec4 depth = texture(u_depth_texture, uv);
+	
+	//ignore pixels in the background
+	if(depth.x >= 1.0)
+		discard;
 
 	//normals mush be converted from 0..1 to -1..+1
 	vec3 N = normalize( normal.xyz * 2.0 - 1.0 ); 
@@ -762,9 +769,6 @@ void main()
 	vec4 proj_worldpos = u_inverse_viewprojection * screen_pos;
 	vec3 world_position = proj_worldpos.xyz / proj_worldpos.w ;
 
-	if( screen_pos.z == 1.0)  //discard background ilumination pixels
-		discard;
-
 	vec3 light;
 	vec3 color;
 	color = albedo.xyz; 
@@ -773,7 +777,16 @@ void main()
 	float metalness = albedo.a;
 	float roughness = normal.a;
 	float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-	light +=  u_ambient_light * extra.a;
+	
+	float ao_factor = 1.0;
+	if( u_ao_show ){
+		//ao_factor = 0.0;
+		ao_factor = texture(u_ao_texture, uv).x ;
+		//we could play with the curve to have more control
+		ao_factor = pow( ao_factor, 1.0 );
+	}
+
+	light +=  u_ambient_light * extra.a * ao_factor;
 	
 	if( u_light_type == 0){ // directional
 
@@ -817,6 +830,11 @@ void main()
 	vec4 normal = texture(u_normal_texture, uv);
 	vec4 extra = texture(u_extra_texture, uv);
 	vec4 depth = texture(u_depth_texture, uv);
+	
+	//ignore pixels in the background
+	if(depth.x >= 1.0)
+		discard;
+	
 
 	//normals mush be converted from 0..1 to -1..+1
 	vec3 N = normalize( normal.xyz * 2.0 - 1.0 ); 
@@ -827,8 +845,7 @@ void main()
 	vec4 proj_worldpos = u_inverse_viewprojection * screen_pos;
 	vec3 world_position = proj_worldpos.xyz / proj_worldpos.w ;
 
-	if( screen_pos.z == 1.0)  
-		discard;
+
 
 	vec3 light;
 	vec3 color;
@@ -873,11 +890,12 @@ uniform mat4 u_viewprojection;
 uniform mat4 u_inverse_viewprojection;
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_normal_texture;
+#include get_functions_utils
 
-#define MAX_POINTS 64 
+#define MAX_POINTS 256 
 uniform vec3 u_points[MAX_POINTS];
 
-out vec4 FragColor;
+out vec4 FragColor;;
 
 void main()
 {
@@ -890,7 +908,7 @@ void main()
 	//ignore pixels in the background
 	if(depth >= 1.0)
 	{
-		FragColor = vec4(1.0); //_--------------------------------------mirar para el de arriba
+		FragColor = vec4(1.0); 
 		return;
 	}
 
@@ -901,18 +919,29 @@ void main()
 	vec4 proj_worldpos = u_inverse_viewprojection * screen_position;
 	vec3 worldpos = proj_worldpos.xyz / proj_worldpos.w;
 
+	vec3 normal = texture(u_normal_texture, uv ).xyz ;
+
+	//to create the matrix33 to convert from tangent to world
+	mat3 rotmat = cotangent_frame( normal, worldpos, v_uv );
+
 	//lets use 64 samples
 	const int samples = MAX_POINTS;
 	int num = samples; //num samples that passed the are outside
-
+	
+	vec3 rotated_point;
 	//for every sample around the point
+	float pdepth;
+	vec4 proj ;
 	for( int i = 0; i < samples; ++i )
 	{
+		//rotate a point is easy
+		rotated_point = rotmat * u_points[i];
+
 		//compute is world position using the random
-		vec3 p = worldpos + u_points[i] * 10.0; // este 10 es el radio y lo podemos poner fuera
+		vec3 point = worldpos + rotated_point * 10.0; // este 10 es el radio y lo podemos poner fuera
 
 		//find the uv in the depth buffer of this point
-		vec4 proj = u_viewprojection * vec4(p, 1.0); 
+		proj = u_viewprojection * vec4(point, 1.0); 
 		proj.xy /= proj.w; //convert to clipspace from homogeneous
 
 		//apply a tiny bias to its z before converting to clip-space
@@ -920,13 +949,14 @@ void main()
 		proj.xyz = proj.xyz * 0.5 + vec3(0.5); //to [0..1]
 
 		//read p true depth
-		float pdepth = texture( u_depth_texture, proj.xy ).x;
+		pdepth = texture( u_depth_texture, proj.xy ).x;
 
 		//compare true depth with its depth
-		if( pdepth < proj.z ) //if true depth smaller, is inside
+		if( pdepth < proj.z  ) //if true depth smaller, is inside
+
+			//podemos añadir, si el punto esta detras, a demas esta muy lejos, mejor no tenerlo en cuenta 
 			num--; //remove this point from the list of visible
 			//Acumular cuantos pixeles que estaban detras que esta tapando y los quito...
-
 	}
 
 	//finally, compute the AO factor as the ratio of visible points
@@ -934,7 +964,7 @@ void main()
 
 	FragColor = vec4( ao ); // occure coherencia temporal, no debe cambiar entre frames siguientes...
 
-	//FragColor = vec4( worldpos * 0.01, 1.0); ///  1:17:00 min !!!:
+	//FragColor = vec4( worldpos * 0.01, 1.0); ///
 }
 // -------------------------------------------------------------------------------------------------------------------------
 

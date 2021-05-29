@@ -9,7 +9,7 @@ GTR::Scene* GTR::Scene::instance = NULL;
 GTR::Scene::Scene()
 {
 	instance = this;
-	
+	this->max_dist_ao = 0;
 }
 
 void GTR::Scene::clear()

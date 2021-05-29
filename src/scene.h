@@ -106,6 +106,7 @@ namespace GTR {
 		static Scene* instance;
 		Vector3 background_color;
 		Vector3 ambient_light;
+		float max_dist_ao;
 		Camera main_camera;
 
 		Scene();

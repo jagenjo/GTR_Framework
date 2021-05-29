@@ -309,7 +309,7 @@ void Application::renderDebugGUI(void)
 	ImGui::Checkbox("UPDATE_SHADOWMAPS", &renderer->update_shadowmaps);
 	ImGui::Checkbox("SHOW_GBUFFERS", &renderer->show_gbuffers);
 	ImGui::Checkbox("SHOW_AO", &renderer->show_ao);
-
+	ImGui::Checkbox("SHOW_AO_DEFERRED", &renderer->show_ao_deferred);
 	
 
 	//add info to the debug panel about the camera
@@ -373,6 +373,7 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 
 		case SDLK_g: renderer->show_gbuffers = !renderer->show_gbuffers; break;
 		case SDLK_v: renderer->show_ao = !renderer->show_ao; break;
+		case SDLK_c: renderer->show_ao_deferred = !renderer->show_ao_deferred; break;
 
 	}
 

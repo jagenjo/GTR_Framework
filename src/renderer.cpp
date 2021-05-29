@@ -18,7 +18,7 @@ using namespace GTR;
 GTR::Renderer::Renderer()
 {
 	this->render_mode = eRenderMode::MULTI;
-	//this->rendering_shadowmap = TRUE;
+	//this->rendering_shadowmap = true;
 	this->pipeline_mode = ePipelineMode::DEFERRED;
 	
 	this->update_shadowmaps = false;
@@ -28,6 +28,7 @@ GTR::Renderer::Renderer()
 	this->show_gbuffers = false;
 
 	this->show_ao = false;
+	this->show_ao_deferred = false;
 	this->ao_buffer = NULL;
 }
 
@@ -81,7 +82,8 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 	//sort each rcs after rendering one pass of all the scene
 	std::sort(this->rc_data_list.begin(), this->rc_data_list.end(), sortRC());
 
-	
+	// hacer comprobacionees de nodo con alpha... si tiene alpha forward,,,
+
 	if (pipeline_mode == FORWARD) 
 		renderForward(scene, this->rc_data_list, camera);
 		
@@ -263,8 +265,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		//GL_RED tamb solo 1 canal pero puede representar verde o azul... 
 		// los dos guardan 1 byte
 		// si es red, desde la shader lee y pone solo red, mientras otro los 3 canales por el igual
-		ao_buffer = new Texture(width, height, GL_RGB, GL_UNSIGNED_BYTE); // solo usamos un canal
+		ao_buffer = new Texture(width * 0.5, height* 0.5, GL_RED, GL_UNSIGNED_BYTE); // solo usamos un canal
 		// goal-> guardar inf si un pixel esta mas oscurecido o menos...
+		// reducimos la resolucion de AO funcionara igual de bien
 	}
 	ssao.applyEffect(gbuffers_fbo.depth_texture, gbuffers_fbo.color_textures[GTR::eChannels::NORMAL], camera, ao_buffer);
 
@@ -305,7 +308,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], GTR::eChannels::EMISSIVE);
 	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, GTR::eChannels::DEPTH);
 	shader->setUniform("u_ambient_light", scene->ambient_light);
+	shader->setTexture("u_ao_texture", ao_buffer, GTR::eChannels::OCCLUSION);
 	
+	shader->setUniform("u_ao_show", show_ao_deferred);
 	shader->setUniform("u_camera_position", camera->eye);
 
 	Matrix44 inv_vp = camera->viewprojection_matrix;
@@ -805,7 +810,7 @@ std::vector<Vector3> generateSpherePoints(int num, float radius, bool hemi)
 
 SSAOFX::SSAOFX() {
 	this->intensity = 1.0;
-	random_points = generateSpherePoints(64, 1.0, false);
+	random_points = generateSpherePoints(64*4, 1.0, true);
 
 }
 
@@ -817,6 +822,11 @@ void SSAOFX::applyEffect(Texture* Zbuffer, Texture* normal_buffer, Camera* camer
 	FBO* ssao_fbo = Texture::getGlobalFBO(outputOcc);
 	//start rendering inside the ssao texture
 	ssao_fbo->bind();
+
+	//disable using mipmaps
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//enable bilinear filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

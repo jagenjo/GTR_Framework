@@ -76,6 +76,7 @@ namespace GTR {
 		Texture* color_buffer;
 		Texture* ao_buffer;
 		bool show_ao;
+		bool show_ao_deferred;
 
 		eRenderMode render_mode;
 		ePipelineMode pipeline_mode;
