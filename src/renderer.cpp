@@ -13,6 +13,7 @@
 #include "framework.h"
 #include "application.h"
 
+
 using namespace GTR;
 
 GTR::Renderer::Renderer()
@@ -153,6 +154,7 @@ void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& r
 		renderMeshWithMaterial(this->render_mode, rc.model, rc.mesh, rc.material, camera);
 	}
 
+
 }
 
 void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCall>& rendercalls, Camera* camera) {
@@ -207,6 +209,7 @@ void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCal
 		RenderCall& rc = rendercalls[i]; 
 		renderMeshWithMaterial(eRenderMode::GBUFFERS, rc.model, rc.mesh, rc.material, camera); //always in gbuffer mode
 	}
+	
 
 	//stop rendering to the gbuffers
 	gbuffers_fbo.unbind();
@@ -249,6 +252,8 @@ void GTR::Renderer::showGbuffers(int width, int height, Camera* camera) {
 
 }
 
+
+
 void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera)
 {
 	int width = Application::instance->window_width;
@@ -265,7 +270,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		//GL_RED tamb solo 1 canal pero puede representar verde o azul... 
 		// los dos guardan 1 byte
 		// si es red, desde la shader lee y pone solo red, mientras otro los 3 canales por el igual
-		ao_buffer = new Texture(width * 0.5, height* 0.5, GL_RGB, GL_UNSIGNED_BYTE); // solo usamos un canal
+		ao_buffer = new Texture(width * 0.5, height* 0.5, GL_RED, GL_UNSIGNED_BYTE); // solo usamos un canal
 		// goal-> guardar inf si un pixel esta mas oscurecido o menos...
 		// reducimos la resolucion de AO funcionara igual de bien
 	}
@@ -307,7 +312,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], GTR::eChannels::NORMAL);
 	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], GTR::eChannels::EMISSIVE);
 	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, GTR::eChannels::DEPTH);
-	shader->setUniform("u_ambient_light", scene->ambient_light);
+	shader->setUniform("u_ambient_light", degamma(scene->ambient_light));
 	shader->setTexture("u_ao_texture", ao_buffer, GTR::eChannels::OCCLUSION);
 	
 	shader->setUniform("u_ao_show", show_ao_deferred);
@@ -399,16 +404,21 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//stop rendering to the fbo, render to screen
 	illumination_fbo.unbind();
 
+
 	//set to back //be sure blending is not active
 	glFrontFace(GL_CCW);
 	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
+
+	//glDepthFunc(GL_LESS);
 	//and render the texture into the screen
-	illumination_fbo.color_textures[0]->toViewport();
+	//illumination_fbo.color_textures[0]->toViewport(); // aqui es cuando lo volvemos pasar a gamma usando un shader que aplica la gamma conversion
 
+	shader = Shader::Get("applygamma");
+	shader->enable();
+	shader->setTexture("u_texture", illumination_fbo.color_textures[0], 9); /////////change the number-----------------------------------------------------
+	quad->render(GL_TRIANGLES);
 
-	//showGbuffers(width, height, camera);//------------------------------------------------------------------????why there
 }
 
 //renders all the prefab
@@ -535,6 +545,7 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	}
 	else if (mode == GBUFFERS) 
 		shader = Shader::Get("gbuffers");
+
 	
 
 	if (!shader)//no shader? then nothing to render
@@ -542,9 +553,14 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 
 	shader->enable();
 
+	/*if (mode == GBUFFERS && this->ao_buffer) {
+		shader->setTexture("u_ao_texture", this->ao_buffer, GTR::eChannels::OCCLUSION);
+	}*/
+
+
 	assert(glGetError() == GL_NO_ERROR);
 
-	//upload uniforms
+	
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model );
@@ -569,7 +585,7 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	shader->setUniform("u_alpha_cutoff", material->alpha_mode == GTR::eAlphaMode::MASK ? material->alpha_cutoff : 0);
 
 	glDepthFunc(GL_LEQUAL); //paints the pixels if it is LESS OR EQUAL of Zdepth
-	shader->setUniform("u_ambient_light", scene->ambient_light);//? ...
+	shader->setUniform("u_ambient_light", degamma(scene->ambient_light));//_---------------------------------
 
 	//select the blending. Solo para las luces.
 	if (material->alpha_mode == GTR::eAlphaMode::BLEND)
@@ -635,6 +651,8 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 
 		glDisable(GL_BLEND);
 		glDepthFunc(GL_LESS);
+
+
 		
 		return; //we put return, to go out when it finish!
 	} // flag of multipass

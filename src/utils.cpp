@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <cmath>
 
 #ifdef WIN32
 	#include <windows.h>
@@ -561,4 +562,36 @@ Vector4 readJSONVector4(cJSON* obj, const char* name)
 			return Vector4(dst[0], dst[1], dst[2], dst[3]);
 	}
 	return Vector4();
+}
+
+Vector3& degamma(Vector3& color) { //podemos retornar referencias desde las funciones// y el usuario puede elegir si lo quiere como ref o copia
+
+	// pregunar a Alex, usar pow o usar mult...
+	//return color.x * color.x usar la mult
+
+
+	/* mirar las texturas cuales son las que tenemos que pasar a gamma y cuales nop
+			//dentro del shader pasarlas a linear
+
+			//aplicar la gamma al final
+			//single pass -> aplicar gamma en el final del shader, mientras para multi, al final de cpu
+
+			// gamma-> color def por el usario, light color, material color-> en cpu
+			// en cpu , color_texture -> pasar a gamma, luego en shader -> linear? ...-> como gamma
+
+	*/
+
+	Vector3 degamma = color;
+	//return degamma *= color;
+	degamma.dot(color);
+	return degamma;
+	//return color *= color;
+
+}
+
+Vector3& gamma(Vector3& color) {
+
+	Vector3 gamma = color;
+	return gamma.sqrt(color);
+
 }

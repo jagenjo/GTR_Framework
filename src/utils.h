@@ -62,6 +62,11 @@ bool readJSONVector(cJSON* obj, const char* name, std::vector<float>& dst);
 Vector3 readJSONVector3(cJSON* obj, const char* name, Vector3 default_value);
 Vector4 readJSONVector4(cJSON* obj, const char* name);
 
+//convertion of gamma or linear space:
+
+Vector3& degamma(Vector3& color);
+Vector3& gamma(Vector3& color);
+
 #endif
 
 

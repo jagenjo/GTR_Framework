@@ -74,12 +74,12 @@ Vector2 operator - (const Vector2& a, const Vector2& b) { return Vector2(a.x - b
 
 double Vector3::length() 
 {
-	return sqrt(x*x + y*y + z*z);
+	return std::sqrt(x*x + y*y + z*z); ////
 }
 
 double Vector3::length() const
 {
-	return sqrt(x*x + y*y + z*z);
+	return std::sqrt(x*x + y*y + z*z); ////
 }
 
 Vector3& Vector3::normalize()
@@ -106,6 +106,12 @@ float Vector3::dot( const Vector3& v ) const
 {
 	return x*v.x + y*v.y + z*v.z;
 }
+
+Vector3 Vector3::sqrt(const Vector3& v) const
+{
+	return Vector3( std::sqrt(v.x), std::sqrt(v.y), std::sqrt(v.z));
+}
+
 
 void Vector3::random(float range)
 {
