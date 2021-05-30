@@ -220,7 +220,7 @@ vec4 get_metallic_roughness( vec2 v_uv, sampler2D u_metallic_roughness_texture )
 #define PI 0.3183098861837697
 
 // Normal Distribution Function using GGX Distribution
-float D_GGX ( const in float NoH, const in float linearRoughness )
+float D_GGX ( const  float NoH, const  float linearRoughness )
 {
 	float a2 = linearRoughness * linearRoughness;
 	float f = (NoH * NoH) * (a2 - 1.0) + 1.0;
@@ -228,7 +228,7 @@ float D_GGX ( const in float NoH, const in float linearRoughness )
 }
 
 // Fresnel term with scalar optimization(f90=1)
-float F_Schlick( const in float VoH, const in float f0)
+float F_Schlick( const float VoH, const float f0)
 {
 	float f = pow(1.0 - VoH, 5.0);
 	return f0 + (1.0 - f0) * f;
@@ -236,7 +236,7 @@ float F_Schlick( const in float VoH, const in float f0)
 
 /*
 // Fresnel term with colorized fresnel
-vec3 F_Schlick( const in float VoH, const in vec3 f0)
+vec3 F_Schlick( const  float VoH, const  vec3 f0)
 {
 	float f = pow(1.0 - VoH, 5.0);
 	return f0 + (vec3(1.0) - f0) * f;
@@ -890,8 +890,9 @@ uniform mat4 u_viewprojection;
 uniform mat4 u_inverse_viewprojection;
 uniform sampler2D u_depth_texture;
 uniform sampler2D u_normal_texture;
-#include get_functions_utils
+uniform vec2 u_camera_nearfar;
 
+#include get_functions_utils
 #define MAX_POINTS 256 
 uniform vec3 u_points[MAX_POINTS];
 
@@ -932,6 +933,11 @@ void main()
 	//for every sample around the point
 	float pdepth;
 	vec4 proj ;
+	float n = u_camera_nearfar.x;
+	float f = u_camera_nearfar.y;
+	float z_old;
+	float z_new;
+	float z_diff;
 	for( int i = 0; i < samples; ++i )
 	{
 		//rotate a point is easy
@@ -951,8 +957,14 @@ void main()
 		//read p true depth
 		pdepth = texture( u_depth_texture, proj.xy ).x;
 
+		// linealizar la depth 
+		
+		z_old = n * (pdepth + 1.0) / (f + n - pdepth * (f - n));
+		z_new = n * (proj.z + 1.0) / (f + n - proj.z * (f - n));
+		z_diff = z_new - z_old;
+																		//--- poner la distancia max / dist_far etc...
 		//compare true depth with its depth
-		if( pdepth < proj.z  ) //if true depth smaller, is inside
+		if( z_old < z_new && z_diff > 0.001) //if true depth smaller, is inside
 
 			//podemos añadir, si el punto esta detras, a demas esta muy lejos, mejor no tenerlo en cuenta 
 			num--; //remove this point from the list of visible
@@ -966,6 +978,8 @@ void main()
 
 	//FragColor = vec4( worldpos * 0.01, 1.0); ///
 }
+
+
 // -------------------------------------------------------------------------------------------------------------------------
 
 \multi.fs
@@ -1014,7 +1028,7 @@ void main()
 {
 	float n = u_camera_nearfar.x;
 	float f = u_camera_nearfar.y;
-	float z = texture2D(u_texture,v_uv).x;
+	float z = texture(u_texture,v_uv).x;
 	float color = n * (z + 1.0) / (f + n - z * (f - n));
 	FragColor = vec4(color);
 }

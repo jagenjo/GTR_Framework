@@ -265,7 +265,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		//GL_RED tamb solo 1 canal pero puede representar verde o azul... 
 		// los dos guardan 1 byte
 		// si es red, desde la shader lee y pone solo red, mientras otro los 3 canales por el igual
-		ao_buffer = new Texture(width * 0.5, height* 0.5, GL_RED, GL_UNSIGNED_BYTE); // solo usamos un canal
+		ao_buffer = new Texture(width * 0.5, height* 0.5, GL_RGB, GL_UNSIGNED_BYTE); // solo usamos un canal
 		// goal-> guardar inf si un pixel esta mas oscurecido o menos...
 		// reducimos la resolucion de AO funcionara igual de bien
 	}
@@ -367,7 +367,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
 	shader->setUniform("u_iRes", iRes);
 	shader->setUniform("u_camera_position", camera->eye );
-
+	//glEnable(GL_DEPTH_TEST);
 	Matrix44 m; Vector3 pos; 
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
@@ -854,7 +854,7 @@ void SSAOFX::applyEffect(Texture* Zbuffer, Texture* normal_buffer, Camera* camer
 	shader->setUniform("u_inverse_viewprojection", invp);
 
 	shader->setUniform("u_iRes", Vector2(1.0 / (float)Zbuffer->width, 1.0 / (float)Zbuffer->height));
-	 
+	shader->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
 	//render fullscreen quad
 	quad->render(GL_TRIANGLES);
 
