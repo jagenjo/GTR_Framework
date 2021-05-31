@@ -40,3 +40,6 @@
 *.tlog
 *.tlog
 *.tlog
+*.log
+*.pdb
+*.tlog

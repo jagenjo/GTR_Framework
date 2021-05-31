@@ -172,6 +172,7 @@
     <ClCompile Include="..\..\src\prefab.cpp" />
     <ClCompile Include="..\..\src\scene.cpp" />
     <ClCompile Include="..\..\src\shader.cpp" />
+    <ClCompile Include="..\..\src\sphericalharmonics.cpp" />
     <ClCompile Include="..\..\src\texture.cpp" />
     <ClCompile Include="..\..\src\utils.cpp" />
   </ItemGroup>
@@ -222,6 +223,7 @@
     <ClInclude Include="..\..\src\prefab.h" />
     <ClInclude Include="..\..\src\scene.h" />
     <ClInclude Include="..\..\src\shader.h" />
+    <ClInclude Include="..\..\src\sphericalharmonics.h" />
     <ClInclude Include="..\..\src\texture.h" />
     <ClInclude Include="..\..\src\utils.h" />
   </ItemGroup>
