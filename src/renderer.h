@@ -103,6 +103,8 @@ namespace GTR {
 		//to get node from the prefab and its children
 		void getRCsfromNode(const Matrix44& model, GTR::Node* node, Camera* camera);
 
+		void uploadTextures(Material* material, Shader* shader);
+
 		//to render one mesh given its material and transformation matrix
 		void renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera);
 

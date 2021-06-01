@@ -860,9 +860,7 @@ void main()
 	
 	float ao_factor = 1.0;
 	if( u_ao_show ){
-		//ao_factor = 0.0;
 		ao_factor = texture(u_ao_texture, uv).x ;
-		//we could play with the curve to have more control--------------------------------------------------------------!!!!!!
 		ao_factor = pow( ao_factor, 2.0 );
 	}
 

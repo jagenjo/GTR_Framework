@@ -218,8 +218,8 @@ int main(int argc, char **argv)
 	SDL_Init(SDL_INIT_EVERYTHING);
 
 	bool fullscreen = false; //change this to go fullscreen
-	Vector2 size(800, 768); //size(1024,768); //size(800, 500);//
-
+	//Vector2 size(800, 768); //size(1024,768); //size(800, 500);//
+	Vector2 size(400, 300);
 	if(fullscreen)
 		size = getDesktopSize(0);
 
@@ -229,7 +229,7 @@ int main(int argc, char **argv)
 		return 0;
 	int window_width, window_height;
 	SDL_GetWindowSize(window, &window_width, &window_height);
-	SDL_SetWindowPosition(window, 3000, 0);
+	//SDL_SetWindowPosition(window, 3000, 0);
 
 	// Setup Dear ImGui context
 	#ifndef SKIP_IMGUI
