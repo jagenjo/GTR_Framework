@@ -18,19 +18,25 @@ using namespace GTR;
 
 GTR::Renderer::Renderer()
 {
+	int width = Application::instance->window_width;
+	int height = Application::instance->window_height;
+
 	this->render_mode = eRenderMode::MULTI;
 	//this->rendering_shadowmap = true;
 	this->pipeline_mode = ePipelineMode::DEFERRED;
 	
 	this->update_shadowmaps = false;
 
-	this->color_buffer = new Texture(Application::instance->window_width, Application::instance->window_height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
+	this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
 	this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
 	this->show_gbuffers = false;
 
 	this->show_ao = false;
 	this->show_ao_deferred = false;
-	this->ao_buffer = NULL;
+		
+	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE);
+	
+	
 }
 
 // render in texture
@@ -116,7 +122,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera) {
 
 	//clear data_lists
-	this->rc_data_list.resize(0); //like .clear but keep the capacity, so there are fewer reallocations.
+	this->rc_data_list.resize(0); 
 	this->light_entities.resize(0);
 
 	//render entities
@@ -160,11 +166,11 @@ void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& r
 
 	if (apply_clear) {
 
-	//set the clear color (the background color)
-	glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0);
-	// Clear the color and the depth buffer
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	checkGLErrors();
+		//set the clear color (the background color)
+		glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0);
+		// Clear the color and the depth buffer
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		checkGLErrors();
 
 	}
 	//render RenderCalls through reference 
@@ -283,17 +289,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//-----End gbuffers pass
 
 	// si existe ya la textura pero el tamaño de la textura no es el mismo que el anterior, que te la tire el de anterior y te cree uno nueva -> por resize de las ventas...
-	//!!!!
 
-	if (!ao_buffer) {
-		//GL_LUMINANCE -> los dos guardan 1 canal, pero este represemta la iluminancia total. 
-		//GL_RED tamb solo 1 canal pero puede representar verde o azul... 
-		// los dos guardan 1 byte
-		// si es red, desde la shader lee y pone solo red, mientras otro los 3 canales por el igual
-		ao_buffer = new Texture(width * 0.5, height* 0.5, GL_RED, GL_UNSIGNED_BYTE); // solo usamos un canal
-		// goal-> guardar inf si un pixel esta mas oscurecido o menos...
-		// reducimos la resolucion de AO funcionara igual de bien
-	}
 	ssao.applyEffect(gbuffers_fbo.depth_texture, gbuffers_fbo.color_textures[GTR::eChannels::NORMAL], camera, ao_buffer);
 
 
@@ -423,10 +419,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	glFrontFace(GL_CCW);
 	glDisable(GL_BLEND);
 
-	//and render the texture into the screen
-	//illumination_fbo.color_textures[0]->toViewport(); // aqui es cuando lo volvemos pasar a gamma usando un shader que aplica la gamma conversion
-
-
+	
 }
 
 
@@ -489,20 +482,7 @@ void Renderer::getRCsfromNode(const Matrix44& prefab_model, GTR::Node* node, Cam
 	
 }
 
-
-//renders a mesh given its transform and material
-void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera)
-{
-	//in case there is nothing to do
-	if (!mesh || !mesh->getNumVertices() || !material )
-		return;
-    assert(glGetError() == GL_NO_ERROR);
-
-
-	//define locals to simplify coding
-	Shader* shader = NULL;
-	GTR::Scene* scene = GTR::Scene::instance;
-
+void Renderer::uploadTexture(GTR::Material* material, Shader* shader) {
 	//create and load texture 
 	Texture* texture = NULL;
 	Texture* em_texture = NULL;
@@ -527,6 +507,37 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 		oc_texture = Texture::getWhiteTexture();
 	if (n_texture == NULL)
 		n_texture = Texture::getWhiteTexture();
+
+	//upload textures
+	if (texture)
+		shader->setTexture("u_color_texture", texture, 0);
+	if (em_texture)
+		shader->setTexture("u_emissive_texture", em_texture, 1);
+	if (mr_texture)
+		shader->setTexture("u_metallic_roughness_texture", mr_texture, 2);
+	if (oc_texture)
+		shader->setTexture("u_occlusion_texture", oc_texture, 3);
+	if (n_texture)
+		shader->setTexture("u_normal_texture", n_texture, 4);
+
+
+}
+
+
+//renders a mesh given its transform and material
+void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera)
+{
+	//in case there is nothing to do
+	if (!mesh || !mesh->getNumVertices() || !material )
+		return;
+    assert(glGetError() == GL_NO_ERROR);
+
+
+	//define locals to simplify coding
+	Shader* shader = NULL;
+	GTR::Scene* scene = GTR::Scene::instance;
+
+	
 
 	//select if render both sides of the triangles
 	if(material->two_sided)
@@ -580,7 +591,7 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	/*if (mode == GBUFFERS && this->ao_buffer) {
 		shader->setTexture("u_ao_texture", this->ao_buffer, GTR::eChannels::OCCLUSION);
 	}*/
-
+	uploadTexture(material, shader);
 
 	assert(glGetError() == GL_NO_ERROR);
 
@@ -592,23 +603,10 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	shader->setUniform("u_emissive_factor", material->emissive_factor);
 	shader->setUniform("u_color", material->color);
 
-	//upload textures
-	if(texture)
-		shader->setTexture("u_color_texture", texture, 0);
-	if(em_texture)
-		shader->setTexture("u_emissive_texture", em_texture, 1);
-	if(mr_texture )
-		shader->setTexture("u_metallic_roughness_texture", mr_texture, 2);
-	if (oc_texture)
-		shader->setTexture("u_occlusion_texture", oc_texture, 3);
-	if (n_texture)
-		shader->setTexture("u_normal_texture", n_texture, 4);
-
-
+	
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
 	shader->setUniform("u_alpha_cutoff", material->alpha_mode == GTR::eAlphaMode::MASK ? material->alpha_cutoff : 0);
 
-	glDepthFunc(GL_LEQUAL); //paints the pixels if it is LESS OR EQUAL of Zdepth
 	shader->setUniform("u_ambient_light", scene->ambient_light);//_---------------------------------
 
 	//select the blending. Solo para las luces.
@@ -619,7 +617,7 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	}
 	else
 		glDisable(GL_BLEND);
-	
+	glDepthFunc(GL_LESS);
 	
 	if (mode == GTR::eRenderMode::SINGLE || mode == GTR::eRenderMode::MULTI) {
 		

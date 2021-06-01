@@ -332,8 +332,8 @@ vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position,
 
 vec3 degamma(vec3 c)
 {
-	return pow(c,vec3(2.2));
-	//return c*=c ;
+	//return pow(c,vec3(2.2));
+	return c*=c ;
 }
 
 vec3 gamma(vec3 c)
@@ -862,7 +862,7 @@ void main()
 	if( u_ao_show ){
 		//ao_factor = 0.0;
 		ao_factor = texture(u_ao_texture, uv).x ;
-		//we could play with the curve to have more control--------------------------------------------------------------!!!!!!
+		//we could play with the curve to have more control--------------------------------------!!!!!!
 		ao_factor = pow( ao_factor, 2.0 );
 	}
 
