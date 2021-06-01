@@ -360,6 +360,43 @@ vec3 linearToneMapping(vec3 color)
 	return color;
 }
 
+
+//----------------------Dithering functions-----------------------------
+
+\get_dithering_function
+
+float dither4x4(vec2 position, float brightness)
+{
+	//creamos un patron de 4x4, 16 possibles casos:	
+  int x = int(mod(position.x, 4.0));
+  int y = int(mod(position.y, 4.0));
+  int index = x + y * 4;
+  float limit = 0.0;
+
+  if (x < 8) {
+	  //y a partir del thr, indicamos que ese pixel se activa o no 
+    if (index == 0) limit = 0.0625;
+    if (index == 1) limit = 0.5625;
+    if (index == 2) limit = 0.1875;
+    if (index == 3) limit = 0.6875;
+    if (index == 4) limit = 0.8125;
+    if (index == 5) limit = 0.3125;
+    if (index == 6) limit = 0.9375;
+    if (index == 7) limit = 0.4375;
+    if (index == 8) limit = 0.25;
+    if (index == 9) limit = 0.75;
+    if (index == 10) limit = 0.125;
+    if (index == 11) limit = 0.625;
+    if (index == 12) limit = 1.0;
+    if (index == 13) limit = 0.5;
+    if (index == 14) limit = 0.875;
+    if (index == 15) limit = 0.375;
+  }
+
+  return brightness < limit ? 0.0 : 1.0;
+}
+
+
 // -------------------------------------------------------------------------------------------------------------------------
 \basic.vs
 
@@ -574,45 +611,34 @@ void main()
 //--------------------------------------------------------------------------------------------------------------------------
 
 
+
 \light_singlepass.fs
 
 #version 330 core
 
-uniform vec3 u_camera_position; 
 uniform vec4 u_color;
 uniform vec3 u_emissive_factor;
-
 uniform float u_alpha_cutoff;
 uniform vec3 u_ambient_light;
 
 const int MAX_LIGHTS = 8;
 uniform int u_num_lights;
-uniform int u_light_types[MAX_LIGHTS];
-uniform vec3 u_light_colors[MAX_LIGHTS];
-uniform vec3 u_light_positions[MAX_LIGHTS];
-uniform vec3 u_light_vectors[MAX_LIGHTS];
-uniform float u_light_intensitis[MAX_LIGHTS];
-uniform float u_light_maxdists[MAX_LIGHTS];
-uniform vec3 u_light_fronts[MAX_LIGHTS];
-uniform float u_light_spotExponents[MAX_LIGHTS];
-uniform float u_light_spotCosineCutoffs[MAX_LIGHTS];
+uniform int u_light_type[MAX_LIGHTS];
+uniform vec3 u_light_color[MAX_LIGHTS];
+uniform vec3 u_light_position[MAX_LIGHTS];
+uniform vec3 u_light_vector[MAX_LIGHTS];
+uniform float u_light_intensity[MAX_LIGHTS];
+uniform float u_light_maxdist[MAX_LIGHTS];
+uniform float u_light_spotExponent[MAX_LIGHTS];
+uniform float u_light_spotCosineCutoff[MAX_LIGHTS];
 
 
 #include "get_parm_from_vs"
-#include "get_lights_uniforms"
 #include "get_lights_functions"
 #include "get_textures_functions"
 #include "get_textures_uniforms"
 
-
 out vec4 FragColor;
-
-vec3 compute_light( vec3 N, vec3 L, vec3 light_color){
-
-	float NdotL = max( dot(N,L), 0.0 );
-	return NdotL * light_color;
-	
-}
 
 void main()
 {
@@ -630,33 +656,40 @@ void main()
 	vec4 normal = get_normal( v_normal,  v_world_position, v_uv, u_normal_texture);
 	vec3 N = normal.xyz ;
 	vec3 L;
-
-	for (int i=0; i< MAX_LIGHTS; ++i){
+	float NdotL;
+	float att_factor ;
+	
+	for (int i = 0; i < MAX_LIGHTS; ++i){
 
 		if( i < u_num_lights){
 			
-			if( u_light_types[i] == 0){ // directional
-				L = u_light_vectors[i];
-				light += compute_light( N, L , u_light_colors[i]) * u_light_intensitis[i] ;
+			
+			if( u_light_type[i] == 0){ // directional
+				L = normalize( -u_light_vector[i]) ;
+				NdotL = max( dot(N,L), 0.0) ;
+				att_factor =  compute_attfactor(  u_light_position[i] , v_world_position, u_light_maxdist[i] );
+				light += NdotL * att_factor * u_light_color[i] * u_light_intensity[i] ;
 			}
-			else{ // point or spot
+			if(u_light_type[i] == 1){ // point or spot
 		
-				L = normalize(u_light_positions[i] - v_world_position);
-				float att2 = attenuation_ranged( u_light_positions[i], v_world_position, u_light_maxdists[i]);
-				light += compute_light( N, L , u_light_colors[i]) * u_light_intensitis[i]* att2 ;
-
-				if (u_light_type == 2){
-
-					vec3 D = normalize( u_light_fronts[i]);
-					float DdotL = dot( D, -L);
-					if ( DdotL >= u_light_spotCosineCutoffs[i] ){
-						light += pow( DdotL , u_light_spotExponents[i] ) * u_light_intensitis[i] ; 
-					}
-					else{
-						light += vec3(0.0); // The light will add no color to the point.
-					}
-				}	
+				L = normalize(u_light_position[i] - v_world_position);
+				NdotL = max( dot(N,L), 0.0) ;
+				att_factor =  compute_attfactor(  u_light_position[i] , v_world_position, u_light_maxdist[i] );
+				light += NdotL * att_factor * u_light_color[i] * u_light_intensity[i] ;
 			}
+			if(u_light_type[i] == 2){
+				vec3 L_aux = normalize(u_light_position[i] - v_world_position);
+				float spotCosine = dot( normalize(u_light_vector[i]) , -L_aux );
+				spotCosine = max(spotCosine, 0.0);
+				if ( spotCosine >= u_light_spotCosineCutoff[i] ){
+					float spotFactor = pow( spotCosine , u_light_spotExponent[i] );
+					att_factor =  compute_attfactor(  u_light_position[i] , v_world_position, u_light_maxdist[i] );
+					light += NdotL * spotFactor * att_factor * u_light_color[i] * u_light_intensity[i] ;
+					 
+				}
+				
+			}
+			
 		}
 	}
 	
@@ -665,6 +698,8 @@ void main()
 
 	FragColor = color;
 }
+
+
 
 
 // -------------------------------------------------------------------------------------------------------------------------
@@ -705,10 +740,12 @@ uniform vec4 u_color;
 uniform vec3 u_emissive_factor;
 uniform float u_alpha_cutoff;
 //uniform sampler2D u_ao_texture;
+uniform bool u_use_dither;
 
 #include "get_textures_uniforms"
 #include "get_parm_from_vs"
 #include "get_textures_functions"
+#include "get_dithering_function"
 
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 NormalColor;
@@ -718,12 +755,17 @@ void main()
 {
 	vec2 uv = v_uv;
 	vec4 color = u_color;
+	color *= texture( u_color_texture, uv );///------------------------------
 
-	if(color.a < u_alpha_cutoff) 
-		discard;
 	//discard some pixels depending on the pixel screen position and its transparency
-	if( color.a < 0.9 && floor(mod(gl_FragCoord.x,2.0)) != floor(mod(gl_FragCoord.y,2.0)) ) //// mirar
+	if( color.a < 0.9 && floor(mod(gl_FragCoord.x,2.0)) != floor(mod(gl_FragCoord.y,2.0)) ) 
 		discard;
+
+	if(u_use_dither && color.a < 0.9 ){
+		float dither_factor = dither4x4( gl_FragCoord.xy , color.a );
+		if( dither_factor == 0.0 )
+			discard;
+	}
 
 	//-----save each textures to each buffers---
 	color *= texture( u_color_texture, uv );

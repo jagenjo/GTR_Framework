@@ -1,0 +1,19 @@
+1.NIA: 218352 y 206074
+2.Name: Suman Pan y Alexander Vera
+3.Mail: suman.pan01@estudiant.upf.edu 
+	alexanderjoel.vera01@estudiant.upf.edu
+
+4.Description of how to use the application (which keys, which options, etc):
+
+Differents modes:
+- KEY_t: show original texture of the scene
+- KEY_o: show lights with SINGLEPASS
+- KEY_p: show lights with MULTIPASS
+
+- KEY_m: show normal texture
+- KEY_n: show occlusion texture
+- KEY_b: show texture coordinate in texture
+
+- Key_g: show gbuffers
+- Key_v: show ao
+- Key_c: show deferred ao

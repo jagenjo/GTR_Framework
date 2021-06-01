@@ -39,14 +39,6 @@ void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
 	
 	renderScene(scene, camera);
 
-	//fbo.color_textures[0]->toViewport();
-	//drawGrid();
-	//fbo.bind();
-	//drawGrid(); Cuando tengo que dibujar el grid??? no es al final de renderizar todo? 
-
-	//fbo.unbind();
-
-	//color_buffer->toViewport();
 
 	if (this->show_ao && ao_buffer)
 		ao_buffer->toViewport();
@@ -339,7 +331,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 			quad->render(GL_TRIANGLES);
 			
 			//in case there are more than one directional light:
-			//glDepthFunc(GL_LEQUAL);//---------------------------------------------------------------------------------
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_ONE, GL_ONE);
 			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
@@ -347,8 +338,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		
 			
 	}
-	//glDepthFunc(GL_LESS);
-	//glDisable(GL_BLEND);
 
 	//---------Using geometry--------------
 	 
@@ -356,8 +345,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", false, false);
 
 	glDisable(GL_CULL_FACE); 
-	//glDisable(GL_DEPTH_TEST);
-	//glEnable(GL_DEPTH_TEST);
+	
 	//this deferred_ws shader uses the basic.vs instead of quad.vs
 	shader = Shader::Get("deferred_ws");
 
@@ -392,11 +380,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		glFrontFace(GL_CW);
 		sphere->render(GL_TRIANGLES);
 		
-		//glEnable(GL_BLEND);
 
 		//only pixels behind a surface are rendered //only draw if the pixel is behind 
 		// we solve this during the depth test stage, meaning before execte .fs
-		//glEnable(GL_DEPTH_TEST);//----------------------------------------------------------------???????????????????????
 		glDepthFunc(GL_GREATER);
 		glBlendFunc(GL_ONE, GL_ONE);
 	}
@@ -408,15 +394,13 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//set to back //be sure blending is not active
 	glFrontFace(GL_CCW);
 	glDisable(GL_BLEND);
-	glDisable(GL_DEPTH_TEST);
 
-	//glDepthFunc(GL_LESS);
 	//and render the texture into the screen
 	//illumination_fbo.color_textures[0]->toViewport(); // aqui es cuando lo volvemos pasar a gamma usando un shader que aplica la gamma conversion
 
 	shader = Shader::Get("applygamma");
 	shader->enable();
-	shader->setTexture("u_texture", illumination_fbo.color_textures[0], 9); /////////change the number-----------------------------------------------------
+	shader->setTexture("u_texture", illumination_fbo.color_textures[0], 9); 
 	quad->render(GL_TRIANGLES);
 
 }
@@ -478,9 +462,6 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 		return;
     assert(glGetError() == GL_NO_ERROR);
 
-	//flag para deffered en materiales con transparencias.//----------------------------------------------
-	if (mode == GBUFFERS && material->alpha_mode == GTR::eAlphaMode::BLEND)
-		return; // luego cambiar con  usar diphering--------------------------------------------------
 
 	//define locals to simplify coding
 	Shader* shader = NULL;
@@ -553,6 +534,13 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 
 	shader->enable();
 
+	bool use_dither = false;
+	//flag para deffered en materiales con transparencias.y
+	if (mode == GBUFFERS && material->alpha_mode == GTR::eAlphaMode::BLEND) {
+		shader->setUniform("u_use_dither", !use_dither);
+
+	}
+		
 	/*if (mode == GBUFFERS && this->ao_buffer) {
 		shader->setTexture("u_ao_texture", this->ao_buffer, GTR::eChannels::OCCLUSION);
 	}*/
