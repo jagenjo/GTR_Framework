@@ -95,6 +95,8 @@ namespace GTR {
 
 		void collectRenderCalls(GTR::Scene* scene, Camera* camera);
 	
+		
+
 		//to get a whole prefab (with all its nodes)
 		void getRCsfromPrefab(const Matrix44& model, GTR::Prefab* prefab, Camera* camera);
 
@@ -104,9 +106,7 @@ namespace GTR {
 		//to render one mesh given its material and transformation matrix
 		void renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera);
 
-		
-
-		void renderForward(GTR::Scene* scene, std::vector<RenderCall>& rendercalls, Camera* camera);
+		void renderForward(GTR::Scene* scene, std::vector<RenderCall>& rendercalls, Camera* camera, bool apply_clear);
 
 		void createGbuffers(int width, int height, std::vector<RenderCall>& rendercalls, Camera* camera);
 
@@ -119,7 +119,8 @@ namespace GTR {
 
 		void render2depthbuffer(GTR::Material* material, Camera* camera, std::vector<RenderCall>& rendercalls);
 
-		
+		void applyfinalHDR();
+
 	};
 
 	Texture* CubemapFromHDRE(const char* filename);

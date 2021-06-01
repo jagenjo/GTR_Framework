@@ -15,7 +15,7 @@ deferred quad.vs deferred.fs
 deferred_ws basic.vs deferred_ws.fs
 
 ssao quad.vs ssao.fs 
-applygamma quad.vs applygamma.fs
+applyHDRgamma quad.vs applyHDRgamma.fs
 
 
 // ----------------------GET PARAMETERS-----------------------------
@@ -560,8 +560,8 @@ void main()
 {
 	vec2 uv = v_uv;
 	//vec4 color = u_color;
-	vec3 color = degamma( u_color.xyz ); //------------------------------------------------------------------------------------------------------------------?????¿¿¿¿¿¿¿¿
-	color *= degamma( texture( u_color_texture, uv ).xyz ) ;
+	vec3 color = ( u_color.xyz ); //------------------------------------------------------------------------------
+	color *= ( texture( u_color_texture, uv ).xyz ) ;
 	
 	//if(color.a < u_alpha_cutoff) 
 	//	discard;
@@ -603,7 +603,7 @@ void main()
 		
 	}
 	color.xyz *= light;
-	color.xyz += u_emissive_factor * degamma( texture(u_emissive_texture, uv ).xyz );
+	color.xyz += u_emissive_factor * ( texture(u_emissive_texture, uv ).xyz );
 
 	FragColor = vec4(color, 1.0);
 }
@@ -963,7 +963,7 @@ void main()
 // -------------------------------------------------------------------------------------------------------------------------
 
 
-\applygamma.fs
+\applyHDRgamma.fs
 
 #version 330 core
 

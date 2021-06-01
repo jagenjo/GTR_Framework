@@ -77,11 +77,36 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 
 	// hacer comprobacionees de nodo con alpha... si tiene alpha forward,,,
 
-	if (pipeline_mode == FORWARD) 
-		renderForward(scene, this->rc_data_list, camera);
-		
-	else if (pipeline_mode == DEFERRED)
-		renderDeferred(scene, this->rc_data_list, camera);
+	int i = 0;
+	std::vector<RenderCall> rc_data_no_alpha;
+	std::vector<RenderCall> rc_data_alpha;
+	for (i; i < rc_data_list.size(); i++) {
+		if (rc_data_list[i].material->alpha_mode == GTR::eAlphaMode::BLEND)
+			break;
+		rc_data_no_alpha.push_back(rc_data_list[i]);
+	}
+	for (i; i < rc_data_list.size(); i++) {
+		rc_data_alpha.push_back(rc_data_list[i]);
+	}
+
+
+	if (pipeline_mode == FORWARD)
+		renderForward(scene, this->rc_data_list, camera, true);
+
+	else if (pipeline_mode == DEFERRED) {
+		renderDeferred(scene, rc_data_no_alpha, camera);
+		illumination_fbo.bind(); //TIENE DEPTH
+		this->gbuffers_fbo.depth_texture->copyTo(NULL);
+		glEnable(GL_DEPTH_TEST);
+		renderForward(scene, rc_data_alpha, camera, false);
+		glDisable(GL_DEPTH_TEST);
+
+		illumination_fbo.unbind();
+
+		//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
+		applyfinalHDR();
+
+	}
 
 	
 	
@@ -130,8 +155,10 @@ void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera) {
 }
 
 
-void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera)
+void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera, bool apply_clear)
 {
+
+	if (apply_clear) {
 
 	//set the clear color (the background color)
 	glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0);
@@ -139,6 +166,7 @@ void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& r
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	checkGLErrors();
 
+	}
 	//render RenderCalls through reference 
 	for (int i = 0; i < rendercalls.size(); i++)
 	{
@@ -398,12 +426,20 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	//and render the texture into the screen
 	//illumination_fbo.color_textures[0]->toViewport(); // aqui es cuando lo volvemos pasar a gamma usando un shader que aplica la gamma conversion
 
-	shader = Shader::Get("applygamma");
+
+}
+
+
+void Renderer::applyfinalHDR() {
+
+	Mesh* quad = Mesh::getQuad();
+	Shader* shader = Shader::Get("applyHDRgamma");
 	shader->enable();
-	shader->setTexture("u_texture", illumination_fbo.color_textures[0], 9); 
+	shader->setTexture("u_texture", illumination_fbo.color_textures[0], 9); /////////change the number-----------------------------------------------------
 	quad->render(GL_TRIANGLES);
 
 }
+
 
 //renders all the prefab
 void Renderer::getRCsfromPrefab(const Matrix44& model, GTR::Prefab* prefab, Camera* camera)
@@ -573,7 +609,7 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	shader->setUniform("u_alpha_cutoff", material->alpha_mode == GTR::eAlphaMode::MASK ? material->alpha_cutoff : 0);
 
 	glDepthFunc(GL_LEQUAL); //paints the pixels if it is LESS OR EQUAL of Zdepth
-	shader->setUniform("u_ambient_light", degamma(scene->ambient_light));//_---------------------------------
+	shader->setUniform("u_ambient_light", scene->ambient_light);//_---------------------------------
 
 	//select the blending. Solo para las luces.
 	if (material->alpha_mode == GTR::eAlphaMode::BLEND)
