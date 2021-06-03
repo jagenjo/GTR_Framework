@@ -43,6 +43,7 @@ float texelSolidAngle(float aU, float aV, float width, float height) {
 // give me a cubemap, its size and number of channels
 // and i'll give you spherical harmonics
 SphericalHarmonics computeSH( FloatImage images[], bool degamma ) {
+	assert(images[0].width == images[0].height && images[0].width != 0 && "Image is not square");
     int size = images[0].width;
     int channels = 3;
     SphericalHarmonics sh;

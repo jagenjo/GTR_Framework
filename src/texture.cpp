@@ -21,7 +21,6 @@
 #ifdef USE_SKIA
 
 #define SK_CPU_LENDIAN 1
-
 #include "skia/include/core/SkData.h"
 #include "skia/include/core/SkImage.h"
 #include "skia/include/codec/SkCodec.h"
@@ -522,6 +521,11 @@ void Texture::generateMipmaps()
 
 		glBindTexture(this->texture_type, texture_id );	//enable the id of the texture we are going to use
 		glTexParameteri(this->texture_type, GL_TEXTURE_MIN_FILTER, Texture::default_min_filter ); //set the mag filter
+		if (this->texture_type == GL_TEXTURE_CUBE_MAP)
+		{
+			glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); //set the mag filter
+			glTexParameteri(this->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); //set the mag filter
+		}
 		glGenerateMipmapEXT(this->texture_type);
 #else
 	glBindTexture(this->texture_type, texture_id);	//enable the id of the texture we are going to use
@@ -647,11 +651,7 @@ void Image::fromTexture(Texture* texture)
 	}
 	
 	texture->bind();
-#ifdef OPENGL_ES3
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-#else
-	assert(0&&"not supported");
-#endif
 }
 
 //TGA format from: http://www.paulbourke.net/dataformats/tga/
@@ -972,14 +972,9 @@ void FloatImage::fromTexture(Texture* texture)
 		height = texture->height;
 		data = new float[width * height * num_channels];
 	}
+
 	texture->bind();
-
-#ifdef OPENGL_ES3
 	glGetTexImage(GL_TEXTURE_2D, 0, num_channels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT, data);
-#else
-	assert(0&&"not supported");
-#endif
-
 }
 
 

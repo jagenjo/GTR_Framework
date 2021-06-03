@@ -1,6 +1,7 @@
 {
 	"background_color":[0.01,0.01,0.1],
 	"ambient_light":[0.1,0.1,0.2],
+	"environment":"night.hdre",
 	"camera_position":[-300,90,-150],
 	"camera_target":[0,40,0],
 	"camera_fov":60,
