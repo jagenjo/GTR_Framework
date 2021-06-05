@@ -17,6 +17,7 @@ deferred_ws basic.vs deferred_ws.fs
 ssao quad.vs ssao.fs 
 applyHDRgamma quad.vs applyHDRgamma.fs
 
+probe basic.vs probe.fs //basic ya q es una esfera que lo vamos a proyectar
 
 // ----------------------GET PARAMETERS-----------------------------
 \get_parm_from_vs
@@ -860,9 +861,7 @@ void main()
 	
 	float ao_factor = 1.0;
 	if( u_ao_show ){
-		//ao_factor = 0.0;
 		ao_factor = texture(u_ao_texture, uv).x ;
-		//we could play with the curve to have more control--------------------------------------!!!!!!
 		ao_factor = pow( ao_factor, 2.0 );
 	}
 
@@ -873,7 +872,7 @@ void main()
 		L = normalize(-u_light_vector);
 		float NoL = max( dot(N,L) , 0.0);
 		vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL , att_factor);
-		light += NoL * att_factor * u_light_color * u_light_intensity *  diffspecular_light;
+		light += NoL *  u_light_color * u_light_intensity *  diffspecular_light; //att_factor
 	}
 
 	color.xyz *= light;
@@ -1088,6 +1087,81 @@ void main()
 
 
 // -------------------------------------------------------------------------------------------------------------------------
+
+\get_SHs_functions
+
+const float Pi = 3.141592654;
+const float CosineA0 = Pi;
+const float CosineA1 = (2.0 * Pi) / 3.0;
+const float CosineA2 = Pi * 0.25;
+struct SH9 { float c[9]; }; //to store weights
+struct SH9Color { vec3 c[9]; }; //to store colors
+
+void SHCosineLobe(in vec3 dir, out SH9 sh) //SH9
+{
+	// Band 0
+	sh.c[0] = 0.282095 * CosineA0;
+	// Band 1
+	sh.c[1] = 0.488603 * dir.y * CosineA1; 
+	sh.c[2] = 0.488603 * dir.z * CosineA1;
+	sh.c[3] = 0.488603 * dir.x * CosineA1;
+	// Band 2
+	sh.c[4] = 1.092548 * dir.x * dir.y * CosineA2;
+	sh.c[5] = 1.092548 * dir.y * dir.z * CosineA2;
+	sh.c[6] = 0.315392 * (3.0 * dir.z * dir.z - 1.0) * CosineA2;
+	sh.c[7] = 1.092548 * dir.x * dir.z * CosineA2;
+	sh.c[8] = 0.546274 * (dir.x * dir.x - dir.y * dir.y) * CosineA2;
+}
+
+vec3 ComputeSHIrradiance(in vec3 normal, in SH9Color sh)
+{
+	// Compute the cosine lobe in SH, oriented about the normal direction
+	SH9 shCosine;
+	SHCosineLobe(normal, shCosine);
+	// Compute the SH dot product to get irradiance
+	vec3 irradiance = vec3(0.0);
+	for(int i = 0; i < 9; ++i)
+		irradiance += sh.c[i] * shCosine.c[i];
+
+	return irradiance;
+}
+
+
+
+
+\probe.fs
+
+#version 330 core
+
+in vec3 v_position;
+in vec3 v_world_position;
+in vec3 v_normal;
+#include "get_SHs_functions"
+uniform vec3 u_coeffs[9];
+
+out vec4 FragColor;
+
+void main()
+{
+	
+	vec3 N = normalize(v_normal);
+
+	SH9Color sh;
+	sh.c[0] = u_coeffs[0];
+	sh.c[1] = u_coeffs[1];
+	sh.c[2] = u_coeffs[2];
+	sh.c[3] = u_coeffs[3];
+	sh.c[4] = u_coeffs[4];
+	sh.c[5] = u_coeffs[5];
+	sh.c[6] = u_coeffs[6];
+	sh.c[7] = u_coeffs[7];
+	sh.c[8] = u_coeffs[8];
+
+	vec4 color = vec4( ComputeSHIrradiance( N, sh ) , 1.0);
+	
+	
+	FragColor = color;
+}
 
 
 

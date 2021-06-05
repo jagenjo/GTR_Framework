@@ -1,1 +1,79 @@
-﻿  visualstudio.vcxproj -> C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\framework.exe
+﻿  renderer.cpp
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON'
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(44,52): warning C4244: 'argumento': conversión de 'double' a 'unsigned int'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(44,38): warning C4244: 'argumento': conversión de 'double' a 'unsigned int'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(103,12): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(108,12): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(145,20): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(199,20): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(255,20): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(276,39): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(276,25): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(280,49): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(280,35): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(280,19): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,60): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,46): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,33): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,19): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(288,50): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(288,36): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(288,23): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(362,49): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(362,29): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(372,20): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(417,20): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(458,40): warning C4305: 'argumento': truncamiento de 'double' a 'float'
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(579,20): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(743,21): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(791,21): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(808,55): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(926,15): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(927,13): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(988,72): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(988,43): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+     Creando biblioteca ..\..\framework.lib y objeto ..\..\framework.exp
+LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
+  Generando código
+  2 of 4377 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    50 functions had inline decision re-evaluated but remain unchanged
+  Generación de código finalizada
+LINK : warning LNK4286: "___glewDeleteBuffers" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewLinkProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewDeleteShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGenBuffers" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGetProgramInfoLog" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewDetachShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewUniformMatrix4fv" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewBlendEquationSeparate" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGenVertexArrays" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewBlendEquation" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewShaderSource" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewDeleteProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewActiveTexture" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewAttachShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewBufferData" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGetUniformLocation" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewBlendFuncSeparate" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewDeleteVertexArrays" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGetProgramiv" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGetShaderInfoLog" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewUniform1i" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewCreateProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewBindBuffer" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewCreateShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGetAttribLocation" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewCompileShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewGetShaderiv" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewDrawElementsBaseVertex" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewVertexAttribPointer" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewUseProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewBindSampler" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewBindVertexArray" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+LINK : warning LNK4286: "___glewEnableVertexAttribArray" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
+gltf_loader.obj : warning LNK4099: no se encontró PDB 'vc142.pdb' con 'gltf_loader.obj' o en 'C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\vc142.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
+prefab.obj : warning LNK4099: no se encontró PDB 'vc142.pdb' con 'prefab.obj' o en 'C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\vc142.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
+glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB 'vc120.pdb' con 'glew32s.lib(glew.obj)' o en 'C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\vc120.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
+  visualstudio.vcxproj -> C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\framework.exe

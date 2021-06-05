@@ -9,12 +9,20 @@
 #include "utils.h"
 #include "scene.h"
 #include "extra/hdre.h"
+
 #include <random>
 #include "framework.h"
+
 #include "application.h"
+#include "sphericalharmonics.h"
+
+#include <algorithm>
+
 
 
 using namespace GTR;
+
+sProbe probe; //quitar 
 
 GTR::Renderer::Renderer()
 {
@@ -26,17 +34,23 @@ GTR::Renderer::Renderer()
 	this->pipeline_mode = ePipelineMode::DEFERRED;
 	
 	this->update_shadowmaps = false;
-
 	this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
 	this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
 	this->show_gbuffers = false;
 
 	this->show_ao = false;
 	this->show_ao_deferred = false;
-		
-	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE);
 	
+	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE); // solo usamos un canal
+
+
+	//------
+
+	memset(&probe, 0, sizeof(probe));
+	probe.sh.coeffs[0].set(1.0, 0.0, 0.0);
+	probe.pos.set(0, 1, 0);
 	
+	this->irr_fbo = NULL;
 }
 
 // render in texture
@@ -44,7 +58,6 @@ void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
 	
 	
 	renderScene(scene, camera);
-
 
 	if (this->show_ao && ao_buffer)
 		ao_buffer->toViewport();
@@ -79,8 +92,9 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 	
 	collectRenderCalls(scene, camera);
 	//sort each rcs after rendering one pass of all the scene
-	std::sort(this->rc_data_list.begin(), this->rc_data_list.end(), sortRC());
+	//std::sort(this->rc_data_list.begin(), this->rc_data_list.end(), sortRC());
 
+	
 	// hacer comprobacionees de nodo con alpha... si tiene alpha forward,,,
 
 	int i = 0;
@@ -100,7 +114,8 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		renderForward(scene, this->rc_data_list, camera, true);
 
 	else if (pipeline_mode == DEFERRED) {
-		renderDeferred(scene, rc_data_no_alpha, camera);
+		renderDeferred(scene, this->rc_data_list, camera);
+		/*
 		illumination_fbo.bind(); //TIENE DEPTH
 		this->gbuffers_fbo.depth_texture->copyTo(NULL);
 		glEnable(GL_DEPTH_TEST);
@@ -108,8 +123,9 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		glDisable(GL_DEPTH_TEST);
 
 		illumination_fbo.unbind();
-
+		*/
 		//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
+		
 		applyfinalHDR();
 
 	}
@@ -158,6 +174,13 @@ void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera) {
 
 		}
 	}
+
+	if (camera) {
+		//sort each rcs after rendering one pass of all the scene
+		std::sort(this->rc_data_list.begin(), this->rc_data_list.end(), sortRC());
+
+	}
+	
 }
 
 
@@ -165,7 +188,6 @@ void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& r
 {
 
 	if (apply_clear) {
-
 		//set the clear color (the background color)
 		glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0);
 		// Clear the color and the depth buffer
@@ -290,6 +312,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 	// si existe ya la textura pero el tamaño de la textura no es el mismo que el anterior, que te la tire el de anterior y te cree uno nueva -> por resize de las ventas...
 
+	
 	ssao.applyEffect(gbuffers_fbo.depth_texture, gbuffers_fbo.color_textures[GTR::eChannels::NORMAL], camera, ao_buffer);
 
 
@@ -344,6 +367,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
+
 	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
@@ -362,6 +386,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		
 			
 	}
+	//poner los flags ?
+	
+	//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
 
 	//---------Using geometry--------------
 	 
@@ -384,7 +411,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
 	shader->setUniform("u_iRes", iRes);
 	shader->setUniform("u_camera_position", camera->eye );
-	//glEnable(GL_DEPTH_TEST);
+	
 	Matrix44 m; Vector3 pos; 
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
@@ -411,15 +438,83 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		glBlendFunc(GL_ONE, GL_ONE);
 	}
 
-	//stop rendering to the fbo, render to screen
-	illumination_fbo.unbind();
-
-
-	//set to back //be sure blending is not active
 	glFrontFace(GL_CCW);
 	glDisable(GL_BLEND);
 
+
+	//stop rendering to the fbo, render to screen
+	illumination_fbo.unbind();
+
 	
+}
+
+void Renderer::extractProbe( GTR::Scene* scene, sProbe& p ) {//es una ref pq internamente se va a modificar
+	//vamos a necesitar un fbo, pq vamos a renderizarlo en un espacio separado, no pantalla
+	FloatImage images[6]; //here we will store the six views
+	Camera camera;
+
+	//set the fov to 90 and the aspect to 1
+	camera.setPerspective(90, 1, 0.1, 1000);
+
+	if (!irr_fbo) { //para crear las texturas y luego leerlas despues
+		irr_fbo = new FBO();
+		irr_fbo->create(64, 64, 1, GL_RGB, GL_FLOAT); //Creamos la textura 63x63pixeles, no necesitamos alpha, interesa que sea float para mantener reso. ilum.
+	}
+
+	collectRenderCalls(scene, NULL);//extraer todos los objetos sin camara
+
+	for (int i = 0; i < 6; ++i) //for every cubemap face
+	{
+		//compute camera orientation using defined vectors
+		Vector3 eye = p.pos;
+		Vector3 front = cubemapFaceNormals[i][2]; //vector hacia delante y hacia arriba...
+		Vector3 center = p.pos + front;
+		Vector3 up = cubemapFaceNormals[i][1];
+		camera.lookAt(eye, center, up);
+		camera.enable();
+
+		//render the scene from this point of view
+		irr_fbo->bind();
+		renderForward(scene, rc_data_list , &camera , true); //como solo tenemos un canal, los buffers de deferred tienen resolucion de la pantalla...
+		irr_fbo->unbind();
+
+		//read the pixels back and store in a FloatImage !!
+		images[i].fromTexture(irr_fbo->color_textures[0]); //leer de vuelta desde GPU a CPU
+	}
+
+	//compute the coefficients given the six images
+	bool gammaCorrection = false;
+	p.sh = computeSH(images, gammaCorrection);
+}
+
+void Renderer::uodateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
+	
+	//podemos poner en la posicion de la camara
+	extractProbe(scene, probe);
+}
+
+void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
+{
+	Camera* camera = Camera::current; // este current...
+	
+	Shader* shader = Shader::Get("probe");
+	Mesh* mesh = Mesh::Get("data/meshes/sphere.obj", false, false);
+
+	glEnable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+
+	Matrix44 model;
+	model.setTranslation(pos.x, pos.y, pos.z);
+	model.scale(size, size, size);
+
+	shader->enable();
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	shader->setUniform("u_camera_position", camera->eye);
+	shader->setUniform("u_model", model);
+	shader->setUniform3Array("u_coeffs", coeffs, 9); //vienen despues
+
+	mesh->render(GL_TRIANGLES);
 }
 
 
@@ -428,7 +523,7 @@ void Renderer::applyfinalHDR() {
 	Mesh* quad = Mesh::getQuad();
 	Shader* shader = Shader::Get("applyHDRgamma");
 	shader->enable();
-	shader->setTexture("u_texture", illumination_fbo.color_textures[0], 9); /////////change the number-----------------------------------------------------
+	shader->setTexture("u_texture", illumination_fbo.color_textures[0], 9); /////////change the number-----
 	quad->render(GL_TRIANGLES);
 
 }
@@ -462,14 +557,17 @@ void Renderer::getRCsfromNode(const Matrix44& prefab_model, GTR::Node* node, Cam
 		BoundingBox world_bounding = transformBoundingBox(node_model,node->mesh->box);
 		
 		//if bounding box is inside the camera frustum then the object is probably visible
-		if (camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize) )
+		if (!camera || camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize) )
 		{
 			//instance each rc
 			RenderCall rc;
 			rc.model = node_model;
 			rc.material = node->material;
 			rc.mesh = node->mesh;
-			rc.dist2camera = camera->eye.distance(world_bounding.center);
+			if (camera) {
+
+				rc.dist2camera = camera->eye.distance(world_bounding.center);
+			}
 			this->rc_data_list.push_back(rc);
 			
 			//node->mesh->renderBounding(node_model, true);
@@ -480,47 +578,6 @@ void Renderer::getRCsfromNode(const Matrix44& prefab_model, GTR::Node* node, Cam
 	for (int i = 0; i < node->children.size(); ++i)
 		getRCsfromNode(prefab_model, node->children[i], camera);
 	
-}
-
-void Renderer::uploadTexture(GTR::Material* material, Shader* shader) {
-	//create and load texture 
-	Texture* texture = NULL;
-	Texture* em_texture = NULL;
-	Texture* mr_texture = NULL;
-	Texture* oc_texture = NULL;
-	Texture* n_texture = NULL;
-
-	texture = material->color_texture.texture;
-	em_texture = material->emissive_texture.texture;
-	mr_texture = material->metallic_roughness_texture.texture;
-	oc_texture = material->occlusion_texture.texture;
-	n_texture = material->normal_texture.texture;
-
-
-	if (texture == NULL)
-		texture = Texture::getWhiteTexture(); //a 1x1 white texture
-	if (em_texture == NULL)
-		em_texture = Texture::getWhiteTexture();
-	if (mr_texture == NULL)
-		mr_texture = Texture::getWhiteTexture();
-	if (oc_texture == NULL)
-		oc_texture = Texture::getWhiteTexture();
-	if (n_texture == NULL)
-		n_texture = Texture::getWhiteTexture();
-
-	//upload textures
-	if (texture)
-		shader->setTexture("u_color_texture", texture, 0);
-	if (em_texture)
-		shader->setTexture("u_emissive_texture", em_texture, 1);
-	if (mr_texture)
-		shader->setTexture("u_metallic_roughness_texture", mr_texture, 2);
-	if (oc_texture)
-		shader->setTexture("u_occlusion_texture", oc_texture, 3);
-	if (n_texture)
-		shader->setTexture("u_normal_texture", n_texture, 4);
-
-
 }
 
 
@@ -536,8 +593,6 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	//define locals to simplify coding
 	Shader* shader = NULL;
 	GTR::Scene* scene = GTR::Scene::instance;
-
-	
 
 	//select if render both sides of the triangles
 	if(material->two_sided)
@@ -574,7 +629,6 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	else if (mode == GBUFFERS) 
 		shader = Shader::Get("gbuffers");
 
-	
 
 	if (!shader)//no shader? then nothing to render
 		return;
@@ -591,11 +645,10 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	/*if (mode == GBUFFERS && this->ao_buffer) {
 		shader->setTexture("u_ao_texture", this->ao_buffer, GTR::eChannels::OCCLUSION);
 	}*/
-	uploadTexture(material, shader);
+	
 
 	assert(glGetError() == GL_NO_ERROR);
 
-	
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model );
@@ -603,7 +656,8 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	shader->setUniform("u_emissive_factor", material->emissive_factor);
 	shader->setUniform("u_color", material->color);
 
-	
+	uploadTextures(material, shader);
+
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
 	shader->setUniform("u_alpha_cutoff", material->alpha_mode == GTR::eAlphaMode::MASK ? material->alpha_cutoff : 0);
 
@@ -617,8 +671,9 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	}
 	else
 		glDisable(GL_BLEND);
-	glDepthFunc(GL_LESS);
 	
+	glDepthFunc(GL_LESS);
+
 	if (mode == GTR::eRenderMode::SINGLE || mode == GTR::eRenderMode::MULTI) {
 		
 		renderlights(mode, shader, mesh, material);
@@ -635,6 +690,45 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	//set the render state as it was before to avoid problems with future renders
 	glDisable(GL_BLEND);
 
+}
+
+void Renderer::uploadTextures(Material* material, Shader* shader) {
+	//create and load texture 
+	Texture* texture = NULL;
+	Texture* em_texture = NULL;
+	Texture* mr_texture = NULL;
+	Texture* oc_texture = NULL;
+	Texture* n_texture = NULL;
+
+	texture = material->color_texture.texture;
+	em_texture = material->emissive_texture.texture;
+	mr_texture = material->metallic_roughness_texture.texture;
+	oc_texture = material->occlusion_texture.texture;
+	n_texture = material->normal_texture.texture;
+
+
+	if (texture == NULL)
+		texture = Texture::getWhiteTexture(); //a 1x1 white texture
+	if (em_texture == NULL)
+		em_texture = Texture::getWhiteTexture();
+	if (mr_texture == NULL)
+		mr_texture = Texture::getWhiteTexture();
+	if (oc_texture == NULL)
+		oc_texture = Texture::getWhiteTexture();
+	if (n_texture == NULL)
+		n_texture = Texture::getWhiteTexture();
+
+	//upload textures
+	if (texture)
+		shader->setTexture("u_color_texture", texture, 0);
+	if (em_texture)
+		shader->setTexture("u_emissive_texture", em_texture, 1);
+	if (mr_texture)
+		shader->setTexture("u_metallic_roughness_texture", mr_texture, 2);
+	if (oc_texture)
+		shader->setTexture("u_occlusion_texture", oc_texture, 3);
+	if (n_texture)
+		shader->setTexture("u_normal_texture", n_texture, 4);
 }
 
 
@@ -674,8 +768,6 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 		glDisable(GL_BLEND);
 		glDepthFunc(GL_LESS);
 
-
-		
 		return; //we put return, to go out when it finish!
 	} // flag of multipass
 	
@@ -729,7 +821,6 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 		shader->setUniform1Array("u_light_spot_cutoffs", (float*)&light_spot_cutoff, num_lights);
 		
 		mesh->render(GL_TRIANGLES);
-
 
 		return;
 	}

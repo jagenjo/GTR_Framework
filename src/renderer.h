@@ -2,6 +2,7 @@
 #include "prefab.h"
 #include "fbo.h"
 #include "application.h"
+#include "sphericalharmonics.h"
 
 //forward declarations
 class Camera;
@@ -37,6 +38,17 @@ namespace GTR {
 	
 	};
 
+	
+
+	//struct to store probes
+	struct sProbe {
+		Vector3 pos; //where is located
+		Vector3 local; //its ijk pos in the matrix
+		int index; //its index in the linear array
+		SphericalHarmonics sh; //coeffs
+	};
+
+
 	struct RenderCall 
 	{
 		Matrix44 model;
@@ -71,6 +83,7 @@ namespace GTR {
 		FBO fbo;
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
+		FBO* irr_fbo;
 		bool show_gbuffers;
 
 		Texture* color_buffer;
@@ -94,8 +107,6 @@ namespace GTR {
 		void renderScene(GTR::Scene* scene, Camera* camera);
 
 		void collectRenderCalls(GTR::Scene* scene, Camera* camera);
-	
-		
 
 		//to get a whole prefab (with all its nodes)
 		void getRCsfromPrefab(const Matrix44& model, GTR::Prefab* prefab, Camera* camera);
@@ -103,9 +114,8 @@ namespace GTR {
 		//to get node from the prefab and its children
 		void getRCsfromNode(const Matrix44& model, GTR::Node* node, Camera* camera);
 
-		void uploadTexture(GTR::Material* material, Shader* shader);
+		void uploadTextures(Material* material, Shader* shader);
 
-		
 		//to render one mesh given its material and transformation matrix
 		void renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Mesh* mesh, GTR::Material* material, Camera* camera);
 
@@ -121,6 +131,14 @@ namespace GTR {
 		void renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::Material* material);
 
 		void render2depthbuffer(GTR::Material* material, Camera* camera, std::vector<RenderCall>& rendercalls);
+
+		//----
+
+		void extractProbe(GTR::Scene* scene, sProbe& p);
+
+		void uodateIrradianceCache(GTR::Scene* scene);
+
+		void renderProbe(Vector3 pos, float size, float* coeffs);
 
 		void applyfinalHDR();
 

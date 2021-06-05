@@ -71,7 +71,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 
 	//This class will be the one in charge of rendering all 
-	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor!
+	//renderer = new GTR::Renderer(); //here so we have opengl ready in constructor!
 
 	//Example of loading a prefab
 	//prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
@@ -356,7 +356,13 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_F1: render_debug = !render_debug; break;
 		case SDLK_f: camera->center.set(0, 0, 0); camera->updateViewMatrix(); break;
 		case SDLK_F5: Shader::ReloadAll(); break;
-		case SDLK_F6: scene->clear(); scene->load(scene->filename.c_str()); selected_entity = NULL;  break;
+		case SDLK_F6: 
+			scene->clear(); 
+			scene->load(scene->filename.c_str());
+			selected_entity = NULL;  
+			camera->lookAt(scene->main_camera.eye, scene->main_camera.center, Vector3(0, 1, 0));
+			camera->fov = scene->main_camera.fov;
+			break;
 
 	
 		case SDLK_t: renderer->render_mode = GTR::eRenderMode::SHOW_TEXTURE; break;
@@ -368,12 +374,11 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_b: renderer->render_mode = GTR::eRenderMode::SHOW_UVS; break;
 
 		
-		
-
-
 		case SDLK_g: renderer->show_gbuffers = !renderer->show_gbuffers; break;
 		case SDLK_v: renderer->show_ao = !renderer->show_ao; break;
 		case SDLK_c: renderer->show_ao_deferred = !renderer->show_ao_deferred; break;
+
+		case SDLK_x: renderer->uodateIrradianceCache(scene); break;
 
 	}
 
