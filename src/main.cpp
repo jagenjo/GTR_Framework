@@ -27,7 +27,7 @@ SDL_GLContext glcontext;
 //create a window using SDL
 SDL_Window* createWindow(const char* caption, int width, int height, bool fullscreen = false)
 {
-    int multisample = 8;
+    int multisample = 0; //8; De momento a uno para que vaya mejor en los ordenadores de la uni
     bool retina = false; //change this to use a retina display
 
 	//set attributes

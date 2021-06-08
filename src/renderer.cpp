@@ -126,7 +126,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
 		
 		//applyfinalHDR();
-		renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
+		//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
 
 
 	}
@@ -366,7 +366,13 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
+	quad->render(GL_TRIANGLES);
+	
+	shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
+	
 	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
@@ -374,20 +380,18 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		//we assume that there is always at least one directional ///luego si da tiempo corregir para el caso de no directional light
 		if (light->light_type == DIRECTIONAL) {
 			light->uploadToShader(shader);
-		
+
 			quad->render(GL_TRIANGLES);
-			
+
 			//in case there are more than one directional light:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE);
-			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
+			//glEnable(GL_BLEND);
+			//glBlendFunc(GL_ONE, GL_ONE);
+			//light_entities.erase(i) 
 		}
-		
-			
 	}
-	
-	
-	
+	shader->disable();
+
+	/*
 	//---------Using geometry--------------
 	 
 	//we can use a sphere mesh for point lights
@@ -434,11 +438,11 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		glDepthFunc(GL_GREATER);
 		glBlendFunc(GL_ONE, GL_ONE);
 	}
-
+*/
 	glFrontFace(GL_CCW);
 	glDisable(GL_BLEND);
 
-
+	
 	//stop rendering to the fbo
 	illumination_fbo.unbind();
 	//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro

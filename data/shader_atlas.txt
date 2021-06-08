@@ -278,16 +278,10 @@ vec3 specularBRDF( float roughness, float f0, float NoH, float NoV, float NoL, f
 }
 
 
-// struct matStruct {
-//    vec3 light,	
-// } materialOfDiffSpec;
-// materialOfDiffSpec = matStruct(vec4(0.1, 0.1, 0.1, 1.0),vec4(1.0, 0.0, 0.0, 1.0),vec4(0.7, 0.7, 0.7, 1.0),50.0);
-//
-
 
 vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position, vec3 u_camera_position, vec3 N, float metalness, float roughness, vec3 color, float NoL ){
 	
-	vec3 V = normalize( u_light_position - u_camera_position);
+	vec3 V = normalize(  u_camera_position - u_light_position );
 	vec3 H = normalize( L + V );
 
 	float NoH = max( dot(H,V) , 0.0); //crear una funcion de NdotL?? y clamp?? 
@@ -299,22 +293,13 @@ vec3 get_diffspecular_light( vec3 L, vec3 u_light_vector, vec3 u_light_position,
 	//make it less linear...
 	fresnel = pow( fresnel, 2.0 );
 
-	//vec3 Fr_d = specularBRDF( roughness, fresnel,  NoH,  NoV,  NoL,  LoH );
-	//------------------------------------------------------------------------------------------
-	//we compute the reflection in base to the color and the metalness
-	//vec3 f0 = mix( vec3(0.5), color.xyz, metalness ) ; // es un lerp, lineal interpolation
-
 	//metallic materials do not have diffuse. They are inv prop
 	vec3 diffuseColor = (1.0 - metalness) * color.xyz;
-
 
 	//compute the specular //reflectand
 	vec3 Fr_d = specularBRDF( roughness, fresnel , NoH, NoV, NoL, LoH );
 
-
 	// Here we use the Burley, but you can replace it by the Lambert. Also, we can use NdotL
-	// linearRoughness = squared roughness
-	// vec3 Fd_d = diffuseColor * Fd_Burley(NoV,NoL,LoH,linearRoughness); 
 	vec3 Fd_d = diffuseColor * NoL; 
 
 	//add diffuse and specular reflection = direct light
@@ -844,12 +829,12 @@ void main()
 	vec4 proj_worldpos = u_inverse_viewprojection * screen_pos;
 	vec3 world_position = proj_worldpos.xyz / proj_worldpos.w ;
 
-	vec3 light;
-	vec3 color;
+	vec3 light = vec3(0.0);
+	vec3 color = vec3(0.0);
 	color = degamma(albedo.xyz); // convertir a lineal 
-	vec3 L;
+	vec3 L = vec3(0.0);
 
-	float metalness = albedo.a;
+	float metalness = albedo.a; // PENDIENTE DE PINTAR A PANTALLA SUS VALORES
 	float roughness = normal.a;
 	float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
 	
@@ -866,7 +851,7 @@ void main()
 		L = normalize(-u_light_vector);
 		float NoL = max( dot(N,L) , 0.0);
 		vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL );
-		light += NoL *  u_light_color * u_light_intensity *  diffspecular_light; //att_factor
+		light += diffspecular_light; //att_factor
 	}
 
 	color.xyz *= light;
@@ -934,7 +919,7 @@ void main()
 	vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL );		
 	
 	if (u_light_type == 1){  // point 
-		light += NoL * att_factor * u_light_color * u_light_intensity * diffspecular_light ;
+		light += att_factor * diffspecular_light ;
 	}
 	else{ // spot
 
@@ -942,7 +927,7 @@ void main()
 		spotCosine = max(spotCosine, 0.0 ); 
 		if ( spotCosine >= u_light_spotCosineCutoff ){
 			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-			light += NoL * spotFactor * att_factor * u_light_color * u_light_intensity * diffspecular_light ; 
+			light += att_factor* diffspecular_light ; 
 		}
 	}
 

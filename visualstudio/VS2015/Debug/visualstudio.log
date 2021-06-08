@@ -1,73 +1,317 @@
-﻿  renderer.cpp
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON'
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(44,52): warning C4244: 'argumento': conversión de 'double' a 'unsigned int'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(44,38): warning C4244: 'argumento': conversión de 'double' a 'unsigned int'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(103,12): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(108,12): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(145,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(199,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(255,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(276,39): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(276,25): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(280,49): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(280,35): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(280,19): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,60): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,46): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,33): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(284,19): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(288,50): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(288,36): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(288,23): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(362,49): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(362,29): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(369,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(416,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(457,40): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(578,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(742,21): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(790,21): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(807,55): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(925,15): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(926,13): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(987,72): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(987,43): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-camera.obj : warning LNK4075: se omite '/EDITANDCONTINUE' debido a la especificación '/INCREMENTAL:NO'
-     Creando biblioteca ..\..\framework_debug.lib y objeto ..\..\framework_debug.exp
-LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
-LINK : warning LNK4217: "___glewActiveTexture" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewBlendEquation" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)"
-LINK : warning LNK4217: "___glewBlendFuncSeparate" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewBindBuffer" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewBufferData" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewDeleteBuffers" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)"
-LINK : warning LNK4217: "___glewGenBuffers" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewAttachShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewBlendEquationSeparate" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewCompileShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewCreateProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewCreateShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewDeleteProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)"
-LINK : warning LNK4217: "___glewDeleteShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)"
-LINK : warning LNK4217: "___glewDetachShader" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)"
-LINK : warning LNK4217: "___glewEnableVertexAttribArray" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)"
-LINK : warning LNK4217: "___glewGetAttribLocation" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewGetProgramInfoLog" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl CheckProgram(unsigned int,char const *)" (?CheckProgram@@YA_NIPBD@Z)"
-LINK : warning LNK4217: "___glewGetProgramiv" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl CheckProgram(unsigned int,char const *)" (?CheckProgram@@YA_NIPBD@Z)"
-LINK : warning LNK4217: "___glewGetShaderInfoLog" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl CheckShader(unsigned int,char const *)" (?CheckShader@@YA_NIPBD@Z)"
-LINK : warning LNK4217: "___glewGetShaderiv" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl CheckShader(unsigned int,char const *)" (?CheckShader@@YA_NIPBD@Z)"
-LINK : warning LNK4217: "___glewGetUniformLocation" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewLinkProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewShaderSource" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewUniform1i" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)"
-LINK : warning LNK4217: "___glewUniformMatrix4fv" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)"
-LINK : warning LNK4217: "___glewUseProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewVertexAttribPointer" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)"
-LINK : warning LNK4217: "___glewDrawElementsBaseVertex" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewBindSampler" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewBindVertexArray" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)"
-LINK : warning LNK4217: "___glewDeleteVertexArrays" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-LINK : warning LNK4217: "___glewGenVertexArrays" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj" en la función ""void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)"
-glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB '' con 'glew32s.lib(glew.obj)' o en ''; se vinculará el objeto sin tener en cuenta información de depuración
-  visualstudio.vcxproj -> C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\framework_debug.exe
+﻿  camera.cpp
+  cJSON.cpp
+  box.cpp
+  box_bld.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\camera.cpp(116,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\camera.cpp(125,13): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\camera.cpp(346,70): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\camera.cpp(351,69): warning C4305: 'argument': truncation from 'double' to 'float'
+  coldet.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\coldet\box_bld.cpp(134,21): warning C4018: '<': signed/unsigned mismatch
+  coldet_bld.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\coldet\coldet.cpp(374,10): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  math3d.cpp
+  mytritri.cpp
+  sysdep.cpp
+  tritri.cpp
+  hdre.cpp
+  ImCurveEdit.cpp
+  ImGradient.cpp
+  imgui.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\hdre.cpp(140,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\hdre.cpp(201,11): warning C4244: '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\hdre.cpp(108,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  ImGuizmo.cpp
+  imgui_demo.cpp
+  imgui_impl_opengl3.cpp
+  imgui_impl_sdl.cpp
+  imgui_widgets.cpp
+  ImSequencer.cpp
+  jpgd.cpp
+  picopng.cpp
+  textparser.cpp
+  fbo.cpp
+  framework.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\framework.cpp(49,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\framework.cpp(157,4): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\framework.cpp(190,18): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\framework.cpp(1288,34): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\framework.cpp(1406,32): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\framework.cpp(1411,32): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  application.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\fbo.cpp(112,24): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\fbo.cpp(113,25): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\fbo.cpp(143,24): warning C4018: '<': signed/unsigned mismatch
+  gltf_loader.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.h(12,12): warning C4099: 'cJSON': type name first seen using 'struct' now seen using 'class' (compiling source file ..\..\src\application.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(103): message : see declaration of 'cJSON' (compiling source file ..\..\src\application.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\application.cpp(175,14): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\application.cpp(176,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\application.cpp(195,55): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\application.cpp(197,55): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\application.cpp(324,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\application.cpp(440,36): warning C4244: '*=': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\application.cpp(442,35): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  input.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(771,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(1005,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(1006,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(1010,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(1415,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(1420,3): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(1965,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(1975,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cgltf.h(2054,2): warning C4996: 'strncpy': This function or variable may be unsafe. Consider using strncpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details. (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': type name first seen using 'class' now seen using 'struct' (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(103): message : see declaration of 'cJSON' (compiling source file ..\..\src\gltf_loader.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(61,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(71,13): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(114,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(141,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(163,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(183,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(397,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(426,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(491,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\gltf_loader.cpp(471,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  main.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\input.cpp(138,24): warning C4244: '=': conversion from 'float' to 'char', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\input.cpp(146,19): warning C4305: 'initializing': truncation from 'double' to 'float'
+  material.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\main.cpp(157,46): warning C4244: '=': conversion from 'Sint32' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\main.cpp(192,23): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+  mesh.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\material.cpp(73,9): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\material.cpp(75,75): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  renderer.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(295,3): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(496,1): warning C4005: 'glGenBuffersARB': macro redefinition
+C:\Users\u150254\Desktop\suman\GTR_Framework\visualstudio\libs\include\GL\glew.h(7631): message : see previous definition of 'glGenBuffersARB' (compiling source file ..\..\src\mesh.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(497,1): warning C4005: 'glBindBufferARB': macro redefinition
+C:\Users\u150254\Desktop\suman\GTR_Framework\visualstudio\libs\include\GL\glew.h(7627): message : see previous definition of 'glBindBufferARB' (compiling source file ..\..\src\mesh.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(498,1): warning C4005: 'glBufferDataARB': macro redefinition
+C:\Users\u150254\Desktop\suman\GTR_Framework\visualstudio\libs\include\GL\glew.h(7628): message : see previous definition of 'glBufferDataARB' (compiling source file ..\..\src\mesh.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(499,1): warning C4005: 'GL_ARRAY_BUFFER_ARB': macro redefinition
+C:\Users\u150254\Desktop\suman\GTR_Framework\visualstudio\libs\include\GL\glew.h(7582): message : see previous definition of 'GL_ARRAY_BUFFER_ARB' (compiling source file ..\..\src\mesh.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(500,1): warning C4005: 'GL_STATIC_DRAW_ARB': macro redefinition
+C:\Users\u150254\Desktop\suman\GTR_Framework\visualstudio\libs\include\GL\glew.h(7605): message : see previous definition of 'GL_STATIC_DRAW_ARB' (compiling source file ..\..\src\mesh.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(764,6): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(881,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1136,50): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1158,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1162,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1172,5): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1273,27): warning C4244: 'argument': conversion from 'double' to 'const unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1274,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1222,12): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1412,40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1412,25): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1414,44): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1414,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1415,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1422,44): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1422,31): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1424,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1437,30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1460,30): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1489,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\mesh.cpp(1498,21): warning C4018: '<': signed/unsigned mismatch
+  prefab.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': type name first seen using 'class' now seen using 'struct' (compiling source file ..\..\src\renderer.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(103): message : see declaration of 'cJSON' (compiling source file ..\..\src\renderer.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(44,52): warning C4244: 'argument': conversion from 'double' to 'unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(44,38): warning C4244: 'argument': conversion from 'double' to 'unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(102,12): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(107,12): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(146,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(200,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(256,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(277,39): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(277,25): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(281,49): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(281,35): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(281,19): warning C4244: 'argument': conversion from 'double' to 'GLint', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(285,60): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(285,46): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(285,33): warning C4244: 'argument': conversion from 'double' to 'GLint', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(285,19): warning C4244: 'argument': conversion from 'double' to 'GLint', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(289,50): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(289,36): warning C4244: 'argument': conversion from 'double' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(289,23): warning C4244: 'argument': conversion from 'double' to 'GLint', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(361,49): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(361,29): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(371,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(413,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(455,40): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(576,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(740,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(788,21): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(805,55): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(923,15): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(924,13): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(985,72): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\renderer.cpp(985,43): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  scene.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': type name first seen using 'class' now seen using 'struct' (compiling source file ..\..\src\prefab.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(103): message : see declaration of 'cJSON' (compiling source file ..\..\src\prefab.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(41,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(55,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(63,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(79,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(108,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(138,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(170,22): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\prefab.cpp(243,20): warning C4018: '<': signed/unsigned mismatch
+  shader.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': type name first seen using 'class' now seen using 'struct' (compiling source file ..\..\src\scene.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\extra\cJSON.h(103): message : see declaration of 'cJSON' (compiling source file ..\..\src\scene.cpp)
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(17,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(92,16): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(93,28): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(214,67): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(252,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(257,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(263,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(268,20): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\scene.cpp(273,18): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+  sphericalharmonics.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\shader.cpp(179,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\shader.cpp(218,20): warning C4018: '<': signed/unsigned mismatch
+  texture.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(26,14): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(27,14): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(30,27): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(31,27): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(61,30): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(62,30): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(87,60): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(87,54): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(87,51): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(87,48): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(101,78): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(101,59): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(101,40): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\sphericalharmonics.cpp(122,54): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  utils.cpp
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(33,51): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(33,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(34,56): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(34,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(39,15): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(40,15): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(47,55): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(47,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(48,57): warning C4244: 'argument': conversion from 'unsigned int' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(48,9): warning C4244: 'initializing': conversion from 'double' to 'int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(53,15): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(54,15): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(333,94): warning C4244: 'argument': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(333,87): warning C4244: 'argument': conversion from 'float' to 'GLsizei', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(655,18): warning C4244: '=': conversion from 'float' to 'unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(656,19): warning C4244: '=': conversion from 'float' to 'unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(679,19): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(675,12): warning C4101: 'bytesPerPixel': unreferenced local variable
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(811,6): warning C4101: 'actual_comps': unreferenced local variable
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(877,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(949,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(963,15): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(982,18): warning C4244: '=': conversion from 'float' to 'unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\texture.cpp(983,19): warning C4244: '=': conversion from 'float' to 'unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(104,13): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(129,7): warning C4996: 'fopen': This function or variable may be unsafe. Consider using fopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(185,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(186,26): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(334,51): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(335,63): warning C4305: 'argument': truncation from 'double' to 'float'
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(375,10): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(385,16): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(407,11): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(409,17): warning C4244: 'argument': conversion from 'float' to 'const unsigned int', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(422,12): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(431,14): warning C4018: '>=': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(471,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(472,59): warning C4244: 'argument': conversion from '_Ty' to 'unsigned int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(472,44): warning C4244: 'argument': conversion from '_Ty' to 'unsigned int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(472,29): warning C4244: 'argument': conversion from '_Ty' to 'unsigned int', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(482,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(493,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(494,74): warning C4244: 'argument': conversion from '_Ty' to 'unsigned char', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(494,59): warning C4244: 'argument': conversion from '_Ty' to 'unsigned char', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(494,44): warning C4244: 'argument': conversion from '_Ty' to 'unsigned char', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(494,29): warning C4244: 'argument': conversion from '_Ty' to 'unsigned char', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(513,17): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(533,20): warning C4018: '<': signed/unsigned mismatch
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(537,23): warning C4244: '=': conversion from 'double' to '_Ty', possible loss of data
+          with
+          [
+              _Ty=float
+          ]
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(595): warning C4172: returning address of local variable or temporary
+C:\Users\u150254\Desktop\suman\GTR_Framework\src\utils.cpp(587): warning C4172: returning address of local variable or temporary: degamma
+  imgui_draw.cpp
+camera.obj : warning LNK4075: ignoring '/EDITANDCONTINUE' due to '/INCREMENTAL:NO' specification
+     Creating library ..\..\framework_debug.lib and object ..\..\framework_debug.exp
+LINK : warning LNK4098: defaultlib 'LIBCMT' conflicts with use of other libs; use /NODEFAULTLIB:library
+LINK : warning LNK4217: symbol '___glewActiveTexture' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewBlendEquation' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)'
+LINK : warning LNK4217: symbol '___glewBlendFuncSeparate' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewBindBuffer' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewBufferData' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewDeleteBuffers' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)'
+LINK : warning LNK4217: symbol '___glewGenBuffers' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewAttachShader' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewBlendEquationSeparate' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewCompileShader' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewCreateProgram' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewCreateShader' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewDeleteProgram' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)'
+LINK : warning LNK4217: symbol '___glewDeleteShader' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)'
+LINK : warning LNK4217: symbol '___glewDetachShader' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_DestroyDeviceObjects(void)" (?ImGui_ImplOpenGL3_DestroyDeviceObjects@@YAXXZ)'
+LINK : warning LNK4217: symbol '___glewEnableVertexAttribArray' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)'
+LINK : warning LNK4217: symbol '___glewGetAttribLocation' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewGetProgramInfoLog' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl CheckProgram(unsigned int,char const *)" (?CheckProgram@@YA_NIPBD@Z)'
+LINK : warning LNK4217: symbol '___glewGetProgramiv' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl CheckProgram(unsigned int,char const *)" (?CheckProgram@@YA_NIPBD@Z)'
+LINK : warning LNK4217: symbol '___glewGetShaderInfoLog' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl CheckShader(unsigned int,char const *)" (?CheckShader@@YA_NIPBD@Z)'
+LINK : warning LNK4217: symbol '___glewGetShaderiv' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl CheckShader(unsigned int,char const *)" (?CheckShader@@YA_NIPBD@Z)'
+LINK : warning LNK4217: symbol '___glewGetUniformLocation' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewLinkProgram' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewShaderSource' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewUniform1i' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)'
+LINK : warning LNK4217: symbol '___glewUniformMatrix4fv' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)'
+LINK : warning LNK4217: symbol '___glewUseProgram' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewVertexAttribPointer' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_SetupRenderState(struct ImDrawData *,int,int,unsigned int)" (?ImGui_ImplOpenGL3_SetupRenderState@@YAXPAUImDrawData@@HHI@Z)'
+LINK : warning LNK4217: symbol '___glewDrawElementsBaseVertex' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewBindSampler' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewBindVertexArray' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"bool __cdecl ImGui_ImplOpenGL3_CreateDeviceObjects(void)" (?ImGui_ImplOpenGL3_CreateDeviceObjects@@YA_NXZ)'
+LINK : warning LNK4217: symbol '___glewDeleteVertexArrays' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+LINK : warning LNK4217: symbol '___glewGenVertexArrays' defined in 'glew32s.lib(glew.obj)' is imported by 'imgui_impl_opengl3.obj' in function '"void __cdecl ImGui_ImplOpenGL3_RenderDrawData(struct ImDrawData *)" (?ImGui_ImplOpenGL3_RenderDrawData@@YAXPAUImDrawData@@@Z)'
+glew32s.lib(glew.obj) : warning LNK4099: PDB 'vc120.pdb' was not found with 'glew32s.lib(glew.obj)' or at 'C:\Users\u150254\Desktop\suman\GTR_Framework\vc120.pdb'; linking object as if no debug info
+  visualstudio.vcxproj -> C:\Users\u150254\Desktop\suman\GTR_Framework\framework_debug.exe
