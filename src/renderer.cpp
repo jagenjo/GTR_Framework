@@ -34,14 +34,14 @@ GTR::Renderer::Renderer()
 	this->pipeline_mode = ePipelineMode::DEFERRED;
 	
 	this->update_shadowmaps = false;
-	this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
-	this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
+	//this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
+	//this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
 	this->show_gbuffers = false;
 
 	this->show_ao = false;
 	this->show_ao_deferred = false;
 	
-	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE); // solo usamos un canal
+	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE); 
 
 
 	//------
@@ -66,8 +66,7 @@ void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
 	int height = Application::instance->window_height;
 
 	if (this->show_gbuffers)
-		showGbuffers(width, height, camera); // hay que pasar la camara y w , h...
-	
+		showGbuffers(width, height, camera); 
 }
 
 
@@ -124,9 +123,11 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 
 		illumination_fbo.unbind();
 		*/
-		//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
+		illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
 		
-		applyfinalHDR();
+		//applyfinalHDR();
+		renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
+
 
 	}
 
@@ -312,9 +313,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 	// si existe ya la textura pero el tamaño de la textura no es el mismo que el anterior, que te la tire el de anterior y te cree uno nueva -> por resize de las ventas...
 
-	
 	ssao.applyEffect(gbuffers_fbo.depth_texture, gbuffers_fbo.color_textures[GTR::eChannels::NORMAL], camera, ao_buffer);
-
 
 	//---------Ilumination_Pass--------------
 		
@@ -386,10 +385,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		
 			
 	}
-	//poner los flags ?
 	
-	//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
-
+	
+	
 	//---------Using geometry--------------
 	 
 	//we can use a sphere mesh for point lights
@@ -406,7 +404,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], GTR::eChannels::EMISSIVE);
 	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, GTR::eChannels::DEPTH);
 	
-	//basic.vs will need the model and the viewproj of the camera
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
 	shader->setUniform("u_iRes", iRes);
@@ -442,8 +439,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	glDisable(GL_BLEND);
 
 
-	//stop rendering to the fbo, render to screen
+	//stop rendering to the fbo
 	illumination_fbo.unbind();
+	//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
 
 	
 }
@@ -495,7 +493,7 @@ void Renderer::uodateIrradianceCache(GTR::Scene* scene) {//para hacer actualizac
 
 void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
 {
-	Camera* camera = Camera::current; // este current...
+	Camera* camera = Camera::current; 
 	
 	Shader* shader = Shader::Get("probe");
 	Mesh* mesh = Mesh::Get("data/meshes/sphere.obj", false, false);

@@ -80,13 +80,13 @@ namespace GTR {
 
 		SSAOFX ssao;
 
-		FBO fbo;
+		//FBO fbo;
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
 		FBO* irr_fbo;
 		bool show_gbuffers;
 
-		Texture* color_buffer;
+		//Texture* color_buffer;
 		Texture* ao_buffer;
 		bool show_ao;
 		bool show_ao_deferred;
