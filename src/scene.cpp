@@ -205,7 +205,7 @@ GTR::LightEntity::LightEntity() {
 void GTR::LightEntity::uploadToShader(Shader* sh)
 {
 	sh->setUniform("u_light_type", this->light_type);
-	sh->setUniform("u_light_color", degamma(this->color));
+	sh->setUniform("u_light_color", (this->color));//degamma
 	
 	 
 	sh->setUniform("u_light_position", this->model.getTranslation() );

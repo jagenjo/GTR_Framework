@@ -136,7 +136,7 @@ namespace GTR {
 
 		void extractProbe(GTR::Scene* scene, sProbe& p);
 
-		void uodateIrradianceCache(GTR::Scene* scene);
+		void updateIrradianceCache(GTR::Scene* scene);
 
 		void renderProbe(Vector3 pos, float size, float* coeffs);
 

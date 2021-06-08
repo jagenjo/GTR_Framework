@@ -378,7 +378,7 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_v: renderer->show_ao = !renderer->show_ao; break;
 		case SDLK_c: renderer->show_ao_deferred = !renderer->show_ao_deferred; break;
 
-		case SDLK_x: renderer->uodateIrradianceCache(scene); break;
+		case SDLK_x: renderer->updateIrradianceCache(scene); break;
 
 	}
 

@@ -126,7 +126,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
 		
 		//applyfinalHDR();
-		renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
+		//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
 
 
 	}
@@ -350,7 +350,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], GTR::eChannels::NORMAL);
 	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], GTR::eChannels::EMISSIVE);
 	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, GTR::eChannels::DEPTH);
-	shader->setUniform("u_ambient_light", degamma(scene->ambient_light));
+	shader->setUniform("u_ambient_light", (scene->ambient_light)); //degamma
 	shader->setTexture("u_ao_texture", ao_buffer, GTR::eChannels::OCCLUSION);
 	
 	shader->setUniform("u_ao_show", show_ao_deferred);
@@ -362,11 +362,12 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setUniform("u_inverse_viewprojection", inv_vp);
 	shader->setUniform("u_iRes", iRes );
 
+	
 	//disable depth and blend
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-
+	
 	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
@@ -378,9 +379,10 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 			quad->render(GL_TRIANGLES);
 			
 			//in case there are more than one directional light:
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_ONE, GL_ONE);
-			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
+			
+			//glEnable(GL_BLEND);
+			
+			shader->setUniform("u_ambient_light", Vector3(1, 0, 0));
 		}
 		
 			
@@ -392,9 +394,10 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	 
 	//we can use a sphere mesh for point lights
 	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", false, false);
-
-	glDisable(GL_CULL_FACE); 
 	
+	glDisable(GL_CULL_FACE); 
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 	//this deferred_ws shader uses the basic.vs instead of quad.vs
 	shader = Shader::Get("deferred_ws");
 
@@ -432,20 +435,24 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		//only pixels behind a surface are rendered //only draw if the pixel is behind 
 		// we solve this during the depth test stage, meaning before execte .fs
 		glDepthFunc(GL_GREATER);
+		
 		glBlendFunc(GL_ONE, GL_ONE);
 	}
 
-	glFrontFace(GL_CCW);
-	glDisable(GL_BLEND);
-
-
+	
+	
+	
+	shader->disable();
 	//stop rendering to the fbo
 	illumination_fbo.unbind();
 	//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
-
+	
+	glFrontFace(GL_CCW);
+	glDisable(GL_BLEND);
 	
 }
 
+//rendering to a texture
 void Renderer::extractProbe( GTR::Scene* scene, sProbe& p ) {//es una ref pq internamente se va a modificar
 	//vamos a necesitar un fbo, pq vamos a renderizarlo en un espacio separado, no pantalla
 	FloatImage images[6]; //here we will store the six views
@@ -485,7 +492,7 @@ void Renderer::extractProbe( GTR::Scene* scene, sProbe& p ) {//es una ref pq int
 	p.sh = computeSH(images, gammaCorrection);
 }
 
-void Renderer::uodateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
+void Renderer::updateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
 	
 	//podemos poner en la posicion de la camara
 	extractProbe(scene, probe);
