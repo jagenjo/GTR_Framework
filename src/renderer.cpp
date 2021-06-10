@@ -123,11 +123,12 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 
 		illumination_fbo.unbind();
 		*/
-		illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
+		illumination_fbo.color_textures[0]->toViewport(); //me he quedado aqui, no se q le pasa la luz spotlight...
 		
 		//applyfinalHDR();
 		//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
 
+		//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
 
 	}
 
@@ -233,20 +234,20 @@ void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCal
 	//disable all but the GB0 (and the depth)
 	gbuffers_fbo.enableSingleBuffer(0);
 
-	//clear the 1º GB with the color (and depth)
+	//clear the 1ï¿½ GB with the color (and depth)
 	glClearColor( 0.1 , 0.1 , 0.1 , 1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	checkGLErrors();
 
-	//now enable the 2º GB and clear. This time we haven't clear the GL_COLOR
+	//now enable the 2ï¿½ GB and clear. This time we haven't clear the GL_COLOR
 	gbuffers_fbo.enableSingleBuffer(1);
 	glClearColor( 0, 0, 0, 1.0);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	checkGLErrors();
 
-	// clear 3º GB
+	// clear 3ï¿½ GB
 
-	// clear 4º GB
+	// clear 4ï¿½ GB
 
 	//enable all buffers back
 	gbuffers_fbo.enableAllBuffers();
@@ -295,7 +296,7 @@ void GTR::Renderer::showGbuffers(int width, int height, Camera* camera) {
 	//depth_sh->disable();
 	gbuffers_fbo.depth_texture->toViewport(depth_sh);
 
-	//Volver a poner el tamaño de VPort. 0,0 en una textura esta abajo iz!
+	//Volver a poner el tamaï¿½o de VPort. 0,0 en una textura esta abajo iz!
 	glViewport(0, 0, width, height);
 	
 
@@ -311,7 +312,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	createGbuffers(width, height, rendercalls, camera);
 	//-----End gbuffers pass
 
-	// si existe ya la textura pero el tamaño de la textura no es el mismo que el anterior, que te la tire el de anterior y te cree uno nueva -> por resize de las ventas...
+	// si existe ya la textura pero el tamaï¿½o de la textura no es el mismo que el anterior, que te la tire el de anterior y te cree uno nueva -> por resize de las ventas...
 
 	ssao.applyEffect(gbuffers_fbo.depth_texture, gbuffers_fbo.color_textures[GTR::eChannels::NORMAL], camera, ao_buffer);
 
@@ -367,6 +368,15 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
+
+
+	quad->render(GL_TRIANGLES);
+	
+	shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
+
 	
 	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); i++)
@@ -375,21 +385,25 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		//we assume that there is always at least one directional ///luego si da tiempo corregir para el caso de no directional light
 		if (light->light_type == DIRECTIONAL) {
 			light->uploadToShader(shader);
-		
+
 			quad->render(GL_TRIANGLES);
-			
+
 			//in case there are more than one directional light:
+
 			
 			//glEnable(GL_BLEND);
 			
-			shader->setUniform("u_ambient_light", Vector3(1, 0, 0));
+			//shader->setUniform("u_ambient_light", Vector3(1, 0, 0));
+
+			//glEnable(GL_BLEND);
+			//glBlendFunc(GL_ONE, GL_ONE);
+			//light_entities.erase(i) 
+
 		}
-		
-			
 	}
-	
-	
-	
+	shader->disable();
+
+	/*
 	//---------Using geometry--------------
 	 
 	//we can use a sphere mesh for point lights
@@ -439,10 +453,14 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		glBlendFunc(GL_ONE, GL_ONE);
 	}
 
+
 	
 	
 	
 	shader->disable();
+
+*/
+
 	//stop rendering to the fbo
 	illumination_fbo.unbind();
 	//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
@@ -717,7 +735,7 @@ void Renderer::uploadTextures(Material* material, Shader* shader) {
 	if (em_texture == NULL)
 		em_texture = Texture::getWhiteTexture();
 	if (mr_texture == NULL)
-		mr_texture = Texture::getWhiteTexture();
+		mr_texture = Texture::getBlackTexture();
 	if (oc_texture == NULL)
 		oc_texture = Texture::getWhiteTexture();
 	if (n_texture == NULL)
