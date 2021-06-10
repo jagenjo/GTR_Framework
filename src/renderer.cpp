@@ -123,7 +123,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 
 		illumination_fbo.unbind();
 		*/
-		illumination_fbo.color_textures[0]->toViewport(); //me he quedado aqui, no se q le pasa la luz spotlight...
+		//illumination_fbo.color_textures[0]->toViewport(); //me he quedado aqui, no se q le pasa la luz spotlight...
 		
 		//applyfinalHDR();
 		//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
