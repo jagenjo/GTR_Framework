@@ -185,7 +185,6 @@ void GTR::PrefabEntity::renderInMenu()
 GTR::LightEntity::LightEntity() {
 
 	this->entity_type = LIGHT;
-	//this->pos = this->model.getTranslation();
 	this->color.set(1, 1, 1);
 	this->target.set(0, 0, 0);
 
@@ -193,9 +192,8 @@ GTR::LightEntity::LightEntity() {
 	this->light_type = DIRECTIONAL;
 	this->max_dist = 0;
 	this->cone_angle = 0;
-	this->area_size = 0;
 	this->spot_exp = 0;
-
+	this->area_size = 0;
 	this->light_camera.lookAt(this->model.getTranslation(), this->model * Vector3(0, 0, 1), this->model.rotateVector(Vector3(0, 1, 0)));
 
 	
@@ -206,19 +204,13 @@ void GTR::LightEntity::uploadToShader(Shader* sh)
 {
 	sh->setUniform("u_light_type", this->light_type);
 	sh->setUniform("u_light_color", (this->color));//degamma
-	
-	 
 	sh->setUniform("u_light_position", this->model.getTranslation() );
 	sh->setUniform("u_light_vector", model.frontVector() );
-	
-	sh->setUniform("u_light_spotCosineCutoff", cosf(this->cone_angle * DEG2RAD));
-	sh->setUniform("u_light_spotExponent", spot_exp );
-	
 	sh->setUniform("u_light_intensity", intensity );
 	sh->setUniform("u_light_maxdist", max_dist );
-	
+	sh->setUniform("u_light_spotCosineCutoff", cosf(this->cone_angle * DEG2RAD));
+	sh->setUniform("u_light_spotExponent", spot_exp);
 	sh->setUniform("u_light_area_size", area_size );
-
 
 }
 
@@ -234,10 +226,10 @@ void GTR::LightEntity::configure(cJSON* json)
 		if (lightType == "POINT") {
 			this->light_type = POINT; 
 		}
-		if (lightType == "DIRECTIONAL") {
+		else if (lightType == "DIRECTIONAL") {
 			this->light_type = DIRECTIONAL;
 		}
-		if (lightType == "SPOT") {
+		else if (lightType == "SPOT") {
 			this->light_type = SPOT;
 		}
 		
@@ -274,8 +266,6 @@ void GTR::LightEntity::configure(cJSON* json)
 		this->spot_exp = cone_exp;
 	}
 
-
-
 }
 
 
@@ -293,16 +283,15 @@ void GTR::LightEntity::renderInMenu()
 		}
 
 		if (this->light_type == POINT) {
-			ImGui::SliderFloat("Max dist", &max_dist, 0, 1000);
+			ImGui::SliderFloat("Max dist", &max_dist, 0, 1200);
 			ImGui::SliderFloat("Intensity", &intensity, 0, 20);
 		}
 
 		if (this->light_type == SPOT) {
-			ImGui::SliderFloat("Max dist", &max_dist, 0, 1000);
+			ImGui::SliderFloat("Max dist", &max_dist, 0, 1200);
 			ImGui::SliderFloat("Intensity", &intensity, 0, 20);
-			ImGui::SliderFloat("Cone angle", &cone_angle, 0, 100);
 			ImGui::SliderFloat("Spot exp", &spot_exp, 0, 30);
-			ImGui::SliderFloat("Spot cutoff", &spot_cutoff, 0, 90);
+			ImGui::SliderFloat("Spot cutoff", &cone_angle, 0, 90);
 
 		}
 		

@@ -77,9 +77,8 @@ namespace GTR {
 		float max_dist; //how far the light can reach
 		float area_size; // the size of the volume for directional light
 		float cone_angle;
-		
 		float spot_exp;
-		float spot_cutoff;
+
 		FBO* shadow_fbo;
 		Camera light_camera;
 

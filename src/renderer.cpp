@@ -65,7 +65,7 @@ void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
 	int width = Application::instance->window_width;
 	int height = Application::instance->window_height;
 
-	if (this->show_gbuffers)
+	if (this->show_gbuffers && gbuffers_fbo.fbo_id != 0)
 		showGbuffers(width, height, camera); 
 }
 
@@ -114,6 +114,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 
 	else if (pipeline_mode == DEFERRED) {
 		renderDeferred(scene, this->rc_data_list, camera);
+		//glClearColor(0, 0, 0, 0);
 		/*
 		illumination_fbo.bind(); //TIENE DEPTH
 		this->gbuffers_fbo.depth_texture->copyTo(NULL);
@@ -123,7 +124,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 
 		illumination_fbo.unbind();
 		*/
-		//illumination_fbo.color_textures[0]->toViewport(); //me he quedado aqui, no se q le pasa la luz spotlight...
+		illumination_fbo.color_textures[0]->toViewport(); //me he quedado aqui, no se q le pasa la luz spotlight...
 		
 		//applyfinalHDR();
 		//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
@@ -299,7 +300,7 @@ void GTR::Renderer::showGbuffers(int width, int height, Camera* camera) {
 	//Volver a poner el tama�o de VPort. 0,0 en una textura esta abajo iz!
 	glViewport(0, 0, width, height);
 	
-
+	
 }
 
 
@@ -804,44 +805,38 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 		Vector3 light_direction[num_lights];
 		float light_intensity[num_lights];
 		float light_maxdist[num_lights];
-		Vector3 light_target[num_lights];
 		float light_spot_exp[num_lights];
 		float light_spot_cutoff[num_lights];
-		Vector3 light_fronts[num_lights];
-
+		float light_area_size[num_lights];
 		//fill the elements of the lists
 		for (int i = 0; i < lights.size(); i++)
 		{
 			if (i > num_lights - 1 )
 				break; //finish when the have used all posibles lights of the list
-			// This is because we could have more lights [lights.size] than the ones that we want to render. Then to avoid IndexError.
-
+			
 			light_type[i] = lights[i]->light_type;
 			light_color[i] = lights[i]->color;
 			light_position[i] = lights[i]->model.getTranslation();
-
-			light_direction[i] =  lights[i]->model.rotateVector(Vector3(0, 0, -1));
-
+			light_direction[i] = lights[i]->model.frontVector();
 			light_intensity[i] = lights[i]->intensity;
 			light_maxdist[i] = lights[i]->max_dist;
-
-			light_fronts[i] = lights[i]->target;
+			light_spot_cutoff[i] = cosf(lights[i]->cone_angle * DEG2RAD);
 			light_spot_exp[i] = lights[i]->spot_exp;
-			light_spot_cutoff[i] = cosf(lights[i]->spot_cutoff * DEG2RAD);
+			light_area_size[i] = lights[i]->area_size;
 
 		}
 				
 		shader->setUniform1("u_num_lights", num_lights);
-		shader->setUniform1Array("u_light_types", (int*)&light_type, num_lights);
-		shader->setUniform3Array("u_light_colors", (float*)&light_color, num_lights);
-		shader->setUniform3Array("u_light_positions", (float*)&light_position, num_lights);
-		shader->setUniform3Array("u_light_vectors", (float*)&light_direction, num_lights);
-		shader->setUniform1Array("u_light_intensitis", (float*)&light_intensity, num_lights);
-		shader->setUniform1Array("u_light_maxdists", (float*)&light_maxdist, num_lights);
+		shader->setUniform1Array("u_light_type", (int*)&light_type, num_lights);
+		shader->setUniform3Array("u_light_color", (float*)&light_color, num_lights);
+		shader->setUniform3Array("u_light_position", (float*)&light_position, num_lights);
+		shader->setUniform3Array("u_light_vector", (float*)&light_direction, num_lights);
+		shader->setUniform1Array("u_light_intensity", (float*)&light_intensity, num_lights);
+		shader->setUniform1Array("u_light_maxdist", (float*)&light_maxdist, num_lights);
 
-		shader->setUniform3Array("u_light_fronts", (float*)&light_fronts, num_lights);
-		shader->setUniform1Array("u_light_spot_exps", (float*)&light_spot_exp, num_lights);
-		shader->setUniform1Array("u_light_spot_cutoffs", (float*)&light_spot_cutoff, num_lights);
+		shader->setUniform1Array("u_light_spotCosineCutoff", (float*)&light_spot_cutoff, num_lights);
+		shader->setUniform1Array("u_light_spotExponent", (float*)&light_spot_exp, num_lights);
+		shader->setUniform1Array("u_light_area_size", (float*)&light_area_size, num_lights);
 		
 		mesh->render(GL_TRIANGLES);
 
@@ -943,8 +938,8 @@ std::vector<Vector3> generateSpherePoints(int num, float radius, bool hemi)
 	for (int i = 0; i < num; i += 3)
 	{
 		Vector3& p = points[i];
-		float u = random();
-		float v = random();
+		float u = randomFramework(); // Le he tenido que cambiar el nombre por que en MacOS es ambigua
+		float v = randomFramework();
 		float theta = u * 2.0 * PI;
 		float phi = acos(2.0 * v - 1.0);
 		//float r = cbrt(random()) * radius;

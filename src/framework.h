@@ -389,7 +389,7 @@ bool BoundingBoxSphereOverlap(const BoundingBox& box, const Vector3& center, flo
 Vector3 reflect(const Vector3& I, const Vector3& N);
 
 //value between 0 and 1
-inline float random(float range = 1.0f, int offset = 0) { return ((rand() % 1000) / (1000.0f)) * range + offset; }
+inline float randomFramework(float range = 1.0f, int offset = 0) { return ((rand() % 1000) / (1000.0f)) * range + offset; }
 
 
 typedef Vector2 vec2;

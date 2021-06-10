@@ -48,6 +48,8 @@
 		12E51D4B244B3A0E0023C412 /* coldet.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D40244B3A0D0023C412 /* coldet.cpp */; };
 		12E51D4C244B3A0E0023C412 /* coldet_bld.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D42244B3A0E0023C412 /* coldet_bld.cpp */; };
 		12E51D4D244B3A0E0023C412 /* math3d.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12E51D43244B3A0E0023C412 /* math3d.cpp */; };
+		E71691F526729C5B006EB037 /* sphericalharmonics.h in Sources */ = {isa = PBXBuildFile; fileRef = E71691F326729C5A006EB037 /* sphericalharmonics.h */; };
+		E71691F626729C5B006EB037 /* sphericalharmonics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E71691F426729C5B006EB037 /* sphericalharmonics.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -126,6 +128,8 @@
 		12E51D43244B3A0E0023C412 /* math3d.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = math3d.cpp; path = ../src/extra/coldet/math3d.cpp; sourceTree = "<group>"; };
 		12E51D44244B3A0E0023C412 /* mytritri.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mytritri.h; path = ../src/extra/coldet/mytritri.h; sourceTree = "<group>"; };
 		12E51D45244B3A0E0023C412 /* coldet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = coldet.h; path = ../src/extra/coldet/coldet.h; sourceTree = "<group>"; };
+		E71691F326729C5A006EB037 /* sphericalharmonics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = sphericalharmonics.h; path = ../src/sphericalharmonics.h; sourceTree = "<group>"; };
+		E71691F426729C5B006EB037 /* sphericalharmonics.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = sphericalharmonics.cpp; path = ../src/sphericalharmonics.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -146,6 +150,8 @@
 		12BE84B11981D8180090DDBD = {
 			isa = PBXGroup;
 			children = (
+				E71691F426729C5B006EB037 /* sphericalharmonics.cpp */,
+				E71691F326729C5A006EB037 /* sphericalharmonics.h */,
 				1278921C262C454100178A4E /* scene.cpp */,
 				1278921D262C454100178A4E /* scene.h */,
 				1278921A262C451400178A4E /* tritri.cpp */,
@@ -315,6 +321,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -347,6 +354,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E71691F526729C5B006EB037 /* sphericalharmonics.h in Sources */,
+				E71691F626729C5B006EB037 /* sphericalharmonics.cpp in Sources */,
 				1278921E262C454100178A4E /* scene.cpp in Sources */,
 				1278921F262C454100178A4E /* scene.h in Sources */,
 				1278921B262C451500178A4E /* tritri.cpp in Sources */,
