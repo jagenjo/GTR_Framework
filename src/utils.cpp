@@ -592,6 +592,8 @@ Vector3& degamma(Vector3& color) { //podemos retornar referencias desde las func
 Vector3& gamma(Vector3& color) {
 
 	Vector3 gamma = color;
-	return gamma.sqrt(color);
+    Vector3* result = new Vector3();
+    *result = gamma.sqrt(color);
+	return *result;
 
 }

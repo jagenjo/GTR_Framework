@@ -29,9 +29,9 @@ GTR::Renderer::Renderer()
 	int width = Application::instance->window_width;
 	int height = Application::instance->window_height;
 
-	this->render_mode = eRenderMode::MULTI;
+	this->render_mode = eRenderMode::SINGLE;
 	//this->rendering_shadowmap = true;
-	this->pipeline_mode = ePipelineMode::DEFERRED;
+	this->pipeline_mode = ePipelineMode::FORWARD;
 	
 	this->update_shadowmaps = false;
 	//this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
@@ -943,8 +943,8 @@ std::vector<Vector3> generateSpherePoints(int num, float radius, bool hemi)
 	for (int i = 0; i < num; i += 3)
 	{
 		Vector3& p = points[i];
-		float u = random();
-		float v = random();
+		float u = randomFramework(); // Le he tenido que cambiar el nombre por que en MacOS es ambigua
+		float v = randomFramework();
 		float theta = u * 2.0 * PI;
 		float phi = acos(2.0 * v - 1.0);
 		//float r = cbrt(random()) * radius;
