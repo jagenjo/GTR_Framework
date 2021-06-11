@@ -29,7 +29,7 @@ GTR::Renderer::Renderer()
 	int width = Application::instance->window_width;
 	int height = Application::instance->window_height;
 
-	this->render_mode = eRenderMode::MULTI;
+	this->render_mode = eRenderMode::SINGLE;
 	this->rendering_shadowmap = false;
 	this->pipeline_mode = ePipelineMode::FORWARD;
 	

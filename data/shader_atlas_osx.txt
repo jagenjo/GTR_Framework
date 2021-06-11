@@ -661,18 +661,19 @@ void main()
 				NdotL = max( dot(N,L), 0.0) ;
 				light += NdotL * u_light_color[i] * u_light_intensity[i] ;
 			}
-			else if(u_light_type[i] == 1){ 
+			else if(u_light_type[i] == 1){ // Is failing with att_factor. Maybe the problem is on the function or the parameters
 				L = normalize(u_light_position[i] - v_world_position);
 				NdotL = max( dot(N,L), 0.0);
-				light += NdotL * att_factor * u_light_color[i] * u_light_intensity[i] ;
+				light += NdotL * u_light_color[i] * u_light_intensity[i] ; // We have removed the att_factor
 			}
 			else if(u_light_type[i] == 2){
-				vec3 L_aux = normalize(u_light_position[i] - v_world_position);
-				float spotCosine = dot( normalize(u_light_vector[i]) , -L_aux );
+				L = normalize(u_light_position[i] - v_world_position);
+				NdotL = max( dot(N,L), 0.0);
+				float spotCosine = dot( normalize(u_light_vector[i]) , -L );
 				spotCosine = max(spotCosine, 0.0);
 				if ( spotCosine >= u_light_spotCosineCutoff[i] ){
 					float spotFactor = pow( spotCosine , u_light_spotExponent[i] );
-					light += spotFactor * att_factor * u_light_color[i] * u_light_intensity[i] ;	 
+					light += NdotL * spotFactor * att_factor * u_light_color[i] * u_light_intensity[i] ;	 
 				}
 			}
 		}
