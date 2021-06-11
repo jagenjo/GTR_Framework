@@ -30,12 +30,14 @@ GTR::Renderer::Renderer()
 	int height = Application::instance->window_height;
 
 	this->render_mode = eRenderMode::MULTI;
-	//this->rendering_shadowmap = true;
-	this->pipeline_mode = ePipelineMode::DEFERRED;
+	this->rendering_shadowmap = false;
+	this->pipeline_mode = ePipelineMode::FORWARD;
 	
 	this->update_shadowmaps = false;
+
 	//this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
 	//this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
+	
 	this->show_gbuffers = false;
 
 	this->show_ao = false;
@@ -93,8 +95,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 	//sort each rcs after rendering one pass of all the scene
 	//std::sort(this->rc_data_list.begin(), this->rc_data_list.end(), sortRC());
 
-	
-	// hacer comprobacionees de nodo con alpha... si tiene alpha forward,,,
+
 
 	int i = 0;
 	std::vector<RenderCall> rc_data_no_alpha;
@@ -108,6 +109,23 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		rc_data_alpha.push_back(rc_data_list[i]);
 	}
 
+	/*
+	if (rendering_shadowmap) {
+
+		LightEntity* light;
+		for (int i = 0; i < this->light_entities.size(); i++)
+		{
+			light = light_entities[i];
+			if (!light->cast_shadows) // si no emite, continua
+			{
+				continue;
+			}
+			//render2depthbuffer(GTR::Scene* scene, light, camera);
+		}
+
+		
+	}
+		*/
 
 	if (pipeline_mode == FORWARD)
 		renderForward(scene, this->rc_data_list, camera, true);
@@ -136,6 +154,9 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 	
 	
 }
+
+
+
 
 //collect all RC
 void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera) {
@@ -598,6 +619,7 @@ void Renderer::getRCsfromNode(const Matrix44& prefab_model, GTR::Node* node, Cam
 		}
 	}
 
+
 	//iterate recursively with children
 	for (int i = 0; i < node->children.size(); ++i)
 		getRCsfromNode(prefab_model, node->children[i], camera);
@@ -670,8 +692,7 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 		shader->setTexture("u_ao_texture", this->ao_buffer, GTR::eChannels::OCCLUSION);
 	}*/
 	
-
-	assert(glGetError() == GL_NO_ERROR);
+	//assert(glGetError() == GL_NO_ERROR);
 
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_camera_position", camera->eye);
@@ -695,13 +716,10 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	}
 	else
 		glDisable(GL_BLEND);
-	
-	glDepthFunc(GL_LESS);
 
 	if (mode == GTR::eRenderMode::SINGLE || mode == GTR::eRenderMode::MULTI) {
 		
 		renderlights(mode, shader, mesh, material);
-		
 		shader->disable();
 		glDisable(GL_BLEND);
 		
@@ -709,10 +727,8 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	}
 
 	mesh->render(GL_TRIANGLES);
-	
 	shader->disable();
-	//set the render state as it was before to avoid problems with future renders
-	glDisable(GL_BLEND);
+	glDisable(GL_BLEND); //set the render state as it was before to avoid problems with future renders
 
 }
 
@@ -781,8 +797,7 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 			}
 			//pass the lights data to the shader
 			light->uploadToShader(shader);
-			mesh->render(GL_TRIANGLES);
-			
+			mesh->render(GL_TRIANGLES); 			
 			//only one pass ambient light and emissive light
 			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
 			shader->setUniform("u_emissive_factor", Vector3(0, 0, 0));
@@ -798,7 +813,7 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 	if (mode == eRenderMode::SINGLE) {
 		std::vector <LightEntity*> lights = this->light_entities;
 		const int num_lights = 8;
-
+		
 		int light_type[num_lights];
 		Vector3 light_color[num_lights];
 		Vector3 light_position[num_lights];
@@ -845,29 +860,42 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 
 }
 
-/*
 
-void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera, std::vector<RenderCall>& rendercalls) {
+
+void Renderer::render2depthbuffer( std::vector<RenderCall>& rendercalls, Camera* camera) {
 	
 	int width = Application::instance->window_width;
-	//int height = Application::instance->window_height;
+	int height = Application::instance->window_height;
 
 	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); ++i)
 	{
+		if (this->light_entities[i]->light_type == POINT)
+			continue;
+
 		if (this->light_entities[i]->light_type == SPOT) {
 			light = this->light_entities[i];
+			light->light_camera.setPerspective(light->cone_angle, 1, 10.0, light->max_dist);
+		}
+		else { // DIRECTIONAL
+			light = this->light_entities[i];
+			light->light_camera.setOrthographic(-light->area_size, light->area_size,
+							-light->area_size, light->area_size, 
+							-light->area_size, light->area_size);
 		}
 	}
 
 	//first time we create the FBO
-	if (!light->shadow_fbo)
-	{
-		//we create FBO
-		FBO* fbo = new FBO();
+	if (!light->shadow_fbo )
+	{	
+		light->shadow_fbo = new FBO();
+		//Texture* tex = new Texture(Application::instance->window_width, Application::instance->window_width, GL_RGB, GL_UNSIGNED_BYTE);
+		//light->shadow_fbo->setTexture(tex);
+		//light->shadow_fbo->setDepthOnly(width, width); // only create a depth texture
 		
-		light->shadow_fbo = fbo;
-		light->shadow_fbo->setDepthOnly(width, width); // only create a depth texture
+		//create textures automatically this will allocate memory inside the GPU for one color texture and one depth texture
+		light->shadow_fbo->create(width, width);
+		
 	}
 
 	//enable it to render inside the texture
@@ -884,13 +912,9 @@ void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera, std::
 	for (int i = 0; i < rendercalls.size(); i++)//render all
 	{
 		RenderCall& rc = rendercalls[i];
-		renderMeshWithMaterial(eRenderMode::MULTI, rc.model, rc.mesh, rc.material, camera); //always in gbuffer mode
+		renderMeshWithMaterial(eRenderMode::MULTI, rc.model, rc.mesh, rc.material, &light->light_camera); //always in gbuffer mode
 	}
 
-	if (material->alpha_mode == BLEND)
-	{
-		glDisable(GL_BLEND);
-	}
 
 	//disable it to render back to the screen
 	light->shadow_fbo->unbind();
@@ -898,35 +922,39 @@ void Renderer::render2depthbuffer(GTR::Material* material, Camera* camera, std::
 	//allow to render back to the color buffer
 	glColorMask(true, true, true, true);
 	
-	//color textures are inside this var
-	//light->fbo->color_textures[0];
-
 	//and the depth texture inside this one
-	light->shadow_fbo->depth_texture;
+	//light->shadow_fbo->depth_texture;
+
+	showShadowmap( light->shadow_fbo ,  camera, width, height);
+
+	
+
+}
+
+
+void Renderer::showShadowmap(FBO* fbo, Camera* camera, float width, float height) {
+	
+	//remember to disable ztest if rendering quads!
+	glDisable(GL_DEPTH_TEST);
+
+	//glViewport(0, 0, width*0.2, width * 0.2);
+	//to show on the screen the content of a texture
+	fbo->color_textures[0]->toViewport();
+	
+	//why not necessary???
+	//glViewport(0, 0, width , height);
+
+	//to use a special shader,  to visualize a Depth Texture
+	Shader* zshader = Shader::Get("depth");
+	zshader->enable();
+	zshader->setTexture("u_texture", fbo->color_textures[0], 10); //-----------------
+	zshader->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
+	fbo->depth_texture->toViewport(zshader);
 
 
 }
 
-*/
 
-Texture* GTR::CubemapFromHDRE(const char* filename)
-{
-	HDRE* hdre = new HDRE();
-	if (!hdre->load(filename))
-	{
-		delete hdre;
-		return NULL;
-	}
-
-	/*
-	Texture* texture = new Texture();
-	texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFaces(0), hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT );
-	for(int i = 1; i < 6; ++i)
-		texture->uploadCubemap(texture->format, texture->type, false, (Uint8**)hdre->getFaces(i), GL_RGBA32F, i);
-	return texture;
-	*/
-	return NULL;
-}
 
 //---Screen Space Ambient Occlusion
 
@@ -965,9 +993,7 @@ SSAOFX::SSAOFX() {
 
 void SSAOFX::applyEffect(Texture* Zbuffer, Texture* normal_buffer, Camera* camera, Texture* outputOcc) {
 
-	int width = Application::instance->window_width;
-	int height = Application::instance->window_height;
-
+	
 	FBO* ssao_fbo = Texture::getGlobalFBO(outputOcc);
 	//start rendering inside the ssao texture
 	ssao_fbo->bind();
@@ -1010,4 +1036,24 @@ void SSAOFX::applyEffect(Texture* Zbuffer, Texture* normal_buffer, Camera* camer
 	ssao_fbo->unbind();
 
 
+}
+
+
+Texture* GTR::CubemapFromHDRE(const char* filename)
+{
+	HDRE* hdre = new HDRE();
+	if (!hdre->load(filename))
+	{
+		delete hdre;
+		return NULL;
+	}
+
+	/*
+	Texture* texture = new Texture();
+	texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFaces(0), hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT );
+	for(int i = 1; i < 6; ++i)
+		texture->uploadCubemap(texture->format, texture->type, false, (Uint8**)hdre->getFaces(i), GL_RGBA32F, i);
+	return texture;
+	*/
+	return NULL;
 }

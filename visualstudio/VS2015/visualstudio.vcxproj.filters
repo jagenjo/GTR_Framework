@@ -35,9 +35,6 @@
     <ClCompile Include="..\..\src\texture.cpp">
       <Filter>gfx</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\shader.cpp">
-      <Filter>gfx</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\mesh.cpp">
       <Filter>gfx</Filter>
     </ClCompile>
@@ -113,6 +110,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\sphericalharmonics.cpp">
       <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\shader.cpp">
+      <Filter>pipeline</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

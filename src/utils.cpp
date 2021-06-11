@@ -564,6 +564,14 @@ Vector4 readJSONVector4(cJSON* obj, const char* name)
 	return Vector4();
 }
 
+bool readJSONBool(cJSON* obj, const char* name, bool default_value)
+{
+	cJSON* bool_json = cJSON_GetObjectItemCaseSensitive((cJSON*)obj, name);
+	if (!bool_json )
+		return default_value;
+	return bool_json;
+}
+
 Vector3& degamma(Vector3& color) { //podemos retornar referencias desde las funciones// y el usuario puede elegir si lo quiere como ref o copia
 
 	// pregunar a Alex, usar pow o usar mult...

@@ -58,40 +58,6 @@ uniform float u_light_spotExponent;
 
 // ----------------------GET FUNCTIONS-----------------------------
 
-// ----------------------SHADOW-------------------------------------
-
-\get_shadow_functions
-
-float get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap ){
-
-	//project our 3D position to the shadowmap
-	vec4 proj_pos = u_shadow_viewproj * vec4(pos,1.0);
-
-	//from homogeneus space to clip space
-	vec2 shadow_uv = proj_pos.xy / proj_pos.w;
-
-	//from clip space to uv space
-	shadow_uv = shadow_uv * 0.5 + vec2(0.5);
-
-	//get point depth [-1 .. +1] in non-linear space
-	float real_depth = (proj_pos.z - u_shadow_bias) / proj_pos.w;
-
-	//normalize from [-1..+1] to [0..+1] still non-linear
-	real_depth = real_depth * 0.5 + 0.5;
-
-	//read depth from depth buffer in [0..+1] non-linear
-	float shadow_depth = texture2D( shadowmap, shadow_uv).x;
-
-	//compute final shadow factor by comparing
-	float shadow_factor = 1.0;
-
-	//we can compare them, even if they are not linear
-	if( shadow_depth < real_depth )
-		shadow_factor = 0.0;
-
-	return shadow_factor ;	
-}
-
 // ----------------------FOR LIGHT-----------------------------
 
 \get_lights_functions
@@ -179,6 +145,40 @@ vec3 perturbNormal(vec3 N, vec3 WP, vec2 uv, vec3 normal_pixel)
 	mat3 TBN = cotangent_frame(N, WP, uv); 
 	// conv tg space to world space 
 	return normalize(TBN * normal_pixel); 
+}
+
+// ----------------------SHADOW-------------------------------------
+
+\get_shadow_functions
+
+float get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap ){
+
+	//project our 3D position to the shadowmap
+	vec4 proj_pos = u_shadow_viewproj * vec4(pos,1.0);
+
+	//from homogeneus space to clip space
+	vec2 shadow_uv = proj_pos.xy / proj_pos.w;
+
+	//from clip space to uv space
+	shadow_uv = shadow_uv * 0.5 + vec2(0.5);
+
+	//get point depth [-1 .. +1] in non-linear space
+	float real_depth = (proj_pos.z - u_shadow_bias) / proj_pos.w;
+
+	//normalize from [-1..+1] to [0..+1] still non-linear
+	real_depth = real_depth * 0.5 + 0.5;
+
+	//read depth from depth buffer in [0..+1] non-linear
+	float shadow_depth = texture2D( shadowmap, shadow_uv).x;
+
+	//compute final shadow factor by comparing
+	float shadow_factor = 1.0;
+
+	//we can compare them, even if they are not linear
+	if( shadow_depth < real_depth )
+		shadow_factor = 0.0;
+
+	return shadow_factor ;	
 }
 
 // ----------------------FOR TEXTURE-----------------------------
@@ -528,7 +528,12 @@ uniform vec3 u_ambient_light;
 #include "get_lights_functions"
 #include "get_textures_uniforms"
 #include "get_textures_functions"
+#include "get_shadow_functions"
 //#include "get_gamma_functions"
+
+uniform vec4 u_shadow_viewproj;
+uniform float u_shadow_bias;
+uniform sampler2D u_shadow_map;
 
 
 //out vec4 FragColor;
@@ -552,6 +557,10 @@ void main()
 	vec3 L = vec3(0.0);
 	float NdotL = 0.0;
 	float att_factor = compute_attfactor(  u_light_position, v_world_position, u_light_maxdist);
+	//float fhadow_factor = get_shadow_factor( v_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
+	//get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap )
+
+
 	if( u_light_type == 0){ // directional
 
 		L = normalize(-u_light_vector);
@@ -1180,8 +1189,6 @@ void main()
 // -------------------------------------------------------------------------------------------------------------------------
 \depth.fs
 
-
-
 uniform vec2 u_camera_nearfar;
 uniform sampler2D u_texture; //depth map
 varying vec2 v_uv;
@@ -1189,6 +1196,7 @@ varying vec2 v_uv;
 
 void main()
 {
+	//example of linearizing depthmap inside shader so we can show it on the screen
 	float n = u_camera_nearfar.x;
 	float f = u_camera_nearfar.y;
 	float z = texture2D(u_texture,v_uv).x;

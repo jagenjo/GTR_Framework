@@ -130,8 +130,8 @@ namespace GTR {
 		//to render lights in the scene 
 		void renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::Material* material);
 
-		void render2depthbuffer(GTR::Material* material, Camera* camera, std::vector<RenderCall>& rendercalls);
-
+		void render2depthbuffer(std::vector<RenderCall>& rendercalls, Camera* camera);
+		void showShadowmap(FBO* fbo, Camera* camera, float width, float height);
 		//----
 
 		void extractProbe(GTR::Scene* scene, sProbe& p);

@@ -71,18 +71,17 @@ namespace GTR {
 				
 		eLightType light_type;
 		Vector3 color;
-		Vector3 target;
-
 		float intensity;			
 		float max_dist; //how far the light can reach
 		float area_size; // the size of the volume for directional light
+		
+		//spot light param
 		float cone_angle;
 		float spot_exp;
-
+		//shadownmap param
 		FBO* shadow_fbo;
+		float shadow_bias;
 		Camera light_camera;
-
-		//FBO* shadow_fbo;
 		bool cast_shadows;
 
 		LightEntity();

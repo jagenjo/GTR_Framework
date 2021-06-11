@@ -17,8 +17,7 @@ namespace GTR {
 		BLEND
 	};
 
-
-
+	
 	enum eChannels {
 		ALBEDO,
 		NORMAL,

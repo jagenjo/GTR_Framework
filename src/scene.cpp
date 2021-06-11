@@ -177,8 +177,6 @@ void GTR::PrefabEntity::renderInMenu()
 	}
 #endif
 
-
-
 }
 
 
@@ -186,24 +184,26 @@ GTR::LightEntity::LightEntity() {
 
 	this->entity_type = LIGHT;
 	this->color.set(1, 1, 1);
-	this->target.set(0, 0, 0);
-
+	
 	this->intensity = 0;
 	this->light_type = DIRECTIONAL;
 	this->max_dist = 0;
 	this->cone_angle = 0;
 	this->spot_exp = 0;
 	this->area_size = 0;
+	this->shadow_fbo = NULL;
+	this->shadow_bias = 0;
+	this->cast_shadows = false;
+	//Texture texture = new Texture(Application::instance->window_width, Application::instance->window_width, GL_RGB, GL_UNSIGNED_BYTE);
 	this->light_camera.lookAt(this->model.getTranslation(), this->model * Vector3(0, 0, 1), this->model.rotateVector(Vector3(0, 1, 0)));
 
-	
 }
 
 
 void GTR::LightEntity::uploadToShader(Shader* sh)
 {
 	sh->setUniform("u_light_type", this->light_type);
-	sh->setUniform("u_light_color", (this->color));//degamma
+	sh->setUniform("u_light_color", (this->color)); //G
 	sh->setUniform("u_light_position", this->model.getTranslation() );
 	sh->setUniform("u_light_vector", model.frontVector() );
 	sh->setUniform("u_light_intensity", intensity );
@@ -212,6 +212,15 @@ void GTR::LightEntity::uploadToShader(Shader* sh)
 	sh->setUniform("u_light_spotExponent", spot_exp);
 	sh->setUniform("u_light_area_size", area_size );
 
+	/*
+	if (this->light_type == POINT) {
+		return;
+	}
+	sh->setUniform("u_shadow_viewproj", this->light_camera.viewprojection_matrix);
+	sh->setUniform("u_shadow_map", this->shadow_fbo->color_textures[0], 10);///
+	sh->setUniform("u_shadow_bias", this->shadow_bias);
+	*/
+	
 }
 
 
@@ -226,45 +235,57 @@ void GTR::LightEntity::configure(cJSON* json)
 		if (lightType == "POINT") {
 			this->light_type = POINT; 
 		}
-		else if (lightType == "DIRECTIONAL") {
+		if (lightType == "DIRECTIONAL") {
 			this->light_type = DIRECTIONAL;
 		}
-		else if (lightType == "SPOT") {
+		if (lightType == "SPOT") {
 			this->light_type = SPOT;
 		}
 		
 	}
-	if (cJSON_GetObjectItem(json, "color"))
+	 if (cJSON_GetObjectItem(json, "color"))
 	{
 		Vector3 light_color = readJSONVector3(json, "color", Vector3(1, 1, 1));
 		this->color = light_color;
 	}
-	if (cJSON_GetObjectItem(json, "intensity"))
+	 if (cJSON_GetObjectItem(json, "intensity"))
 	{
 		float intensity = cJSON_GetObjectItem(json, "intensity")->valuedouble;
 		this->intensity = intensity;
 	}
-	if (cJSON_GetObjectItem(json, "max_dist"))
+	 if (cJSON_GetObjectItem(json, "max_dist"))
 	{
 		float max_dist = cJSON_GetObjectItem(json, "max_dist")->valuedouble;
 		this->max_dist = max_dist;
 	}
 
-	if (cJSON_GetObjectItem(json, "area_size"))
+	 if (cJSON_GetObjectItem(json, "area_size"))
 	{
 		float area_size = cJSON_GetObjectItem(json, "area_size")->valuedouble;
 		this->area_size = area_size;
 	}
-	if (cJSON_GetObjectItem(json, "cone_angle"))
+	 if (cJSON_GetObjectItem(json, "cone_angle"))
 	{
 		float cone_angle = cJSON_GetObjectItem(json, "cone_angle")->valuedouble;
 		this->cone_angle = cone_angle;
 	}
-	if (cJSON_GetObjectItem(json, "cone_exp"))
+	 if (cJSON_GetObjectItem(json, "cone_exp"))
+	 {
+		 float cone_exp = cJSON_GetObjectItem(json, "cone_exp")->valuedouble;
+		 this->spot_exp = cone_exp;
+	 }
+	 if (cJSON_GetObjectItem(json, "shadow_bias"))
 	{
-		float cone_exp = cJSON_GetObjectItem(json, "cone_exp")->valuedouble;
-		this->spot_exp = cone_exp;
+		float shadow_bias = cJSON_GetObjectItem(json, "shadow_bias")->valuedouble;
+		this->shadow_bias = shadow_bias;
 	}
+	/*
+	else if (cJSON_GetObjectItem(json, "cast_shadows"))
+	{
+		bool cast_shadows = readJSONBool(json, "cast_shadows", false); // we create a funcion to read booleans
+		this->cast_shadows = cast_shadows;
+	}*/
+
 
 }
 
@@ -283,12 +304,12 @@ void GTR::LightEntity::renderInMenu()
 		}
 
 		if (this->light_type == POINT) {
-			ImGui::SliderFloat("Max dist", &max_dist, 0, 1200);
+			ImGui::SliderFloat("Max dist", &max_dist, 0, 1000);
 			ImGui::SliderFloat("Intensity", &intensity, 0, 20);
 		}
 
 		if (this->light_type == SPOT) {
-			ImGui::SliderFloat("Max dist", &max_dist, 0, 1200);
+			ImGui::SliderFloat("Max dist", &max_dist, 0, 1000);
 			ImGui::SliderFloat("Intensity", &intensity, 0, 20);
 			ImGui::SliderFloat("Spot exp", &spot_exp, 0, 30);
 			ImGui::SliderFloat("Spot cutoff", &cone_angle, 0, 90);
