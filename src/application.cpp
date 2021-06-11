@@ -372,6 +372,8 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_m: renderer->render_mode = GTR::eRenderMode::SHOW_NORMAL; break;
 		case SDLK_n: renderer->render_mode = GTR::eRenderMode::SHOW_OC; break;
 		case SDLK_b: renderer->render_mode = GTR::eRenderMode::SHOW_UVS; break;
+        case SDLK_0: renderer->pipeline_mode = GTR::ePipelineMode::FORWARD; break;
+        case SDLK_1: renderer->pipeline_mode = GTR::ePipelineMode::DEFERRED; break;
 
 		
 		case SDLK_g: renderer->show_gbuffers = !renderer->show_gbuffers; break;

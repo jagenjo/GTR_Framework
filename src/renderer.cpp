@@ -29,9 +29,9 @@ GTR::Renderer::Renderer()
 	int width = Application::instance->window_width;
 	int height = Application::instance->window_height;
 
-	this->render_mode = eRenderMode::SINGLE;
+	this->render_mode = eRenderMode::MULTI;
 	this->rendering_shadowmap = false;
-	this->pipeline_mode = ePipelineMode::FORWARD;
+	this->pipeline_mode = ePipelineMode::DEFERRED;
 	
 	this->update_shadowmaps = false;
 
@@ -756,7 +756,7 @@ void Renderer::uploadTextures(Material* material, Shader* shader) {
 	if (oc_texture == NULL)
 		oc_texture = Texture::getWhiteTexture();
 	if (n_texture == NULL)
-		n_texture = Texture::getWhiteTexture();
+		n_texture = Texture::getBlackTexture();
 
 	//upload textures
 	if (texture)
