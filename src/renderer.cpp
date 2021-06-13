@@ -340,18 +340,20 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		
 	
 
-	//clone the depth buffer content to the other depth buffer so they contain the same
-	//therefore, we can have the contain in the scene deth and block writing it to avoid any modification while render
-	//this->gbuffers_fbo.depth_texture->copyTo(illumination_fbo.depth_texture);
-	//glDepthMask(false); //now we can block writing to it	
 
 	//now if we enable depth_test during the illumination pass it will take into account the scene depth buffer
 	illumination_fbo.bind();
-
-	// if we want to clear all in once
-	glClearColor(0, 0, 0, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	checkGLErrors();
+    
+    // if we want to clear all in once
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    checkGLErrors();
+    
+    //clone the depth buffer content to the other depth buffer so they contain the same
+    //therefore, we can have the contain in the scene deth and block writing it to avoid any modification while render
+    this->gbuffers_fbo.depth_texture->copyTo(NULL);
+	glDepthMask(false); //now we can block writing to it
+    
 
 	
 	Mesh* quad = Mesh::getQuad(); 
@@ -411,18 +413,30 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 		}
 	}
+<<<<<<< HEAD
 	
+=======
+>>>>>>> 1b3f26dd970eb3fcf918d18441bee35ebbf41662
 
-	/*
+
 	//---------Using geometry--------------
 	 
 	//we can use a sphere mesh for point lights
 	Mesh* sphere = Mesh::Get("data/meshes/sphere.obj", false, false);
 	
-	glDisable(GL_CULL_FACE); 
-	glEnable(GL_DEPTH_TEST);
+    // Activate CULL FACE to render only one time every pixel
+	glEnable(GL_CULL_FACE);
+    // To control the case when the camera is inside the sphere (in which no pixels will be rendered due to the cullface).
+    // To solve this we must render the backfacing triangles of our sphere only using:
+    glFrontFace(GL_CW);
+	// Enable Depth test to compute the overlapping pixels
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_GREATER);
+    // Activate blending to join the illumination of the lights inside the sphere with the scene that is already in the framebuffer
 	glEnable(GL_BLEND);
-	//this deferred_ws shader uses the basic.vs instead of quad.vs
+    glBlendFunc(GL_ONE, GL_ONE);
+	
+    //this deferred_ws shader uses the basic.vs instead of quad.vs
 	shader = Shader::Get("deferred_ws");
 
 	shader->enable();
@@ -436,7 +450,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	shader->setUniform("u_iRes", iRes);
 	shader->setUniform("u_camera_position", camera->eye );
 	
-	Matrix44 m; Vector3 pos; 
+	Matrix44 m; Vector3 pos;
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
 		light = this->light_entities[i];
@@ -452,31 +466,30 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 		shader->setUniform("u_model", m); //pass the model to render the sphere
 
 		light->uploadToShader(shader);
-		glFrontFace(GL_CW);
 		sphere->render(GL_TRIANGLES);
 		
 
 		//only pixels behind a surface are rendered //only draw if the pixel is behind 
 		// we solve this during the depth test stage, meaning before execte .fs
-		glDepthFunc(GL_GREATER);
 		
-		glBlendFunc(GL_ONE, GL_ONE);
+		//glBlendFunc(GL_ONE, GL_ZERO);
 	}
-
-
-	
-	
-	
-	shader->disable();
-
-*/
 
 	//stop rendering to the fbo
 	illumination_fbo.unbind();
-	//illumination_fbo.color_textures[0]->toViewport(); //se ve muy oscuro
-	
+    
+    // Disabling CULL FACE
+    glDisable(GL_CULL_FACE);
+    // Setting back to render the front face
 	glFrontFace(GL_CCW);
-	glDisable(GL_BLEND);
+    // Disabling the depth test
+    glDisable(GL_DEPTH_TEST);
+    // Setting back to less depth test function
+	glDepthFunc(GL_LESS);
+    //now we can activate writing to depth buffer
+    glDepthMask(true);
+    // Disabling blending
+    glDisable(GL_BLEND);
 	
 }
 
