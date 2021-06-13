@@ -186,7 +186,7 @@ GTR::LightEntity::LightEntity() {
 	this->color.set(1, 1, 1);
 	
 	this->intensity = 0;
-	this->light_type = DIRECTIONAL;
+	this->light_type = GTR::eLightType::DIRECTIONAL;
 	this->max_dist = 0;
 	this->cone_angle = 0;
 	this->spot_exp = 0;
@@ -194,7 +194,7 @@ GTR::LightEntity::LightEntity() {
 	this->shadow_fbo = NULL;
 	this->shadow_bias = 0;
 	this->cast_shadows = false;
-	//Texture texture = new Texture(Application::instance->window_width, Application::instance->window_width, GL_RGB, GL_UNSIGNED_BYTE);
+	
 	this->light_camera.lookAt(this->model.getTranslation(), this->model * Vector3(0, 0, 1), this->model.rotateVector(Vector3(0, 1, 0)));
 
 }
@@ -212,14 +212,15 @@ void GTR::LightEntity::uploadToShader(Shader* sh)
 	sh->setUniform("u_light_spotExponent", spot_exp);
 	sh->setUniform("u_light_area_size", area_size );
 
-	/*
-	if (this->light_type == POINT) {
+	
+	if (!this->cast_shadows) {
 		return;
 	}
+	
 	sh->setUniform("u_shadow_viewproj", this->light_camera.viewprojection_matrix);
-	sh->setUniform("u_shadow_map", this->shadow_fbo->color_textures[0], 10);///
+	//sh->setUniform("u_shadow_map", this->shadow_fbo->color_textures[0], 10);///
 	sh->setUniform("u_shadow_bias", this->shadow_bias);
-	*/
+	
 	
 }
 
@@ -279,12 +280,12 @@ void GTR::LightEntity::configure(cJSON* json)
 		float shadow_bias = cJSON_GetObjectItem(json, "shadow_bias")->valuedouble;
 		this->shadow_bias = shadow_bias;
 	}
-	/*
-	else if (cJSON_GetObjectItem(json, "cast_shadows"))
+	
+	 if (cJSON_GetObjectItem(json, "cast_shadows"))
 	{
-		bool cast_shadows = readJSONBool(json, "cast_shadows", false); // we create a funcion to read booleans
+		bool cast_shadows = readJSONBool(json, "cast_shadows", false); 
 		this->cast_shadows = cast_shadows;
-	}*/
+	}
 
 
 }

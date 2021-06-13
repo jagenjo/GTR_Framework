@@ -38,8 +38,6 @@ namespace GTR {
 	
 	};
 
-	
-
 	//struct to store probes
 	struct sProbe {
 		Vector3 pos; //where is located
@@ -73,34 +71,38 @@ namespace GTR {
 
 	public:
 
+		//RCs
 		std::vector< RenderCall > rc_data_list;
-	
+		
+		//Lights
 		int max_num_lights;
 		std::vector<LightEntity* > light_entities;
 
-		SSAOFX ssao;
-
-		//FBO fbo;
+		
+		//FBO & SSAO
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
-		FBO* irr_fbo;
-		bool show_gbuffers;
+		FBO* irr_fbo; //irradiance
+		SSAOFX ssao;
+		//FBO* ssao_fbo;
 
-		//Texture* color_buffer;
+		//Textures
 		Texture* ao_buffer;
-		bool show_ao;
-		bool show_ao_deferred;
+	
 
+		//Flags
 		eRenderMode render_mode;
 		ePipelineMode pipeline_mode;
 
 		bool update_shadowmaps;
 		bool rendering_shadowmap;
-		
+		bool show_ao;
+		bool show_ao_deferred;
+		bool show_gbuffers;
+
 		//ctor
 		Renderer();
-		
-	
+			
 		void render2FBO(GTR::Scene* scene, Camera* camera);
 
 		//renders several elements of the scene
@@ -130,7 +132,8 @@ namespace GTR {
 		//to render lights in the scene 
 		void renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::Material* material);
 
-		void render2depthbuffer(std::vector<RenderCall>& rendercalls, Camera* camera);
+		void createShadowmap(GTR::Scene* scene, LightEntity* light, Camera* camera);
+
 		void showShadowmap(FBO* fbo, Camera* camera, float width, float height);
 		//----
 

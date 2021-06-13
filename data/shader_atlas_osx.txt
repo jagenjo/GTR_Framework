@@ -8,6 +8,7 @@ light basic.vs light.fs
 light_singlepass basic.vs light_singlepass.fs
 sh2debug basic.vs sh2debug.fs
 fbo basic.vs fbo.fs
+simpleDepthShader simpleDepthShader.vs simpleDepthShader.fs
 
 gbuffers basic.vs gbuffers.fs
 showAlpha quad.vs showAlpha.fs // es de 2D-> quad. muestra solo el 4º componente
@@ -55,6 +56,30 @@ uniform float u_light_spotCosineCutoff;
 uniform float u_light_spotExponent;
 
 
+\compute_light_phong
+
+	if( u_light_type == 0){ // directional
+
+		L = normalize(-u_light_vector);
+		NdotL = max( dot(N,L), 0.0);
+		light += NdotL * u_light_color * u_light_intensity;
+	}
+	else{
+		L = normalize(u_light_position - v_world_position);
+		NdotL = max( dot(N,L), 0.0);
+		float spotFactor = 1.0;
+		if( u_light_type == 2) {
+			float spotCosine = dot( normalize( u_light_vector), -L);
+			spotCosine = max(spotCosine, 0.0); 
+			if ( spotCosine >= u_light_spotCosineCutoff ){
+				spotFactor = pow( spotCosine , u_light_spotExponent ) ;
+			}
+			else{
+				spotFactor = 0.0; //if it's outsite
+			}
+		}
+		light += NdotL * spotFactor * att_factor * u_light_color * u_light_intensity;
+	}
 
 // ----------------------GET FUNCTIONS-----------------------------
 
@@ -447,6 +472,26 @@ void main()
 }
 
 // -------------------------------------------------------------------------------------------------------------------------
+\simpleDepthShader.vs
+
+
+attribute vec3 a_vertex;
+uniform mat4 u_shadow_viewproj;
+uniform mat4 u_model;
+
+void main()
+{	
+	gl_Position = u_shadow_viewproj * u_model * vec4(a_vertex, 1.0);
+}
+
+\simpleDepthShader.fs
+
+void main()
+{
+	
+}
+
+// -------------------------------------------------------------------------------------------------------------------------
 \flat.fs
 
 
@@ -569,45 +614,8 @@ void main()
 	//get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap )
 
 
-	if( u_light_type == 0){ // directional
-
-		L = normalize(-u_light_vector);
-		NdotL = max( dot(N,L), 0.0);
-		light += NdotL * u_light_color * u_light_intensity;
-	}
-	else{
-		L = normalize(u_light_position - v_world_position);
-		NdotL = max( dot(N,L), 0.0);
-		float spotFactor = 1.0;
-		if( u_light_type == 2) {
-			float spotCosine = dot( normalize( u_light_vector), -L);
-			spotCosine = max(spotCosine, 0.0); 
-			if ( spotCosine >= u_light_spotCosineCutoff ){
-				spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-			}
-			else{
-				spotFactor = 0.0; //if it's outsite
-			}
-		}
-		light += NdotL * spotFactor * att_factor * u_light_color * u_light_intensity;
-	}
+	#include "compute_light_phong"
 	
-	/*
-	if (u_light_type == 1){  
-		
-		L = normalize(u_light_position - v_world_position);
-		
-	}
-	if (u_light_type == 2){
-
-		vec3 L_aux = normalize(u_light_position - v_world_position);
-		float spotCosine = dot( normalize( u_light_vector), -L_aux);
-		spotCosine = max(spotCosine, 0.0); 
-		if ( spotCosine >= u_light_spotCosineCutoff ){
-			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-			light += spotFactor * att_factor * u_light_color * u_light_intensity ; 
-		}
-	}*/
 
 	color.xyz *= light;
 	color.xyz += u_emissive_factor * ( texture2D(u_emissive_texture, uv ).xyz );

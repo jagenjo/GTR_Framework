@@ -24,29 +24,35 @@ using namespace GTR;
 
 sProbe probe; //quitar 
 
+//this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
+//this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
+
 GTR::Renderer::Renderer()
 {
 	int width = Application::instance->window_width;
 	int height = Application::instance->window_height;
 
-	this->render_mode = eRenderMode::MULTI;
+	//Flags
+	this->render_mode = GTR::eRenderMode::MULTI;
+	this->pipeline_mode = GTR::ePipelineMode::DEFERRED;
 	this->rendering_shadowmap = false;
-	this->pipeline_mode = ePipelineMode::DEFERRED;
-	
 	this->update_shadowmaps = false;
-
-	//this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
-	//this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
-	
 	this->show_gbuffers = false;
-
 	this->show_ao = false;
 	this->show_ao_deferred = false;
 	
-	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE); 
-
-
-	//------
+	//FrameBufferObject
+	if (gbuffers_fbo.fbo_id == 0) { //we reserve memory to each textures...
+		gbuffers_fbo.create(width, height, 3, GL_RGBA, GL_UNSIGNED_BYTE, true); 
+	}
+	if (illumination_fbo.fbo_id == 0) {
+		illumination_fbo.create(width, height, 1, GL_RGB, GL_FLOAT, true);
+	}
+	
+	//Textures
+	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE);
+	
+	//------probes:
 
 	memset(&probe, 0, sizeof(probe));
 	probe.sh.coeffs[0].set(1.0, 0.0, 0.0);
@@ -109,8 +115,8 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		rc_data_alpha.push_back(rc_data_list[i]);
 	}
 
-	/*
-	if (rendering_shadowmap) {
+	
+	if (this->update_shadowmaps) {
 
 		LightEntity* light;
 		for (int i = 0; i < this->light_entities.size(); i++)
@@ -120,12 +126,13 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 			{
 				continue;
 			}
-			//render2depthbuffer(GTR::Scene* scene, light, camera);
+			//just pass the lights that need to cast shadows
+			createShadowmap( scene, light, camera);
 		}
 
 		
 	}
-		*/
+		
 
 	if (pipeline_mode == FORWARD)
 		renderForward(scene, this->rc_data_list, camera, true);
@@ -232,16 +239,7 @@ void GTR::Renderer::renderForward(GTR::Scene* scene, std::vector <RenderCall>& r
 void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCall>& rendercalls, Camera* camera) {
 	
 
-	if (gbuffers_fbo.fbo_id == 0) { //this att tell me if it is already created (by default is 0). Memory is reserved?
-
-		//we reserve memory to each textures...
-		gbuffers_fbo.create(width,
-			height,
-			3, // num of textures to create
-			GL_RGBA, // four channels
-			GL_UNSIGNED_BYTE, //1byte
-			true); //add depth_texture
-	}
+	
 
 	//start rendeing inside the gbuffers
 	gbuffers_fbo.bind();
@@ -340,17 +338,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 	//---------Ilumination_Pass--------------
 		
-	if (illumination_fbo.fbo_id == 0) {
-
-		//create 3 textures of 4 components
-		illumination_fbo.create(width, 
-								height,
-								1, 			//three textures
-								GL_RGB, 		//three channels
-								GL_FLOAT, // to have more precision to accumulate light
-								true);		//add depth_texture
-
-	}
+	
 
 	//clone the depth buffer content to the other depth buffer so they contain the same
 	//therefore, we can have the contain in the scene deth and block writing it to avoid any modification while render
@@ -423,7 +411,7 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 		}
 	}
-	shader->disable();
+	
 
 	/*
 	//---------Using geometry--------------
@@ -675,6 +663,8 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	else if (mode == GBUFFERS) 
 		shader = Shader::Get("gbuffers");
 
+	
+
 
 	if (!shader)//no shader? then nothing to render
 		return;
@@ -694,7 +684,7 @@ void Renderer::renderMeshWithMaterial(eRenderMode mode, const Matrix44 model, Me
 	
 	//assert(glGetError() == GL_NO_ERROR);
 
-	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix); //camera VP 
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model );
 	//float t = getTime(); shader->setUniform("u_time", t);
@@ -862,27 +852,20 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 
 
 
-void Renderer::render2depthbuffer( std::vector<RenderCall>& rendercalls, Camera* camera) {
+void Renderer::createShadowmap( GTR::Scene* scene, LightEntity* light, Camera* camera) {
 	
 	int width = Application::instance->window_width;
 	int height = Application::instance->window_height;
 
-	LightEntity* light;
-	for (int i = 0; i < this->light_entities.size(); ++i)
-	{
-		if (this->light_entities[i]->light_type == POINT)
-			continue;
-
-		if (this->light_entities[i]->light_type == SPOT) {
-			light = this->light_entities[i];
-			light->light_camera.setPerspective(light->cone_angle, 1, 10.0, light->max_dist);
-		}
-		else { // DIRECTIONAL
-			light = this->light_entities[i];
-			light->light_camera.setOrthographic(-light->area_size, light->area_size,
-							-light->area_size, light->area_size, 
-							-light->area_size, light->area_size);
-		}
+	if (light->light_type == SPOT) {
+		
+		light->light_camera.setPerspective(light->cone_angle, 1, 10.0, light->max_dist);
+	}
+	else { // DIRECTIONAL
+		float near_plane = 1.0, far_plane = light->max_dist; //light->area_size
+		light->light_camera.setOrthographic(-10, 10,
+						-10 , 10 , 
+			near_plane, far_plane);
 	}
 
 	//first time we create the FBO
@@ -909,13 +892,17 @@ void Renderer::render2depthbuffer( std::vector<RenderCall>& rendercalls, Camera*
 
 	//whatever we render here will be stored inside a texture, we don't need to do anything fanzy
 	
-	for (int i = 0; i < rendercalls.size(); i++)//render all
-	{
-		RenderCall& rc = rendercalls[i];
-		renderMeshWithMaterial(eRenderMode::MULTI, rc.model, rc.mesh, rc.material, &light->light_camera); //always in gbuffer mode
-	}
+	
+	
+	renderScene(scene, &light->light_camera);
+	
+	Mesh* quad = Mesh::getQuad();
+	Shader* shader = Shader::Get("simpleDepthShader");
+	
+	//shader->setUniform("u_model", camera->viewprojection_matrix);
+	//shader->setUniform("u_shadow_viewproj", light->light_camera.viewprojection_matrix);//is like lightSpaceMatrix
 
-
+	quad->render(GL_TRIANGLES);
 	//disable it to render back to the screen
 	light->shadow_fbo->unbind();
 
