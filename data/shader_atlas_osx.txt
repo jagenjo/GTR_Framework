@@ -54,7 +54,31 @@ uniform float u_light_area_size;
 uniform float u_light_spotCosineCutoff;
 uniform float u_light_spotExponent;
 
+// ----------------------LIGHT COMPUTATION-----------------------------
 
+\compute_light_phong
+if( u_light_type == 0){ // directional
+
+		L = normalize(-u_light_vector);
+		NdotL = max( dot(N,L), 0.0);
+		light += NdotL * u_light_color * u_light_intensity;
+	}
+else{
+	L = normalize(u_light_position - v_world_position);
+	NdotL = max( dot(N,L), 0.0);
+	float spotFactor = 1.0;
+	if( u_light_type == 2) {
+		float spotCosine = dot( normalize( u_light_vector), -L);
+		spotCosine = max(spotCosine, 0.0); 
+		if ( spotCosine >= u_light_spotCosineCutoff ){
+			spotFactor = pow( spotCosine , u_light_spotExponent ) ;
+		}
+		else{
+			spotFactor = 0.0; //if it's outsite
+		}
+	}
+	light += NdotL * spotFactor * att_factor * u_light_color * u_light_intensity;
+}
 
 // ----------------------GET FUNCTIONS-----------------------------
 
@@ -568,46 +592,8 @@ void main()
 	//float fhadow_factor = get_shadow_factor( v_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
 	//get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap )
 
-
-	if( u_light_type == 0){ // directional
-
-		L = normalize(-u_light_vector);
-		NdotL = max( dot(N,L), 0.0);
-		light += NdotL * u_light_color * u_light_intensity;
-	}
-	else{
-		L = normalize(u_light_position - v_world_position);
-		NdotL = max( dot(N,L), 0.0);
-		float spotFactor = 1.0;
-		if( u_light_type == 2) {
-			float spotCosine = dot( normalize( u_light_vector), -L);
-			spotCosine = max(spotCosine, 0.0); 
-			if ( spotCosine >= u_light_spotCosineCutoff ){
-				spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-			}
-			else{
-				spotFactor = 0.0; //if it's outsite
-			}
-		}
-		light += NdotL * spotFactor * att_factor * u_light_color * u_light_intensity;
-	}
+	#include "compute_light_phong"
 	
-	/*
-	if (u_light_type == 1){  
-		
-		L = normalize(u_light_position - v_world_position);
-		
-	}
-	if (u_light_type == 2){
-
-		vec3 L_aux = normalize(u_light_position - v_world_position);
-		float spotCosine = dot( normalize( u_light_vector), -L_aux);
-		spotCosine = max(spotCosine, 0.0); 
-		if ( spotCosine >= u_light_spotCosineCutoff ){
-			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
-			light += spotFactor * att_factor * u_light_color * u_light_intensity ; 
-		}
-	}*/
 
 	color.xyz *= light;
 	color.xyz += u_emissive_factor * ( texture2D(u_emissive_texture, uv ).xyz );
@@ -863,9 +849,9 @@ void main()
 
 		L = normalize(-u_light_vector);
 		float NoL = max( dot(N,L) , 0.0);
-		vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL );
+		//vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL );
 
-		light += diffspecular_light; // *  u_light_color * u_light_intensity; //att_factor
+		light += NoL * u_light_color * u_light_intensity;
 
 	}
 	color.xyz *= light;
@@ -933,24 +919,24 @@ void main()
 	float NoL = max( dot(N,L) , 0.0);
 
 	float att_factor =  compute_attfactor( u_light_position, world_position, u_light_maxdist );
-	vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL );		
+	//vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL );		
 	
-	if (u_light_type == 1){  // point 
+	float spotFactor = 1.0;
 
-		light +=  diffspecular_light * att_factor ; //NoL  * u_light_color * u_light_intensity *
-	
-	}
-	else{ // spot
+	if (u_light_type == 2){ // spot light
 
 		float spotCosine = dot( normalize( u_light_vector), -L ); //como alineado entre -L y light_direction
 		spotCosine = max(spotCosine, 0.0 ); 
+		spotFactor = 0.0;
 		if ( spotCosine >= u_light_spotCosineCutoff ){
-			float spotFactor = pow( spotCosine , u_light_spotExponent ) ;
+			spotFactor = pow( spotCosine , u_light_spotExponent ) ;
 
-			light += spotFactor  * diffspecular_light * att_factor ; // * u_light_color * u_light_intensity 
+			//light += spotFactor  * diffspecular_light * att_factor ; // * u_light_color * u_light_intensity 
 
 		}
 	}
+	// If it's a point light, it will have spotFactor = 1
+	light +=  spotFactor * att_factor * NoL  * u_light_color * u_light_intensity; //diffspecular_light
 
 	color.xyz *= light;
 	gl_FragData[0] = vec4(color, 1.0 ) ;
