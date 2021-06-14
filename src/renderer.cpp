@@ -75,6 +75,8 @@ void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
 
 	if (this->show_gbuffers && gbuffers_fbo.fbo_id != 0)
 		showGbuffers(width, height, camera); 
+
+	//showShadowmap(camera);
 }
 
 
@@ -114,28 +116,11 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 	for (i; i < rc_data_list.size(); i++) {
 		rc_data_alpha.push_back(rc_data_list[i]);
 	}
-
-	
-	if (this->update_shadowmaps) {
-
-		LightEntity* light;
-		for (int i = 0; i < this->light_entities.size(); i++)
-		{
-			light = light_entities[i];
-			if (!light->cast_shadows) // si no emite, continua
-			{
-				continue;
-			}
-			//just pass the lights that need to cast shadows
-			createShadowmap( scene, light, camera);
-		}
-
-		
-	}
 		
 
-	if (pipeline_mode == FORWARD)
+	if (pipeline_mode == FORWARD) {
 		renderForward(scene, this->rc_data_list, camera, true);
+	}
 
 	else if (pipeline_mode == DEFERRED) {
 		renderDeferred(scene, this->rc_data_list, camera);
@@ -157,6 +142,28 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
 
 	}
+
+	
+	
+	if (this->update_shadowmaps) {
+
+		LightEntity* light;
+		for (int i = 0; i < this->light_entities.size(); i++)
+		{
+			light = light_entities[i];
+			if (!light->cast_shadows) // si no emite, continua
+			{
+				continue;
+			}
+			//just pass the lights that need to cast shadows
+			//updateShadowmap(scene, light, camera);
+		}
+	}
+
+	if (rendering_shadowmap) {
+		return;
+	}
+	createShadowmap(scene, camera);
 
 	
 	
@@ -354,8 +361,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
     this->gbuffers_fbo.depth_texture->copyTo(NULL);
 	glDepthMask(false); //now we can block writing to it
     
-
-	
 	Mesh* quad = Mesh::getQuad(); 
 	Shader* shader = Shader::Get("deferred");
 	shader->enable();
@@ -380,16 +385,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-
-
-	quad->render(GL_TRIANGLES);
-	
-	shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE);
-
-	
 	LightEntity* light;
 	for (int i = 0; i < this->light_entities.size(); i++)
 	{
@@ -402,22 +397,13 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 
 			//in case there are more than one directional light:
 
-			
-			//glEnable(GL_BLEND);
-			
-			//shader->setUniform("u_ambient_light", Vector3(1, 0, 0));
-
-			//glEnable(GL_BLEND);
-			//glBlendFunc(GL_ONE, GL_ONE);
+			shader->setUniform("u_ambient_light", Vector3(0, 0, 0));
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_ONE, GL_ONE);
 			//light_entities.erase(i) 
 
 		}
 	}
-<<<<<<< HEAD
-	
-=======
->>>>>>> 1b3f26dd970eb3fcf918d18441bee35ebbf41662
-
 
 	//---------Using geometry--------------
 	 
@@ -865,95 +851,82 @@ void Renderer::renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::M
 
 
 
-void Renderer::createShadowmap( GTR::Scene* scene, LightEntity* light, Camera* camera) {
+void Renderer::createShadowmap( GTR::Scene* scene, Camera* camera) {
 	
 	int width = Application::instance->window_width;
 	int height = Application::instance->window_height;
 
-	if (light->light_type == SPOT) {
+	this->rendering_shadowmap = true;
+
+	LightEntity* light;
+	for (int i = 0; i < this->light_entities.size(); i++)
+	{
+		if (!this->light_entities[i]->cast_shadows || this->light_entities[i]->light_type == POINT)
+			continue;
+		light = this->light_entities[i];
 		
-		light->light_camera.setPerspective(light->cone_angle, 1, 10.0, light->max_dist);
+
+		//enable it to render inside the texture
+		light->shadow_fbo->bind();
+
+		//you can disable writing to the color buffer to speed up the rendering as we do not need it
+		glColorMask(false, false, false, false);
+
+		//clear the depth buffer only (don't care of color)
+		glClear(GL_DEPTH_BUFFER_BIT);
+
+		//whatever we render here will be stored inside a texture, we don't need to do anything fanzy
+	
+		renderScene(scene, light->light_camera);
+	
+		//disable it to render back to the screen
+		light->shadow_fbo->unbind();
+
+		//allow to render back to the color buffer
+		glColorMask(true, true, true, true);
+	
 	}
-	else { // DIRECTIONAL
-		float near_plane = 1.0, far_plane = light->max_dist; //light->area_size
-		light->light_camera.setOrthographic(-10, 10,
-						-10 , 10 , 
-			near_plane, far_plane);
-	}
-
-	//first time we create the FBO
-	if (!light->shadow_fbo )
-	{	
-		light->shadow_fbo = new FBO();
-		//Texture* tex = new Texture(Application::instance->window_width, Application::instance->window_width, GL_RGB, GL_UNSIGNED_BYTE);
-		//light->shadow_fbo->setTexture(tex);
-		//light->shadow_fbo->setDepthOnly(width, width); // only create a depth texture
-		
-		//create textures automatically this will allocate memory inside the GPU for one color texture and one depth texture
-		light->shadow_fbo->create(width, width);
-		
-	}
-
-	//enable it to render inside the texture
-	light->shadow_fbo->bind();
-
-	//you can disable writing to the color buffer to speed up the rendering as we do not need it
-	glColorMask(false, false, false, false);
-
-	//clear the depth buffer only (don't care of color)
-	glClear(GL_DEPTH_BUFFER_BIT);
-
-	//whatever we render here will be stored inside a texture, we don't need to do anything fanzy
-	
-	
-	
-	renderScene(scene, &light->light_camera);
-	
-	Mesh* quad = Mesh::getQuad();
-	Shader* shader = Shader::Get("simpleDepthShader");
-	
-	//shader->setUniform("u_model", camera->viewprojection_matrix);
-	//shader->setUniform("u_shadow_viewproj", light->light_camera.viewprojection_matrix);//is like lightSpaceMatrix
-
-	quad->render(GL_TRIANGLES);
-	//disable it to render back to the screen
-	light->shadow_fbo->unbind();
-
-	//allow to render back to the color buffer
-	glColorMask(true, true, true, true);
-	
-	//and the depth texture inside this one
-	//light->shadow_fbo->depth_texture;
-
-	showShadowmap( light->shadow_fbo ,  camera, width, height);
-
-	
-
-}
-
-
-void Renderer::showShadowmap(FBO* fbo, Camera* camera, float width, float height) {
-	
-	//remember to disable ztest if rendering quads!
 	glDisable(GL_DEPTH_TEST);
-
-	//glViewport(0, 0, width*0.2, width * 0.2);
-	//to show on the screen the content of a texture
-	fbo->color_textures[0]->toViewport();
-	
-	//why not necessary???
-	//glViewport(0, 0, width , height);
-
-	//to use a special shader,  to visualize a Depth Texture
-	Shader* zshader = Shader::Get("depth");
-	zshader->enable();
-	zshader->setTexture("u_texture", fbo->color_textures[0], 10); //-----------------
-	zshader->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
-	fbo->depth_texture->toViewport(zshader);
-
+	glViewport(0, 0, width * 0.2, width * 0.2);
+	light->shadow_fbo->depth_texture->toViewport();
+	rendering_shadowmap = false;
 
 }
 
+
+void Renderer::showShadowmap(Camera* camera) {
+	
+
+	int width = Application::instance->window_width;
+	int height = Application::instance->window_height;
+
+	LightEntity* light;
+	for (int i = 0; i < this->light_entities.size(); i++)
+	{
+		if (!this->light_entities[i]->cast_shadows || this->light_entities[i]->light_type == POINT)
+			continue;
+		light = this->light_entities[i];
+
+
+		//remember to disable ztest if rendering quads!
+		glDisable(GL_DEPTH_TEST);
+
+		glViewport(0, 0, width * 0.2, width * 0.2);
+
+		//why not necessary???
+		//glViewport(0, 0, width , height);
+
+		//to use a special shader,  to visualize a Depth Texture
+		Shader* zshader = Shader::Get("depth");
+		zshader->enable();
+		zshader->setTexture("u_texture", light->shadow_fbo->depth_texture, 10); //-----------------
+		zshader->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
+		light->shadow_fbo->depth_texture->toViewport(zshader);
+		
+		
+		//glViewport(0, 0, width, height);
+	}
+}
 
 
 //---Screen Space Ambient Occlusion

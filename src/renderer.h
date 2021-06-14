@@ -132,9 +132,9 @@ namespace GTR {
 		//to render lights in the scene 
 		void renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::Material* material);
 
-		void createShadowmap(GTR::Scene* scene, LightEntity* light, Camera* camera);
+		void createShadowmap(GTR::Scene* scene, Camera* camera);
 
-		void showShadowmap(FBO* fbo, Camera* camera, float width, float height);
+		void showShadowmap(Camera* camera);
 		//----
 
 		void extractProbe(GTR::Scene* scene, sProbe& p);

@@ -81,7 +81,7 @@ namespace GTR {
 		//shadownmap param
 		FBO* shadow_fbo;
 		float shadow_bias;
-		Camera light_camera;
+		Camera* light_camera;
 		bool cast_shadows;
 
 		LightEntity();
@@ -92,6 +92,7 @@ namespace GTR {
 		virtual void renderInMenu();
 		virtual void configure(cJSON* json);
 
+		void configureLightCamera();
 
 	};
 

@@ -3,6 +3,7 @@
 
 #include "prefab.h"
 #include "extra/cJSON.h"
+#include "application.h"
 
 GTR::Scene* GTR::Scene::instance = NULL;
 
@@ -195,7 +196,9 @@ GTR::LightEntity::LightEntity() {
 	this->shadow_bias = 0;
 	this->cast_shadows = false;
 	
-	this->light_camera.lookAt(this->model.getTranslation(), this->model * Vector3(0, 0, 1), this->model.rotateVector(Vector3(0, 1, 0)));
+	this->light_camera = new Camera();
+	this->shadow_fbo = new FBO();
+	this->shadow_fbo->create(Application::instance->window_width, Application::instance->window_width);
 
 }
 
@@ -217,7 +220,7 @@ void GTR::LightEntity::uploadToShader(Shader* sh)
 		return;
 	}
 	
-	sh->setUniform("u_shadow_viewproj", this->light_camera.viewprojection_matrix);
+	sh->setUniform("u_shadow_viewproj", this->light_camera->viewprojection_matrix);
 	//sh->setUniform("u_shadow_map", this->shadow_fbo->color_textures[0], 10);///
 	sh->setUniform("u_shadow_bias", this->shadow_bias);
 	
@@ -287,7 +290,26 @@ void GTR::LightEntity::configure(cJSON* json)
 		this->cast_shadows = cast_shadows;
 	}
 
+	 configureLightCamera();
 
+}
+
+void GTR::LightEntity::configureLightCamera()
+{	
+	float near_plane = 0.1, far_plane = this->max_dist;
+	if (this->light_type == POINT)
+		return;
+	if (this->light_type == SPOT) {
+		this->light_camera->lookAt(model.getTranslation(), model.getTranslation() + model.frontVector(), Vector3(0.0f, 1.0f, 0.0f));
+		this->light_camera->setPerspective(this->cone_angle, 1.0, near_plane, far_plane);
+		
+	}
+	else {// DIRECTIONAL
+		this->light_camera->lookAt(model.getTranslation(), model.getTranslation() + model.frontVector(), Vector3(0.0f, 1.0f, 0.0f));
+		this->light_camera->setOrthographic(-area_size / 2, area_size / 2, -area_size / 2, area_size / 2,
+			near_plane, far_plane);
+
+	}
 }
 
 
