@@ -88,12 +88,11 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
     
     // Probe grid
-//    Vector3 dim(8, 6, 12);
-//    Vector3 start_pos(-55, 10, -170);
-//    Vector3 end_pos(180, 150, 80);
-//    
-//    renderer->createProbeGrid(dim, start_pos, end_pos);
-//    renderer->placingProbes();
+    Vector3 dim(8, 6, 12);
+    Vector3 start_pos(-200, 10, -250);
+    Vector3 end_pos(380, 350, 280);
+    renderer->createProbeGrid(dim, start_pos, end_pos);
+    renderer->placingProbes();
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse

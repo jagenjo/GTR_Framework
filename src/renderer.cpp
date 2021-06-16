@@ -149,11 +149,16 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		//applyfinalHDR();
 		
 		//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
+            
+        // Cloning the gbuffers depth buffer to the screen framebuffer
+        // For the case that we need to draw new geometry. For instance, draw the
+        // probes spheres
+        this->gbuffers_fbo.depth_texture->copyTo(NULL);
 
 	}
-    
-    //updateIrradianceCache(scene);
-    //renderProbesGrid();
+            
+    updateIrradianceCache(scene);
+    renderProbesGrid();
 	
 	/*
 	if (this->update_shadowmaps) {
@@ -215,7 +220,7 @@ void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera) {
 			// if light is not in the fustrum of the camera, we don't add it to the conteiner
 			// directional light affect all the places so we will add it
 			Vector3 light_pos = lig->model.getTranslation();
-			if (!camera || (lig->light_type != eLightType::DIRECTIONAL && camera->testSphereInFrustum(light_pos, lig->max_dist)) == CLIP_OUTSIDE)
+			if (camera != NULL && (lig->light_type != eLightType::DIRECTIONAL && camera->testSphereInFrustum(light_pos, lig->max_dist) == CLIP_OUTSIDE))
 				continue;
 
 			this->light_entities.push_back(lig);
@@ -613,9 +618,7 @@ void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
 
     glEnable(GL_CULL_FACE);
     glDisable(GL_BLEND);
-    //glEnable(GL_DEPTH_TEST);
-    glDisable(GL_DEPTH_TEST);
-    glBlendFunc(GL_ONE, GL_ONE);
+    glEnable(GL_DEPTH_TEST);
 
     Matrix44 model;
     model.setTranslation(pos.x, pos.y, pos.z);
