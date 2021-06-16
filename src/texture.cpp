@@ -988,7 +988,8 @@ void FloatImage::fromTexture(Texture* texture)
 #ifdef OPENGL_ES3
 	glGetTexImage(GL_TEXTURE_2D, 0, num_channels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT, data);
 #else
-	assert(0&&"not supported");
+    glGetTexImage(GL_TEXTURE_2D, 0, num_channels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT, data);
+	//assert(0&&"not supported");
 #endif
 
 }

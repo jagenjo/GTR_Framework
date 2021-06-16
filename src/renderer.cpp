@@ -40,6 +40,7 @@ GTR::Renderer::Renderer()
 	this->show_gbuffers = false;
 	this->show_ao = false;
 	this->show_ao_deferred = false;
+    this->updateIrradiance = true; // It should be set to true if there is a movement of an object to update the irradiance
 	
 	//FrameBufferObject
 	
@@ -150,7 +151,9 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
 
 	}
-
+    
+    //updateIrradianceCache(scene);
+    //renderProbesGrid();
 	
 	/*
 	if (this->update_shadowmaps) {
@@ -212,7 +215,7 @@ void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera) {
 			// if light is not in the fustrum of the camera, we don't add it to the conteiner
 			// directional light affect all the places so we will add it
 			Vector3 light_pos = lig->model.getTranslation();
-			if (lig->light_type != eLightType::DIRECTIONAL && camera->testSphereInFrustum(light_pos, lig->max_dist) == CLIP_OUTSIDE)
+			if (!camera || (lig->light_type != eLightType::DIRECTIONAL && camera->testSphereInFrustum(light_pos, lig->max_dist)) == CLIP_OUTSIDE)
 				continue;
 
 			this->light_entities.push_back(lig);
@@ -531,40 +534,6 @@ void Renderer::extractProbe( GTR::Scene* scene, sProbe& p ) {//es una ref pq int
 	p.sh = computeSH(images, gammaCorrection);
 }
 
-void Renderer::updateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
-	
-	//podemos poner en la posicion de la camara
-	//extractProbe(scene, probe);
-}
-
-void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
-{
-	Camera* camera = Camera::current; 
-	
-	Shader* shader = Shader::Get("probe");
-	Mesh* mesh = Mesh::Get("data/meshes/sphere.obj", false, false);
-
-	glEnable(GL_CULL_FACE);
-	glDisable(GL_BLEND);
-	//glEnable(GL_DEPTH_TEST);
-	glDisable(GL_DEPTH_TEST);
-	glBlendFunc(GL_ONE, GL_ONE);
-
-	Matrix44 model;
-	model.setTranslation(pos.x, pos.y, pos.z);
-	model.scale(size, size, size);
-
-	shader->enable();
-	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
-	shader->setUniform("u_camera_position", camera->eye);
-	shader->setUniform("u_model", model);
-	shader->setUniform3Array("u_coeffs", coeffs, 9); //vienen despues
-
-	mesh->render(GL_TRIANGLES);
-}
-
-
-
 
 void Renderer::createProbeGrid(Vector3 dim, Vector3 start_pos, Vector3 end_pos) {
 
@@ -600,6 +569,7 @@ void Renderer::placingProbes() {
 			for (int x = 0; x < this->probe_dim.x; ++x)
 			{
 				sProbe p;
+                // Index in the tridimensional matrix
 				p.local.set(x, y, z);
 				//index in the linear array
 				p.index = x + y * probe_dim.x + z * probe_dim.x * probe_dim.y;
@@ -613,25 +583,65 @@ void Renderer::placingProbes() {
 }
 
 //
-void Renderer::computeProbesCoeff() {
+void Renderer::computeProbesCoeff(GTR::Scene* scene) {
 
-	int num = probes.size();
+	int num = (int)probes.size();
 	//now compute the coeffs for every probe
 	for (int iP = 0; iP < num; ++iP)
 	{
-		int probe_index = iP;
+		//int probe_index = iP;
 		//...
-		//extractProbe()
+        extractProbe(scene, probes[iP]);
 	}
-
+}
+            
+void Renderer::updateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
+    if(!updateIrradiance){
+        return;
+    }
+    computeProbesCoeff(scene);
+    this->updateIrradiance = false;
 }
 
 
+void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
+{
+    Camera* camera = Camera::current;
+    
+    Shader* shader = Shader::Get("probe");
+    Mesh* mesh = Mesh::Get("data/meshes/sphere.obj", false, false);
 
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
+    //glEnable(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glBlendFunc(GL_ONE, GL_ONE);
 
+    Matrix44 model;
+    model.setTranslation(pos.x, pos.y, pos.z);
+    model.scale(size, size, size);
 
+    shader->enable();
+    shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+    shader->setUniform("u_camera_position", camera->eye);
+    shader->setUniform("u_model", model);
+    shader->setUniform3Array("u_coeffs", coeffs, 9); //vienen despues
 
+    mesh->render(GL_TRIANGLES);
+}
 
+void Renderer::renderProbesGrid()
+{
+        
+    for (int i = 0; i < probes.size(); i++)
+    {
+        Vector3 pos = probes[i].pos;
+        float size = 10.0;
+        SphericalHarmonics sh = probes[i].sh;
+            
+        renderProbe(pos, size, sh.coeffs[0].v);
+    }
+}
 
 
 void Renderer::applyfinalHDR() {
