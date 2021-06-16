@@ -22,7 +22,7 @@
 
 using namespace GTR;
 
-sProbe probe; //quitar 
+
 
 //this->color_buffer = new Texture(width, height, GL_RGB, GL_HALF_FLOAT); // 2 componentes
 //this->fbo.setTexture(color_buffer); // para evitar de hacerlo en cada frame 
@@ -42,22 +42,29 @@ GTR::Renderer::Renderer()
 	this->show_ao_deferred = false;
 	
 	//FrameBufferObject
-	if (gbuffers_fbo.fbo_id == 0) { //we reserve memory to each textures...
-		gbuffers_fbo.create(width, height, 3, GL_RGBA, GL_UNSIGNED_BYTE, true); 
-	}
-	if (illumination_fbo.fbo_id == 0) {
-		illumination_fbo.create(width, height, 1, GL_RGB, GL_FLOAT, true);
-	}
+	
+	gbuffers_fbo.create(width, height, 3, GL_RGBA, GL_UNSIGNED_BYTE, true); 
+	illumination_fbo.create(width, height, 1, GL_RGB, GL_FLOAT, true);
+	
 	
 	//Textures
 	this->ao_buffer = new Texture(width * 0.5, height * 0.5, GL_RED, GL_UNSIGNED_BYTE);
 	
 	//------probes:
 
-	memset(&probe, 0, sizeof(probe));
-	probe.sh.coeffs[0].set(1.0, 0.0, 0.0);
-	probe.pos.set(0, 1, 0);
+
+	// a place to store the probes
 	
+
+	//memset(&probe, 0, sizeof(probe)); //reserva la memoria para el probe
+	//probe.sh.coeffs[0].set(1.0, 0.0, 0.0);
+	//probe.pos.set(10, 10, 10);
+	this->probe_delta.set(0,0,0);
+	this->probe_delta.set(0,0,0);
+	this->probe_delta.set(0,0,0);
+	this->probe_delta.set(0,0,0);
+
+
 	this->irr_fbo = NULL;
 }
 
@@ -134,17 +141,18 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 
 		illumination_fbo.unbind();
 		*/
-		illumination_fbo.color_textures[0]->toViewport(); //me he quedado aqui, no se q le pasa la luz spotlight...
 		
-		//applyfinalHDR();
+		illumination_fbo.color_textures[0]->toViewport(); //me he quedado aqui, no se q le pasa la luz spotlight...
 		//renderProbe(probe.pos, 2.0, probe.sh.coeffs[0].v); //coje la direccion del primer elemento, y los demas vienen despues
 
+		//applyfinalHDR();
+		
 		//gbuffers_fbo.color_textures[0]->toViewport(Shader::Get("showAlpha"));
 
 	}
 
 	
-	
+	/*
 	if (this->update_shadowmaps) {
 
 		LightEntity* light;
@@ -164,7 +172,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		return;
 	}
 	createShadowmap(scene, camera);
-
+	*/
 	
 	
 }
@@ -479,6 +487,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	
 }
 
+
+//--------IRRADIANCE_-PROBE-------------------------------------------------------------------------------------------------------------------------
+// 
 //rendering to a texture
 void Renderer::extractProbe( GTR::Scene* scene, sProbe& p ) {//es una ref pq internamente se va a modificar
 	//vamos a necesitar un fbo, pq vamos a renderizarlo en un espacio separado, no pantalla
@@ -508,6 +519,7 @@ void Renderer::extractProbe( GTR::Scene* scene, sProbe& p ) {//es una ref pq int
 		//render the scene from this point of view
 		irr_fbo->bind();
 		renderForward(scene, rc_data_list , &camera , true); //como solo tenemos un canal, los buffers de deferred tienen resolucion de la pantalla...
+
 		irr_fbo->unbind();
 
 		//read the pixels back and store in a FloatImage !!
@@ -522,7 +534,7 @@ void Renderer::extractProbe( GTR::Scene* scene, sProbe& p ) {//es una ref pq int
 void Renderer::updateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
 	
 	//podemos poner en la posicion de la camara
-	extractProbe(scene, probe);
+	//extractProbe(scene, probe);
 }
 
 void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
@@ -534,7 +546,9 @@ void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
 
 	glEnable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
+	glDisable(GL_DEPTH_TEST);
+	glBlendFunc(GL_ONE, GL_ONE);
 
 	Matrix44 model;
 	model.setTranslation(pos.x, pos.y, pos.z);
@@ -548,6 +562,76 @@ void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
 
 	mesh->render(GL_TRIANGLES);
 }
+
+
+
+
+void Renderer::createProbeGrid(Vector3 dim, Vector3 start_pos, Vector3 end_pos) {
+
+	//when computing the probes position…
+	//define the corners of the axis aligned grid
+	//this can be done using the boundings of our scene
+	this->probe_dim = dim;
+	this->probe_start_pos= start_pos;
+	this->probe_end_pos = end_pos;
+
+	//compute the vector from one corner to the other
+	this->probe_delta = (end_pos - start_pos);
+
+
+	//and scale it down according to the subdivisions
+	//we substract one to be sure the last probe is at end pos
+	this->probe_delta.x /= (dim.x - 1);
+	this->probe_delta.y /= (dim.y - 1);
+	this->probe_delta.z /= (dim.z - 1);
+	//now delta give us the distance between probes in every axis
+
+
+}
+
+void Renderer::placingProbes() {
+
+	//lets compute the centers
+	//pay attention at the order at which we add them
+	for (int z = 0; z < this->probe_dim.z; ++z)
+	{
+		for (int y = 0; y < this->probe_dim.y; ++y)
+		{
+			for (int x = 0; x < this->probe_dim.x; ++x)
+			{
+				sProbe p;
+				p.local.set(x, y, z);
+				//index in the linear array
+				p.index = x + y * probe_dim.x + z * probe_dim.x * probe_dim.y;
+				//and its position
+				p.pos = probe_start_pos + probe_delta * Vector3(x, y, z);
+				probes.push_back(p);
+			}
+		}
+	}
+
+}
+
+//
+void Renderer::computeProbesCoeff() {
+
+	int num = probes.size();
+	//now compute the coeffs for every probe
+	for (int iP = 0; iP < num; ++iP)
+	{
+		int probe_index = iP;
+		//...
+		//extractProbe()
+	}
+
+}
+
+
+
+
+
+
+
 
 
 void Renderer::applyfinalHDR() {

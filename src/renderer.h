@@ -89,6 +89,12 @@ namespace GTR {
 		//Textures
 		Texture* ao_buffer;
 	
+		//Probe
+		std::vector<sProbe> probes;
+		Vector3 probe_dim; //nº of probe on each 3 dim 
+		Vector3 probe_start_pos;
+		Vector3 probe_end_pos;
+		Vector3 probe_delta;
 
 		//Flags
 		eRenderMode render_mode;
@@ -135,13 +141,22 @@ namespace GTR {
 		void createShadowmap(GTR::Scene* scene, Camera* camera);
 
 		void showShadowmap(Camera* camera);
-		//----
+		
+		//----PROBES
 
 		void extractProbe(GTR::Scene* scene, sProbe& p);
 
 		void updateIrradianceCache(GTR::Scene* scene);
 
 		void renderProbe(Vector3 pos, float size, float* coeffs);
+
+		void createProbeGrid(Vector3 dim, Vector3 start_pos, Vector3 end_pos);
+
+		void placingProbes();
+
+
+		void computeProbesCoeff();
+		
 
 		void applyfinalHDR();
 

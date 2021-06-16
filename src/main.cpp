@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 		return 0;
 	int window_width, window_height;
 	SDL_GetWindowSize(window, &window_width, &window_height);
-	//SDL_SetWindowPosition(window, 3000, 0);
+	SDL_SetWindowPosition(window, 3000, 0);
 
 	// Setup Dear ImGui context
 	#ifndef SKIP_IMGUI

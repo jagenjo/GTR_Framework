@@ -146,6 +146,12 @@ void Application::render(void)
 	//renderer->renderScene(scene, camera);
 	renderer->render2FBO(scene, camera);
 
+	Vector3 dim(8, 6, 12);
+	Vector3 start_pos(-55, 10, -170);
+	Vector3 end_pos(180, 150, 80);
+	
+	renderer->createProbeGrid(dim, start_pos, end_pos);
+
 	/*
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	if (!mesh.vertices.size())
