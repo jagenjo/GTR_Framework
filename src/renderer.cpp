@@ -566,7 +566,8 @@ void Renderer::createProbeGrid(Vector3 dim, Vector3 start_pos, Vector3 end_pos) 
 void Renderer::placingProbes() {
 
 	//lets compute the centers
-	//pay attention at the order at which we add them
+	//pay attention at the order at which we add them:
+    // The order we add them is x, y and z.
 	for (int z = 0; z < this->probe_dim.z; ++z)
 	{
 		for (int y = 0; y < this->probe_dim.y; ++y)
@@ -586,28 +587,6 @@ void Renderer::placingProbes() {
 	}
 
 }
-
-//
-void Renderer::computeProbesCoeff(GTR::Scene* scene) {
-
-	int num = (int)probes.size();
-	//now compute the coeffs for every probe
-	for (int iP = 0; iP < num; ++iP)
-	{
-		//int probe_index = iP;
-		//...
-        extractProbe(scene, probes[iP]);
-	}
-}
-            
-void Renderer::updateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
-    if(!updateIrradiance){
-        return;
-    }
-    computeProbesCoeff(scene);
-    this->updateIrradiance = false;
-}
-
 
 void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
 {
@@ -644,6 +623,95 @@ void Renderer::renderProbesGrid()
             
         renderProbe(pos, size, sh.coeffs[0].v);
     }
+}
+
+void Renderer::computeProbesCoeff(GTR::Scene* scene) {
+
+    int num = (int)probes.size();
+    //now compute the coeffs for every probe
+    for (int iP = 0; iP < num; ++iP)
+    {
+        //int probe_index = iP;
+        //...
+        extractProbe(scene, probes[iP]);
+    }
+}
+
+void Renderer::createProbesTexture(){
+    //create the texture to store the probes (do this ONCE!!!)
+    this->probes_texture = new Texture(
+                        9, //9 coefficients per probe
+                        (int)probes.size(), //as many rows as probes
+                        GL_RGB, //3 channels per coefficient
+                        GL_FLOAT ); //they require a high range
+}
+
+void Renderer::fillAndUploadProbesTextureToGPU(){
+    int sh_size = (int)probes.size();
+    
+    // Check that the vector probes has values.
+    // If not, we do not need to upload anything to the GPU
+    if(sh_size == 0){
+        return;
+    }
+    
+    // we must create the color information for the texture. because every SH are 27 floats in the RGB,RGB,... order,
+    // we can create an array of SphericalHarmonics and use it as pixels of the texture
+    SphericalHarmonics* sh_data = NULL;
+    sh_data = new SphericalHarmonics[sh_size];
+
+    //here we fill the data of the array with our probes in x,y,z order...
+    for (int i = 0; i < sh_size; i++){
+        // Since the probes were saved in the x, y, z order, we can iterate them this way to the sh in x, y, z order.
+        sh_data[i] = probes[i].sh;
+        
+//        // TO debug!!!!!!!!!!!!!
+//        Vector3 coeff_probe_sh = probes[i].sh.coeffs[3];
+//        Vector3 coeff_sh_data = sh_data[i].coeffs[3];
+//        printf("Probe: Spherical coefficient of frequency 3: (%f, %f, %f)\n", coeff_probe_sh.x, coeff_probe_sh.y, coeff_probe_sh.z);
+//        printf("Sh_data: Spherical coefficient of frequency 3: (%f, %f, %f)\n\n", coeff_sh_data.x, coeff_sh_data.y, coeff_sh_data.z);
+//        // Finish debug
+    }
+
+    //now upload the data to the GPU
+    probes_texture->upload( GL_RGB, GL_FLOAT, false, (uint8*)sh_data);
+
+    //disable any texture filtering when reading
+    probes_texture->bind(); // No entiendo para qué es el 0 que se le pasa como parametro en las slides.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    //always free memory after allocating it!!!
+    delete[] sh_data;
+}
+            
+void Renderer::updateIrradianceCache(GTR::Scene* scene) {//para hacer actualizaciones del probe
+    if(!updateIrradiance){
+        return;
+    }
+    computeProbesCoeff(scene);
+    fillAndUploadProbesTextureToGPU();
+    this->updateIrradiance = false;
+}
+
+void Renderer::uploadIrradianceUniforms(Shader* shader){
+    // Hardcodeo las normal distance por ahora, pero lo podríamos poner como parte del renderer
+    float irr_normal_distance = 10.0;
+    
+    if (shader == NULL){
+        return;
+    }
+    
+    shader->enable();
+    
+    shader->setUniform("u_irr_start", probe_start_pos);
+    shader->setUniform("u_irr_end", probe_start_pos);
+    shader->setUniform("u_irr_normal_distance", irr_normal_distance);
+    shader->setUniform("u_irr_delta", probe_delta);
+    shader->setUniform("u_irr_dims", probe_dim);
+    shader->setUniform("u_num_probes", (int)probes.size());
+    shader->setTexture("u_probes_texture", probes_texture, 10); // Slot 10 está bien??
+    
 }
 
 

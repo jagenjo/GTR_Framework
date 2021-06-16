@@ -95,6 +95,7 @@ namespace GTR {
 		Vector3 probe_start_pos;
 		Vector3 probe_end_pos;
 		Vector3 probe_delta;
+        Texture* probes_texture;
 
 		//Flags
 		eRenderMode render_mode;
@@ -150,14 +151,20 @@ namespace GTR {
 		void placingProbes();
         
         void extractProbe(GTR::Scene* scene, sProbe& p);
-
-		void computeProbesCoeff(GTR::Scene* scene);
-        
-        void updateIrradianceCache(GTR::Scene* scene);
         
         void renderProbe(Vector3 pos, float size, float* coeffs);
         
         void renderProbesGrid();
+        
+        void computeProbesCoeff(GTR::Scene* scene);
+        
+        void createProbesTexture();
+        
+        void fillAndUploadProbesTextureToGPU();
+        
+        void updateIrradianceCache(GTR::Scene* scene);
+        
+        void uploadIrradianceUniforms(Shader* shader);
 
 		void applyfinalHDR();
 

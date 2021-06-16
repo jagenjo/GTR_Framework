@@ -78,7 +78,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 
 	scene = new GTR::Scene();
-	if (!scene->load("data/scene.json"))
+	if (!scene->load("data/scene_sponza.json"))
 		exit(1);
 
 	camera->lookAt(scene->main_camera.eye, scene->main_camera.center, Vector3(0, 1, 0));
@@ -88,11 +88,14 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
     
     // Probe grid
-    Vector3 dim(8, 6, 12);
-    Vector3 start_pos(-200, 10, -250);
-    Vector3 end_pos(380, 350, 280);
+    //Vector3 dim(8, 6, 12);
+    Vector3 dim(4, 3, 6);
+    Vector3 start_pos(-100, 5, -100);
+    Vector3 end_pos(100, 150, 100);
     renderer->createProbeGrid(dim, start_pos, end_pos);
     renderer->placingProbes();
+    // Probe texture
+    renderer->createProbesTexture();
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
