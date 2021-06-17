@@ -78,7 +78,7 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 
 	scene = new GTR::Scene();
-	if (!scene->load("data/scene.json"))
+	if (!scene->load("data/scene_sponza.json"))
 		exit(1);
 
 	camera->lookAt(scene->main_camera.eye, scene->main_camera.center, Vector3(0, 1, 0));
@@ -86,6 +86,16 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 	//This class will be the one in charge of rendering all 
 	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
+    
+    // Probe grid
+    //Vector3 dim(8, 6, 12);
+    Vector3 dim(4, 3, 6);
+    Vector3 start_pos(-100, 5, -100);
+    Vector3 end_pos(100, 150, 100);
+    renderer->createProbeGrid(dim, start_pos, end_pos);
+    renderer->placingProbes();
+    // Probe texture
+    renderer->createProbesTexture();
 
 	//hide the cursor
 	SDL_ShowCursor(!mouse_locked); //hide or show the mouse
@@ -145,12 +155,6 @@ void Application::render(void)
 
 	//renderer->renderScene(scene, camera);
 	renderer->render2FBO(scene, camera);
-
-	Vector3 dim(8, 6, 12);
-	Vector3 start_pos(-55, 10, -170);
-	Vector3 end_pos(180, 150, 80);
-	
-	renderer->createProbeGrid(dim, start_pos, end_pos);
 
 	/*
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -387,7 +391,9 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_v: renderer->show_ao = !renderer->show_ao; break;
 		case SDLK_c: renderer->show_ao_deferred = !renderer->show_ao_deferred; break;
 
-		case SDLK_x: renderer->updateIrradianceCache(scene); break;
+		case SDLK_x:
+            renderer->updateIrradiance = !renderer->update_shadowmaps;
+            break;
 
 	}
 

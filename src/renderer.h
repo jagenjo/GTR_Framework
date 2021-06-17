@@ -57,7 +57,7 @@ namespace GTR {
 		RenderCall() {
 			mesh = NULL;
 			material = NULL;
-			dist2camera = NULL;
+			dist2camera = 0;
 			model.setIdentity();
 		}
 	};
@@ -95,6 +95,7 @@ namespace GTR {
 		Vector3 probe_start_pos;
 		Vector3 probe_end_pos;
 		Vector3 probe_delta;
+        Texture* probes_texture;
 
 		//Flags
 		eRenderMode render_mode;
@@ -105,6 +106,7 @@ namespace GTR {
 		bool show_ao;
 		bool show_ao_deferred;
 		bool show_gbuffers;
+        bool updateIrradiance;
 
 		//ctor
 		Renderer();
@@ -144,19 +146,25 @@ namespace GTR {
 		
 		//----PROBES
 
-		void extractProbe(GTR::Scene* scene, sProbe& p);
-
-		void updateIrradianceCache(GTR::Scene* scene);
-
-		void renderProbe(Vector3 pos, float size, float* coeffs);
-
 		void createProbeGrid(Vector3 dim, Vector3 start_pos, Vector3 end_pos);
 
 		void placingProbes();
-
-
-		void computeProbesCoeff();
-		
+        
+        void extractProbe(GTR::Scene* scene, sProbe& p);
+        
+        void renderProbe(Vector3 pos, float size, float* coeffs);
+        
+        void renderProbesGrid();
+        
+        void computeProbesCoeff(GTR::Scene* scene);
+        
+        void createProbesTexture();
+        
+        void fillAndUploadProbesTextureToGPU();
+        
+        void updateIrradianceCache(GTR::Scene* scene);
+        
+        void uploadIrradianceUniforms(Shader* shader);
 
 		void applyfinalHDR();
 
