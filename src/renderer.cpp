@@ -88,7 +88,7 @@ void Renderer::render2FBO(GTR::Scene* scene, Camera* camera) {
 
 struct sortRC {
 	inline bool operator()(RenderCall& a, RenderCall& b) const {
-
+		a
 		//sort the rc through distance more to less if the material is the type BLEND
 		if ((a.material->alpha_mode == GTR::eAlphaMode::BLEND) && (b.material->alpha_mode == GTR::eAlphaMode::BLEND))
 			return a.dist2camera > b.dist2camera;
