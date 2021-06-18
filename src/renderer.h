@@ -143,6 +143,8 @@ namespace GTR {
 		void renderlights(eRenderMode mode, Shader* shader, Mesh* mesh, GTR::Material* material);
 
 		void createShadowmap(GTR::Scene* scene, Camera* camera);
+        
+        void renderMesh(const Matrix44 model, Mesh* mesh, Camera* camera, eAlphaMode material_alpha_mode);
 
 		void showShadowmap(Camera* camera);
 		

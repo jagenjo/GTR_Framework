@@ -295,20 +295,25 @@ void GTR::LightEntity::configure(cJSON* json)
 }
 
 void GTR::LightEntity::configureLightCamera()
-{	
+{
+    if(!cast_shadows)
+        return;
+    
 	float near_plane = 0.1, far_plane = this->max_dist;
+    Vector3 pos = model.getTranslation();
+    Vector3 front = model.frontVector();
+    
+    this->light_camera->lookAt(pos, pos + front, Vector3(0.0f, 1.0f, 0.0f));
+    
+    
 	if (this->light_type == POINT)
 		return;
-	if (this->light_type == SPOT) {
-		this->light_camera->lookAt(model.getTranslation(), model.getTranslation() + model.frontVector(), Vector3(0.0f, 1.0f, 0.0f));
+	else if (this->light_type == SPOT) {
 		this->light_camera->setPerspective(this->cone_angle, 1.0, near_plane, far_plane);
 		
 	}
-	else {// DIRECTIONAL
-		this->light_camera->lookAt(model.getTranslation(), model.getTranslation() + model.frontVector(), Vector3(0.0f, 1.0f, 0.0f));
-		this->light_camera->setOrthographic(-area_size / 2, area_size / 2, -area_size / 2, area_size / 2,
-			near_plane, far_plane);
-
+	else if (this->light_type == DIRECTIONAL){// DIRECTIONAL
+		this->light_camera->setOrthographic(-area_size / 2, area_size / 2, -area_size / 2, area_size / 2, near_plane, far_plane);
 	}
 }
 
