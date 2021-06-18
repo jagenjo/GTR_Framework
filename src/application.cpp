@@ -62,16 +62,11 @@ Application::Application(int window_width, int window_height, SDL_Window* window
         exit(1);
     checkGLErrors();
 
-
-
 	// We create a global camera and set a position and projection properties
 	camera = new Camera();
 	camera->lookAt(Vector3(-150.f, 150.0f, 250.f), Vector3(0.f, 0.0f, 0.f), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective( 45.f, window_width/(float)window_height, 1.0f, 10000.f);
 
-
-	//This class will be the one in charge of rendering all 
-	//renderer = new GTR::Renderer(); //here so we have opengl ready in constructor!
 
 	//Example of loading a prefab
 	//prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
@@ -87,13 +82,22 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 	//This class will be the one in charge of rendering all 
 	renderer = new GTR::Renderer(); //here so we have opengl ready in constructor
     
-    // Probe grid
+	//FrameBufferObject
+
+	//renderer->gbuffers_fbo.create(this->window_width, this->window_height, 3, GL_RGBA, GL_UNSIGNED_BYTE, true);
+	//renderer->illumination_fbo.create(window_width, window_height, 1, GL_RGB, GL_FLOAT, true);
+
+	//Textures
+	//renderer->ao_buffer = new Texture(window_width * 0.5, window_height * 0.5, GL_RED, GL_UNSIGNED_BYTE);
+    
+	//Probe grid
     //Vector3 dim(8, 6, 12);
     Vector3 dim(4, 3, 6);
     Vector3 start_pos(-100, 5, -100);
     Vector3 end_pos(100, 150, 100);
     renderer->createProbeGrid(dim, start_pos, end_pos);
     renderer->placingProbes();
+
     // Probe texture
     renderer->createProbesTexture();
 

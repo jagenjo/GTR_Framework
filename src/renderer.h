@@ -32,6 +32,7 @@ namespace GTR {
 	public:
 		float intensity;
 		std::vector<Vector3> random_points;
+		
 		//ctor
 		SSAOFX();
 		void applyEffect(Texture* Zbuffer, Texture* normal_buffer, Camera* camera, Texture* outputOcc );
@@ -82,9 +83,9 @@ namespace GTR {
 		//FBO & SSAO
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
-		FBO* irr_fbo; //irradiance
+		FBO irr_fbo; //irradiance
 		SSAOFX ssao;
-		//FBO* ssao_fbo;
+		
 
 		//Textures
 		Texture* ao_buffer;

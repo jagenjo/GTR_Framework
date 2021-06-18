@@ -18,6 +18,7 @@ ssao quad.vs ssao.fs
 applyHDRgamma quad.vs applyHDRgamma.fs
 
 probe basic.vs probe.fs //basic ya q es una esfera que lo vamos a proyectar
+irradiance_sh quad.vs irradiance_sh.fs 
 
 // ----------------------GET PARAMETERS-----------------------------
 \get_parm_from_vs
@@ -53,6 +54,16 @@ uniform float u_light_area_size;
 
 uniform float u_light_spotCosineCutoff;
 uniform float u_light_spotExponent;
+
+\get_irradiance_uniforms
+
+uniform vec3 u_irr_end;
+uniform vec3 u_irr_start;
+uniform float u_irr_normal_distance;
+uniform vec3 u_irr_delta;
+uniform vec3 u_irr_dims;
+uniform int u_num_probes;
+uniform sampler2D u_probes_texture;
 
 // ----------------------LIGHT COMPUTATION-----------------------------
 
@@ -866,6 +877,24 @@ void main()
 }
 // -------------------------------------------------------------------------------------------------------------------------
 
+\get_irradiance
+
+	SH9Color sh;
+	
+	
+	#include "find_probe_row_of_texture"
+	
+	//fill the coefficients
+	const float d_uvx = 1.0 / 9.0;
+	for(int i = 0; i < 9; ++i)
+	{
+		vec2 coeffs_uv = vec2( (float(i)+0.5) * d_uvx, row_uv );
+		sh.c[i] = texture2D( u_probes_texture, coeffs_uv ).xyz;
+	}
+
+	vec4 irradiance = vec4( ComputeSHIrradiance( N, sh ) , 1.0);
+
+
 \deferred_ws.fs
 
 
@@ -941,7 +970,9 @@ void main()
 	}
 	// If it's a point light, it will have spotFactor = 1
 	light +=  spotFactor * att_factor * NoL  * u_light_color * u_light_intensity; //diffspecular_light
-
+	
+	
+	//light += irradiance;
 	color.xyz *= light;
 	gl_FragData[0] = vec4(color, 1.0 ) ;
 	
@@ -1114,18 +1145,41 @@ vec3 ComputeSHIrradiance(in vec3 normal, in SH9Color sh)
 	return irradiance;
 }
 
+//float find_probe_row_of_texture(vec3 v_world_position, vec3 u_irr_end, vec3 u_irr_start, vec3 N, vec3 u_irr_normal_distance, vec3 u_irr_delta, vec3 u_irr_dims, int u_num_probes )
+\find_probe_row_of_texture
 
+//computing nearest probe index based on world position
+
+vec3 irr_range = u_irr_end - u_irr_start;
+
+vec3 irr_local_pos = clamp( world_position - u_irr_start 	+ N * u_irr_normal_distance, vec3(0.0), irr_range );
+
+//convert from world pos to grid pos
+vec3 irr_norm_pos = irr_local_pos / u_irr_delta;
+
+//round values as we cannot fetch between rows for now
+vec3 local_indices = round( irr_norm_pos );
+
+//compute in which row is the probe stored
+float row = local_indices.x + local_indices.y * u_irr_dims.x + local_indices.z * u_irr_dims.x * u_irr_dims.y;
+
+//find the UV.y coord of that row in the probes texture
+float row_uv = (row + 1.0) / (u_num_probes + 1.0); 
+
+
+	//return row_uv;
+	
 
 
 \probe.fs
 
-
-
-varying vec3 v_position;
+//varying vec3 v_position;
 varying vec3 v_world_position;
 varying vec3 v_normal;
+
 #include "get_SHs_functions"
 uniform vec3 u_coeffs[9];
+// #include "get_irradiance_uniforms"
 
 //out vec4 FragColor;
 
@@ -1134,6 +1188,7 @@ void main()
 	
 	vec3 N = normalize(v_normal);
 
+	
 	SH9Color sh;
 	sh.c[0] = u_coeffs[0];
 	sh.c[1] = u_coeffs[1];
@@ -1144,12 +1199,71 @@ void main()
 	sh.c[6] = u_coeffs[6];
 	sh.c[7] = u_coeffs[7];
 	sh.c[8] = u_coeffs[8];
+	
 
-	vec4 color = vec4( ComputeSHIrradiance( N, sh ) , 1.0);
+	/*
+	SH9Color sh;
+	#include "find_probe_row_of_texture"
+	
+	//fill the coefficients
+	const float d_uvx = 1.0 / 9.0;
+	for(int i = 0; i < 9; ++i)
+	{
+		vec2 coeffs_uv = vec2( (float(i)+0.5) * d_uvx, row_uv );
+		sh.c[i] = texture2D( u_probes_texture, coeffs_uv ).xyz;
+	}
+	*/
+
+	vec4 irradiance = vec4( ComputeSHIrradiance( N, sh ) , 1.0);
 	
 	
-	gl_FragColor = color;
+	gl_FragColor = irradiance;
 }
+
+// -------------------------------------------------------------------------------------------------------------------------
+
+\irradiance_sh.fs
+
+
+varying vec3 v_normal;
+
+#include "get_SHs_functions"
+#include "get_irradiance_uniforms"
+
+uniform vec3 u_inverse_viewprojection;
+uniform sampler2D u_depth_texture;
+uniform vec3 u_coeffs[9];
+
+void main()
+{
+	
+	vec3 N = normalize(v_normal);
+	vec2 uv = gl_FragCoord.xy * u_iRes.xy ;
+	//reconstruct world position from depth and inv. viweproj
+	vec4 depth = texture2D( u_depth_texture, uv ); // mirar terminar como esto
+	float depth_fact = depth.x ;
+	vec4 screen_pos = vec4( uv.x *2.0 -1.0, uv.y * 2.0 -1.0, depth_fact*2.0-1.0, 1.0 ); // conv todo de -1 a 1
+	vec4 proj_worldpos = u_inverse_viewprojection * screen_pos;
+	vec3 world_position = proj_worldpos.xyz / proj_worldpos.w ;
+
+	SH9Color sh;
+	#include "find_probe_row_of_texture"
+	
+	//fill the coefficients
+	const float d_uvx = 1.0 / 9.0;
+	for(int i = 0; i < 9; ++i)
+	{
+		vec2 coeffs_uv = vec2( (float(i)+0.5) * d_uvx, row_uv );
+		sh.c[i] = texture2D( u_probes_texture, coeffs_uv ).xyz;
+	}
+
+	vec4 irradiance = vec4( ComputeSHIrradiance( N, sh ) , 1.0);
+	
+	gl_FragColor = irradiance;
+}
+
+
+
 
 // -------------------------------------------------------------------------------------------------------------------------
 

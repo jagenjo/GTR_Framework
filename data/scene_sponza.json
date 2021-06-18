@@ -24,6 +24,7 @@
 			"name": "spot",
 			"type": "LIGHT",
 			"position": [ 0, 36, -16 ],
+			"target": [ -909, 39, 8 ],
 			"angle": -45,
 			"color": [ 1, 0.9, 0.8 ],
 			"intensity": 10,
