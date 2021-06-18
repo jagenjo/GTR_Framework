@@ -26,7 +26,8 @@ namespace GTR {
 		OCCLUSION,
 		METALLICROUGHNESS,
 		OPACITY,
-		DISPLACEMENT
+		DISPLACEMENT,
+        PROBE,
 	};
 
 	struct Sampler {

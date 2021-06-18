@@ -108,6 +108,7 @@ namespace GTR {
 		bool show_ao_deferred;
 		bool show_gbuffers;
         bool updateIrradiance;
+        bool show_irradiance;
 
 		//ctor
 		Renderer();
@@ -165,7 +166,7 @@ namespace GTR {
         
         void updateIrradianceCache(GTR::Scene* scene);
         
-        void uploadIrradianceUniforms(Shader* shader);
+        void uploadIrradianceUniforms(Shader* shader, Camera* camera);
 
 		void applyfinalHDR();
 

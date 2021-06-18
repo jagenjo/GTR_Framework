@@ -18,7 +18,7 @@
 			"type": "PREFAB",
 			"filename": "prefabs/sponza/Sponza.gltf",
 			"position": [ 0, 10, 0 ],
-            "scale": [ 25, 25, 25 ]
+            "scale": [ 45, 45, 45 ]
 		},
 		{
 			"name": "spot",
@@ -41,7 +41,7 @@
 			"position": [ 0, 5, -10 ],
 			"angle": 0,
 			"color": [ 1, 0.2, 0.1 ],
-			"intensity": 2.5,
+			"intensity": 5,
 			"max_dist": 70,
 			"light_type": "POINT"
 		},
@@ -51,7 +51,7 @@
 			"position": [ 0, 5, 10 ],
 			"angle": 0,
 			"color": [ 1, 0.2, 0.1 ],
-			"intensity": 2.5,
+			"intensity": 5,
 			"max_dist": 70,
 			"light_type": "POINT"
 		},
@@ -61,7 +61,7 @@
 			"position": [ 0, 300, 20 ],
 			"target": [ 5, 0, -10 ],
 			"color": [ 0.5, 0.4, 0.8 ],
-			"intensity": 3.5,
+			"intensity": 10,
 			"area_size": 1500,
 			"max_dist": 1000,
 			"cast_shadows": true,

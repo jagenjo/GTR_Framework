@@ -41,6 +41,7 @@ GTR::Renderer::Renderer()
 	this->show_ao = false;
 	this->show_ao_deferred = false;
     this->updateIrradiance = true; // It should be set to true if there is a movement of an object to update the irradiance
+    this->show_irradiance = true;
 	
 	//FrameBufferObject
 	
@@ -153,10 +154,20 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
         this->gbuffers_fbo.depth_texture->copyTo(NULL);
 
 	}
-            
-    updateIrradianceCache(scene);
-    renderProbesGrid(); // to render on the screen to visualize it
-
+        
+    if (show_irradiance){
+        updateIrradianceCache(scene);
+        //renderProbesGrid(); // to render on the screen to visualize it
+        Mesh* quad = Mesh::getQuad();
+        Shader* shader = Shader::Get("irradiance_sh");
+        uploadIrradianceUniforms(shader, camera);
+        glDisable(GL_DEPTH_TEST);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+        quad->render(GL_TRIANGLES);
+        glDisable(GL_BLEND);
+        glEnable(GL_DEPTH_TEST);
+    }
 
 	
 	/*
@@ -1067,12 +1078,11 @@ void Renderer::renderProbe(Vector3 pos, float size, float* coeffs)
 
 	
 	shader->enable();
-	uploadIrradianceUniforms(shader);
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_camera_position", camera->eye);
 	shader->setUniform("u_model", model);
 
-	//shader->setUniform3Array("u_coeffs", coeffs, 9); //vienen despues
+	shader->setUniform3Array("u_coeffs", coeffs, 9); //vienen despues
 
 	mesh->render(GL_TRIANGLES);
 }
@@ -1152,13 +1162,24 @@ void Renderer::updateIrradianceCache(GTR::Scene* scene) {//para hacer actualizac
 	this->updateIrradiance = false;
 }
 
-void Renderer::uploadIrradianceUniforms(Shader* shader) {
+void Renderer::uploadIrradianceUniforms(Shader* shader, Camera* camera) {
 	// Hardcodeo las normal distance por ahora, pero lo podríamos poner como parte del renderer
 	float irr_normal_distance = 10.0;
 
 	if (shader == NULL) {
 		return;
 	}
+    
+    // We use the depth texture to reconstruct the 3D world position in the shader
+    Texture* depth_texture = gbuffers_fbo.depth_texture;
+    // We use the normals from the gbuffers
+    Texture* normal_texture = gbuffers_fbo.color_textures[1];
+    // COlor texture
+    Texture* color_texture = gbuffers_fbo.color_textures[0];
+    
+    // Compute the inverse of viewprojection matrix
+    Matrix44 inv_vp = camera->viewprojection_matrix;
+    inv_vp.inverse();
 
 	shader->enable();
 
@@ -1167,10 +1188,23 @@ void Renderer::uploadIrradianceUniforms(Shader* shader) {
 	shader->setUniform("u_irr_normal_distance", irr_normal_distance);
 	shader->setUniform("u_irr_delta", probe_delta);
 	shader->setUniform("u_irr_dims", probe_dim);
-	shader->setUniform("u_num_probes", (int)probes.size());
-	shader->setTexture("u_probes_texture", probes_texture, 10); // Slot 10 está bien??
+	shader->setUniform("u_num_probes", (float)probes.size());
+	shader->setTexture("u_probes_texture", probes_texture, GTR::eChannels::PROBE);
+    
+    int width = Application::instance->window_width;
+    int height = Application::instance->window_height;
+    
+    Vector2 iRes = Vector2(1.0 / (float)width, 1.0 / (float)height);
+    
+    shader->setUniform("u_iRes", iRes);
+    shader->setUniform("u_inverse_viewprojection", inv_vp);
+    shader->setTexture("u_depth_texture", depth_texture, GTR::eChannels::DEPTH);
+    shader->setTexture("u_normal_texture", normal_texture, GTR::eChannels::NORMAL);
+    shader->setTexture("u_color_texture", color_texture, GTR::eChannels::NORMAL);
 
 }
+
+
 
 
 

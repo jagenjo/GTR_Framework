@@ -92,9 +92,9 @@ Application::Application(int window_width, int window_height, SDL_Window* window
     
 	//Probe grid
     //Vector3 dim(8, 6, 12);
-    Vector3 dim(4, 3, 6);
-    Vector3 start_pos(-100, 5, -100);
-    Vector3 end_pos(100, 150, 100);
+    Vector3 dim(6, 2, 8);
+    Vector3 start_pos(-470, 60, -100);
+    Vector3 end_pos(470, 150, 100);
     renderer->createProbeGrid(dim, start_pos, end_pos);
     renderer->placingProbes();
 
@@ -398,6 +398,8 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_x:
             renderer->updateIrradiance = !renderer->update_shadowmaps;
             break;
+            
+        case SDLK_z: renderer->show_irradiance = !renderer->show_irradiance; break;
 
 	}
 
