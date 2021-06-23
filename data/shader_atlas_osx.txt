@@ -73,7 +73,7 @@ if( u_light_type == 0){ // directional
 
 		L = normalize(-u_light_vector);
 		NdotL = max( dot(N,L), 0.0);
-		light += NdotL * u_light_color * u_light_intensity;
+		light += NdotL * u_light_color * u_light_intensity * shadow_factor;
 }
 else{
 	L = normalize(u_light_position - v_world_position);
@@ -89,7 +89,7 @@ else{
 			spotFactor = 0.0; //if it's outsite
 		}
 	}
-	light += NdotL * spotFactor * att_factor * u_light_color * u_light_intensity;
+	light += NdotL * spotFactor * att_factor * u_light_color * u_light_intensity * shadow_factor;
 }
 
 // ----------------------GET FUNCTIONS-----------------------------
@@ -187,6 +187,22 @@ vec3 perturbNormal(vec3 N, vec3 WP, vec2 uv, vec3 normal_pixel)
 
 \get_shadow_functions
 
+float outsideShadowmap(vec2 shadow_uv, float real_depth){
+    //for directional lights
+
+    //it is outside on the sides
+    if( shadow_uv.x < 0.0 || shadow_uv.x > 1.0 || shadow_uv.y < 0.0 || shadow_uv.y > 1.0 )
+        if( u_light_type == 1)
+            return 1.0;
+        else
+            return 0.0;
+
+    //it is before near or behind far plane
+    if(real_depth < 0.0 || real_depth > 1.0)
+        return 1.0;
+
+}
+
 float get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap ){
 
 	//project our 3D position to the shadowmap
@@ -208,13 +224,13 @@ float get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, 
 	float shadow_depth = texture2D( shadowmap, shadow_uv).x;
 
 	//compute final shadow factor by comparing
-	float shadow_factor = 1.0;
+	float shadow_factor = 1.0 * outsideShadowmap(shadow_uv, real_depth);
 
 	//we can compare them, even if they are not linear
 	if( shadow_depth < real_depth )
 		shadow_factor = 0.0;
 
-	return shadow_factor ;	
+	return shadow_factor;	
 }
 
 // ----------------------FOR TEXTURE-----------------------------
@@ -601,9 +617,35 @@ void main()
 	vec3 L = vec3(0.0);
 	float NdotL = 0.0;
 	float att_factor = compute_attfactor(  u_light_position, v_world_position, u_light_maxdist);
-	//float fhadow_factor = get_shadow_factor( v_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
+	//float shadow_factor = get_shadow_factor( v_world_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
 	//get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap )
 
+	    // Shadow map computations
+    //project our 3D position to the shadowmap
+    vec4 proj_pos = u_shadow_viewproj * vec4(v_world_position,1.0);
+
+    //from homogeneus space to clip space
+    vec2 shadow_uv = proj_pos.xy / proj_pos.w;
+
+    //from clip space to uv space
+    shadow_uv = shadow_uv * 0.5 + vec2(0.5);
+
+    //get point depth [-1 .. +1] in non-linear space
+    float real_depth = (proj_pos.z - u_shadow_bias) / proj_pos.w;
+
+    //normalize from [-1..+1] to [0..+1] still non-linear
+    real_depth = real_depth * 0.5 + 0.5;
+
+    //read depth from depth buffer in [0..+1] non-linear
+    float shadow_depth = texture2D( u_shadow_map, shadow_uv).x;
+
+    //compute final shadow factor by comparing
+    float shadow_factor = 1.0 * outsideShadowmap(shadow_uv, real_depth);
+
+    //we can compare them, even if they are not linear
+    if( shadow_depth < real_depth ){
+        shadow_factor = 0.0;
+    }
 
 	#include "compute_light_phong"
 	
@@ -693,30 +735,7 @@ void main()
 }
 
 // -------------------------------------------------------------------------------------------------------------------------
-\fbo.fs
-
-#include "get_parm_from_vs"
-#include "get_functions_utils"
-//out vec4 FragColor;
-
-void main()
-{
-
-	/*	//for directional lights
-
-	//it is outside on the sides
-	if( shadow_uv.x < 0.0 || shadow_uv.x > 1.0 ||
-		shadow_uv.y < 0.0 || shadow_uv.y > 1.0 )
-			return 1.0;
-
-	//it is before near or behind far plane
-	if(real_depth < 0.0 || real_depth > 1.0)
-		return 1.0;
-
-	get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap, vec2 shadow_uv ) */
-
-	gl_FragColor = vec4(1.0);
-}
+//\fbo.fs
 
 // -------------------------------------------------------------------------------------------------------------------------
 

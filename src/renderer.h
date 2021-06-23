@@ -118,13 +118,13 @@ namespace GTR {
 		//renders several elements of the scene
 		void renderScene(GTR::Scene* scene, Camera* camera);
 
-		void collectRenderCalls(GTR::Scene* scene, Camera* camera);
+		void collectRenderCalls(GTR::Scene* scene, Camera* camera, std::vector<RenderCall>& rc_vector);
 
 		//to get a whole prefab (with all its nodes)
-		void getRCsfromPrefab(const Matrix44& model, GTR::Prefab* prefab, Camera* camera);
+		void getRCsfromPrefab(const Matrix44& model, GTR::Prefab* prefab, Camera* camera, std::vector<RenderCall>& rc_vector);
 
 		//to get node from the prefab and its children
-		void getRCsfromNode(const Matrix44& model, GTR::Node* node, Camera* camera);
+		void getRCsfromNode(const Matrix44& model, GTR::Node* node, Camera* camera, std::vector<RenderCall> &rc_vector);
 
 		void uploadTextures(Material* material, Shader* shader);
 

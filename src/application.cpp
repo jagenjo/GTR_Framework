@@ -73,9 +73,10 @@ Application::Application(int window_width, int window_height, SDL_Window* window
 
 
 	scene = new GTR::Scene();
-	if (!scene->load("data/scene_sponza.json"))
+	//if (!scene->load("data/scene_sponza.json"))
+	//	exit(1);
+	if (!scene->load("data/scene.json"))
 		exit(1);
-
 	camera->lookAt(scene->main_camera.eye, scene->main_camera.center, Vector3(0, 1, 0));
 	camera->fov = scene->main_camera.fov;
 
@@ -395,9 +396,7 @@ void Application::onKeyDown( SDL_KeyboardEvent event )
 		case SDLK_v: renderer->show_ao = !renderer->show_ao; break;
 		case SDLK_c: renderer->show_ao_deferred = !renderer->show_ao_deferred; break;
 
-		case SDLK_x:
-            renderer->updateIrradiance = !renderer->update_shadowmaps;
-            break;
+		case SDLK_x: renderer->updateIrradiance = !renderer->updateIrradiance; break;
             
         case SDLK_z: renderer->show_irradiance = !renderer->show_irradiance; break;
 

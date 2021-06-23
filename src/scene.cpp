@@ -193,7 +193,7 @@ GTR::LightEntity::LightEntity() {
 	this->spot_exp = 0;
 	this->area_size = 0;
 	this->shadow_fbo = NULL;
-	this->shadow_bias = 0;
+	this->shadow_bias = 0.00001;
 	this->cast_shadows = false;
 	
 	this->light_camera = new Camera();
@@ -221,7 +221,7 @@ void GTR::LightEntity::uploadToShader(Shader* sh)
 	}
 	
 	sh->setUniform("u_shadow_viewproj", this->light_camera->viewprojection_matrix);
-	//sh->setUniform("u_shadow_map", this->shadow_fbo->color_textures[0], 10);///
+	sh->setUniform("u_shadow_map", this->shadow_fbo->depth_texture, GTR::eChannels::DEPTH_SHADOW);///
 	sh->setUniform("u_shadow_bias", this->shadow_bias);
 	
 	
