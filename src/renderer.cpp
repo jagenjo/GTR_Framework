@@ -36,7 +36,7 @@ GTR::Renderer::Renderer()
 	this->render_mode = GTR::eRenderMode::MULTI;
 	this->pipeline_mode = GTR::ePipelineMode::FORWARD;
 	this->rendering_shadowmap = false;
-	this->update_shadowmaps = false;
+	this->update_shadowmaps = true;
 	this->show_gbuffers = false;
 	this->show_ao = false;
 	this->show_ao_deferred = false;
@@ -123,7 +123,7 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 		rc_data_alpha.push_back(rc_data_list[i]);
 	}*/
 	
-	if (update_shadowmaps) 
+	if (update_shadowmaps)
 		createShadowmap(scene, camera);
 
 	
@@ -209,7 +209,8 @@ void Renderer::renderScene(GTR::Scene* scene, Camera* camera)
 void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera, std::vector<RenderCall>& rc_vector) {
 
 	//clear data_lists
-	this->rc_data_list.resize(0); 
+	//this->rc_data_list.resize(0);
+    rc_vector.resize(0);
 	this->light_entities.resize(0);
 
 	//render entities
