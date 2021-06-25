@@ -1,58 +1,24 @@
-﻿  renderer.cpp
+﻿  scene.cpp
 C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
 C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON'
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(54,52): warning C4244: 'argumento': conversión de 'double' a 'unsigned int'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(54,38): warning C4244: 'argumento': conversión de 'double' a 'unsigned int'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(216,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(269,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(314,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(335,39): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(335,25): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(339,49): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(339,35): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(339,19): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(343,60): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(343,46): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(343,33): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(343,19): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(347,50): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(347,36): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(347,23): warning C4244: 'argumento': conversión de 'double' a 'GLint'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(406,49): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(406,29): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(416,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(467,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(574,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(731,21): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(776,21): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(787,54): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(823,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(842,21): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(910,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(920,50): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(920,37): warning C4244: 'argumento': conversión de 'double' a 'GLsizei'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(921,30): warning C4244: '+=': conversión de 'double' a 'int'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(949,15): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(950,13): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1010,72): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1010,43): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1030,40): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1097,23): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1097,20): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1097,17): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1099,35): warning C4244: '=': conversión de 'float' a 'int'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1101,59): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1101,56): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1101,53): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1138,20): warning C4018: '<': no coinciden signed/unsigned
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1235,52): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\renderer.cpp(1235,32): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(18,20): warning C4018: '<': no coinciden signed/unsigned
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(93,16): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(94,28): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(196,29): warning C4305: '=': truncamiento de 'double' a 'float'
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(214,67): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(257,19): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(262,18): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(268,19): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(273,20): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(278,19): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(283,21): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+C:\Users\pansu\OneDrive\Documentos\3ºtrimestre_3\Real\GTR_Framework\src\scene.cpp(302,24): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
      Creando biblioteca ..\..\framework.lib y objeto ..\..\framework.exp
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
-  6 of 4370 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+  12 of 4370 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    50 functions had inline decision re-evaluated but remain unchanged
+    57 functions had inline decision re-evaluated but remain unchanged
   Generación de código finalizada
 LINK : warning LNK4286: "___glewDeleteBuffers" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"
 LINK : warning LNK4286: "___glewLinkProgram" importa el símbolo "glew32s.lib(glew.obj)" definido en "imgui_impl_opengl3.obj"

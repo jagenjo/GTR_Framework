@@ -313,7 +313,7 @@ void GTR::LightEntity::configureLightCamera()
 		
 	}
 	else if (this->light_type == DIRECTIONAL){// DIRECTIONAL
-		this->light_camera->setOrthographic(-area_size / 2, area_size / 2, -area_size / 2, area_size / 2, near_plane, far_plane);
+		this->light_camera->setOrthographic(-area_size / 2, area_size / 2, -area_size / 2, area_size / 2, -far_plane, far_plane);
 	}
 }
 

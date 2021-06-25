@@ -203,7 +203,7 @@ float outsideShadowmap(vec2 shadow_uv, float real_depth){
 
 }
 
-float get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap ){
+float get_shadow_factor( vec3 pos, mat4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap ){
 
 	//project our 3D position to the shadowmap
 	vec4 proj_pos = u_shadow_viewproj * vec4(pos,1.0);
@@ -591,7 +591,7 @@ uniform vec3 u_ambient_light;
 #include "get_shadow_functions"
 //#include "get_gamma_functions"
 
-uniform vec4 u_shadow_viewproj;
+uniform mat4 u_shadow_viewproj;
 uniform float u_shadow_bias;
 uniform sampler2D u_shadow_map;
 
@@ -617,35 +617,8 @@ void main()
 	vec3 L = vec3(0.0);
 	float NdotL = 0.0;
 	float att_factor = compute_attfactor(  u_light_position, v_world_position, u_light_maxdist);
-	//float shadow_factor = get_shadow_factor( v_world_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
-	//get_shadow_factor( vec3 pos, vec4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap )
-
-	    // Shadow map computations
-    //project our 3D position to the shadowmap
-    vec4 proj_pos = u_shadow_viewproj * vec4(v_world_position,1.0);
-
-    //from homogeneus space to clip space
-    vec2 shadow_uv = proj_pos.xy / proj_pos.w;
-
-    //from clip space to uv space
-    shadow_uv = shadow_uv * 0.5 + vec2(0.5);
-
-    //get point depth [-1 .. +1] in non-linear space
-    float real_depth = (proj_pos.z - u_shadow_bias) / proj_pos.w;
-
-    //normalize from [-1..+1] to [0..+1] still non-linear
-    real_depth = real_depth * 0.5 + 0.5;
-
-    //read depth from depth buffer in [0..+1] non-linear
-    float shadow_depth = texture2D( u_shadow_map, shadow_uv).x;
-
-    //compute final shadow factor by comparing
-    float shadow_factor = 1.0 * outsideShadowmap(shadow_uv, real_depth);
-
-    //we can compare them, even if they are not linear
-    if( shadow_depth < real_depth ){
-        shadow_factor = 0.0;
-    }
+	float shadow_factor = get_shadow_factor( v_world_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
+	//get_shadow_factor( vec3 pos, mat4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap )
 
 	#include "compute_light_phong"
 	
