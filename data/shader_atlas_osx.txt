@@ -7,7 +7,7 @@ multi basic.vs multi.fs
 light basic.vs light.fs
 light_singlepass basic.vs light_singlepass.fs
 sh2debug basic.vs sh2debug.fs
-fbo basic.vs fbo.fs
+//fbo basic.vs fbo.fs
 
 gbuffers basic.vs gbuffers.fs
 showAlpha quad.vs showAlpha.fs // es de 2D-> quad. muestra solo el 4º componente
@@ -224,7 +224,7 @@ float get_shadow_factor( vec3 pos, mat4 u_shadow_viewproj, float u_shadow_bias, 
 	float shadow_depth = texture2D( shadowmap, shadow_uv).x;
 
 	//compute final shadow factor by comparing
-	float shadow_factor = 1.0 * outsideShadowmap(shadow_uv, real_depth);
+	float shadow_factor = 1.0;// * outsideShadowmap(shadow_uv, real_depth);
 
 	//we can compare them, even if they are not linear
 	if( shadow_depth < real_depth )

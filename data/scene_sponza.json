@@ -61,8 +61,8 @@
 			"position": [ 0, 300, 20 ],
 			"target": [ 5, 0, -10 ],
 			"color": [ 0.5, 0.4, 0.8 ],
-			"intensity": 10,
-			"area_size": 1500,
+			"intensity": 1.5,
+			"area_size": 4500,
 			"max_dist": 1000,
 			"cast_shadows": true,
 			"light_type": "DIRECTIONAL"
