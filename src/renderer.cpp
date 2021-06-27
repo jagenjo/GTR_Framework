@@ -34,7 +34,7 @@ GTR::Renderer::Renderer()
 
 	//Flags
 	this->render_mode = GTR::eRenderMode::MULTI;
-	this->pipeline_mode = GTR::ePipelineMode::FORWARD;
+	this->pipeline_mode = GTR::ePipelineMode::DEFERRED;
 	this->rendering_shadowmap = false;
 	this->update_shadowmaps = true;
 	this->show_gbuffers = false;
@@ -212,6 +212,7 @@ void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera, std::vector
 	//this->rc_data_list.resize(0);
     rc_vector.resize(0);
 	this->light_entities.resize(0);
+	this->decal_entities.resize(0);
 
 	//render entities
 	for (int i = 0; i < scene->entities.size(); ++i)
@@ -244,6 +245,14 @@ void Renderer::collectRenderCalls(GTR::Scene* scene, Camera* camera, std::vector
 			this->light_entities.push_back(lig);
 
 		}
+
+		else if (ent->entity_type == DECAL) 
+		{
+			DecalEntity* decal = (GTR::DecalEntity*)ent;
+			this->decal_entities.push_back(decal);
+
+		}
+
 	}
 
 	if (camera) {
@@ -317,6 +326,7 @@ void GTR::Renderer::createGbuffers(int width, int height, std::vector <RenderCal
 		RenderCall& rc = rendercalls[i]; 
 		renderMeshWithMaterial(eRenderMode::GBUFFERS, rc.model, rc.mesh, rc.material, camera); //always in gbuffer mode
 	}
+	 
 	
 
 	//stop rendering to the gbuffers
@@ -332,17 +342,19 @@ void GTR::Renderer::showGbuffers(int width, int height, Camera* camera) {
 	//if (!this->show_gbuffers)
 	//	return;
 
+	FBO* fbo = &gbuffers_fbo;
+
 	//GB0 color
 	glViewport(0, 0, width * 0.5, height * 0.5); //set area of the screen and render fullscreen quad
-	gbuffers_fbo.color_textures[0]->toViewport();
+	fbo->color_textures[0]->toViewport();
 
 	//GB1 normal
 	glViewport(width * 0.5, 0, width * 0.5, height * 0.5);
-	gbuffers_fbo.color_textures[1]->toViewport();
+	fbo->color_textures[1]->toViewport();
 
 	//GB2 material. properties
 	glViewport(width * 0.5, height * 0.5, width * 0.5, height * 0.5);
-	gbuffers_fbo.color_textures[2]->toViewport();
+	fbo->color_textures[2]->toViewport();
 
 	//GB3 depth_buffer
 	glViewport(0, height * 0.5, width * 0.5, height * 0.5);
@@ -352,7 +364,7 @@ void GTR::Renderer::showGbuffers(int width, int height, Camera* camera) {
 	depth_sh->enable();
 	depth_sh->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
 	//depth_sh->disable();
-	gbuffers_fbo.depth_texture->toViewport(depth_sh);
+	fbo->depth_texture->toViewport(depth_sh);
 
 	//Volver a poner el tama�o de VPort. 0,0 en una textura esta abajo iz!
 	glViewport(0, 0, width, height);
@@ -361,6 +373,32 @@ void GTR::Renderer::showGbuffers(int width, int height, Camera* camera) {
 }
 
 
+void GTR::Renderer::createDecalsFBO(int width, int height, Camera* camera)
+{
+	//After remderimng the scene of gbuffers, we will do some decals, and we will clone it to decal_fbo
+	//we need have depth cloned, as FBOs do not allow to read from the shader the current binded buffers(gbuffer).
+
+
+	if (this->decals_fbo.fbo_id == 0) {
+		// we need to clone the fbo of gbuffer
+		this->decals_fbo.create(width, height, 3, GL_RGBA, GL_UNSIGNED_BYTE);
+	}
+
+	gbuffers_fbo.color_textures[GTR::eChannels::ALBEDO]->copyTo(decals_fbo.color_textures[0]);
+	this->gbuffers_fbo.color_textures[GTR::eChannels::NORMAL]->copyTo(decals_fbo.color_textures[1]);
+	this->gbuffers_fbo.color_textures[GTR::eChannels::EMISSIVE]->copyTo(decals_fbo.color_textures[2]);
+
+	decals_fbo.bind();
+	this->gbuffers_fbo.depth_texture->copyTo(NULL);
+	renderDecals(camera);
+	decals_fbo.unbind();
+
+	decals_fbo.color_textures[GTR::eChannels::ALBEDO]->copyTo(gbuffers_fbo.color_textures[0]);
+	this->decals_fbo.color_textures[GTR::eChannels::NORMAL]->copyTo(gbuffers_fbo.color_textures[1]);
+	this->decals_fbo.color_textures[GTR::eChannels::EMISSIVE]->copyTo(gbuffers_fbo.color_textures[2]);
+
+}
+
 
 void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& rendercalls, Camera* camera)
 {
@@ -368,10 +406,9 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
 	int height = Application::instance->window_height;
 
 	createGbuffers(width, height, rendercalls, camera);
-	//-----End gbuffers pass
-
-	// si existe ya la textura pero el tama�o de la textura no es el mismo que el anterior, que te la tire el de anterior y te cree uno nueva -> por resize de las ventas...
-
+	
+	createDecalsFBO(width, height, camera);
+		
 	ssao.applyEffect(gbuffers_fbo.depth_texture, gbuffers_fbo.color_textures[GTR::eChannels::NORMAL], camera, ao_buffer);
 
 	//---------Ilumination_Pass--------------
@@ -506,9 +543,6 @@ void GTR::Renderer::renderDeferred(GTR::Scene* scene, std::vector <RenderCall>& 
     glDisable(GL_BLEND);
 	
 }
-
-
-
 
 
 void Renderer::applyfinalHDR() {
@@ -923,7 +957,7 @@ void Renderer::showShadowmap(Camera* camera) {
 		//to use a special shader,  to visualize a Depth Texture
 		Shader* zshader = Shader::Get("depth");
 		zshader->enable();
-		zshader->setTexture("u_texture", light->shadow_fbo->depth_texture, 10); //-----------------
+		//zshader->setTexture("u_texture", light->shadow_fbo->depth_texture, 10); //-----------------
 		zshader->setUniform("u_camera_nearfar", Vector2(camera->near_plane, camera->far_plane));
 		light->shadow_fbo->depth_texture->toViewport(zshader);
 		
@@ -1264,4 +1298,47 @@ Texture* GTR::CubemapFromHDRE(const char* filename)
 	return texture;
 	*/
 	return NULL;
+}
+
+void Renderer::renderDecals(Camera* camera) 
+{
+	//For each decal, we need to read the zbuffer, draw a cube and reproject the decal to the surface 
+
+	static Mesh* cube = NULL; //Static make the variable use the last value that it have
+	if (cube == NULL) { 
+
+		cube = new Mesh();
+		cube->createCube();
+	}
+
+	Shader* shader = Shader::Get("decal");
+	shader->enable();
+
+	shader->setTexture("u_color_texture", gbuffers_fbo.color_textures[0], GTR::eChannels::ALBEDO);
+	shader->setTexture("u_normal_texture", gbuffers_fbo.color_textures[1], GTR::eChannels::NORMAL);
+	shader->setTexture("u_extra_texture", gbuffers_fbo.color_textures[2], GTR::eChannels::EMISSIVE);
+	shader->setTexture("u_depth_texture", gbuffers_fbo.depth_texture, GTR::eChannels::DEPTH);
+
+	shader->setUniform("u_inverse_viewprojection", camera->inverse_viewprojection_matrix);
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
+	Vector2 iRes = Vector2(1.0 / (float)gbuffers_fbo.depth_texture->width, 1.0 / (float)gbuffers_fbo.depth_texture->height);
+	shader->setUniform("u_iRes", iRes);
+
+	for (int i = 0; i < this->decal_entities.size(); i++)
+	{
+		DecalEntity* decal = this->decal_entities[i];
+
+		shader->setUniform("u_model", decal->model);
+		Matrix44 invModel = decal->model;
+		invModel.inverse();
+		shader->setUniform("u_iModel", invModel);
+		shader->setUniform("u_decal_texture_type", decal->texture_type);
+
+		shader->setTexture("u_decal_texture", decal->decal_texture, 4);
+		
+		cube->render(GL_TRIANGLES);
+	}
+
+	
+
 }

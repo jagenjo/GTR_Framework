@@ -129,8 +129,10 @@ GTR::BaseEntity* GTR::Scene::createEntity(std::string type)
 {
 	if (type == "PREFAB")
 		return new GTR::PrefabEntity();
-	if (type == "LIGHT")
+	else if (type == "LIGHT")
 		return new GTR::LightEntity();
+	else if (type == "DECAL")
+		return new GTR::DecalEntity();
 	return NULL;
 }
 
@@ -143,9 +145,6 @@ void GTR::BaseEntity::renderInMenu()
 	ImGuiMatrix44(model, "Model");
 #endif
 }
-
-
-
 
 GTR::PrefabEntity::PrefabEntity()
 {
@@ -235,14 +234,14 @@ void GTR::LightEntity::configure(cJSON* json)
 	
 	if (cJSON_GetObjectItem(json, "light_type"))
 	{
-		std::string lightType = cJSON_GetObjectItem(json, "light_type")->valuestring;
+		std::string lightType = readJSONString(json, "light_type", "");
 		if (lightType == "POINT") {
 			this->light_type = POINT; 
 		}
-		if (lightType == "DIRECTIONAL") {
+		else if (lightType == "DIRECTIONAL") {
 			this->light_type = DIRECTIONAL;
 		}
-		if (lightType == "SPOT") {
+		else if (lightType == "SPOT") {
 			this->light_type = SPOT;
 		}
 		
@@ -280,7 +279,7 @@ void GTR::LightEntity::configure(cJSON* json)
 	 }
 	 if (cJSON_GetObjectItem(json, "shadow_bias"))
 	{
-		float shadow_bias = cJSON_GetObjectItem(json, "shadow_bias")->valuedouble;
+		float shadow_bias = readJSONNumber(json, "shadow_bias", this->shadow_bias);
 		this->shadow_bias = shadow_bias;
 	}
 	
@@ -346,4 +345,34 @@ void GTR::LightEntity::renderInMenu()
 		}
 		
 	#endif
+}
+
+GTR::DecalEntity::DecalEntity()
+{
+	this->entity_type = DECAL;
+	this->decal_texture = NULL;
+	this->texture_type = eDecalTextureType::albedo;
+}
+
+void GTR::DecalEntity::configure(cJSON* json) {
+
+	
+
+	if (cJSON_GetObjectItem(json, "filename")) {
+		std::string filename = readJSONString(json, "filename", "");
+		this->decal_texture = Texture::Get((std::string("data/") + filename).c_str());
+	}
+	if (cJSON_GetObjectItem(json, "texture_type"))
+	{
+		std::string textureType = readJSONString(json, "texture_type", "");
+		if (textureType == "albedo") {
+			this->texture_type = eDecalTextureType::albedo;
+		}
+		else if (textureType == "normal") {
+			this->texture_type = eDecalTextureType::normal;
+		}
+		
+
+	}
+
 }

@@ -35,6 +35,9 @@ void Camera::updateViewMatrix()
 {
 	view_matrix.lookAt( eye, center, up );
 	viewprojection_matrix = view_matrix * projection_matrix;
+	Matrix44 invmatrix = viewprojection_matrix;
+	invmatrix.inverse();
+	this->inverse_viewprojection_matrix = invmatrix;
 	extractFrustum();
 }
 
@@ -49,7 +52,9 @@ void Camera::updateProjectionMatrix()
 		projection_matrix.perspective(fov, aspect, near_plane, far_plane);
 
 	viewprojection_matrix = view_matrix * projection_matrix;
-
+	Matrix44 invmatrix = viewprojection_matrix;
+	invmatrix.inverse();
+	this->inverse_viewprojection_matrix = invmatrix;
 	extractFrustum();
 }
 

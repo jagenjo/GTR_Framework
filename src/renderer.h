@@ -79,10 +79,13 @@ namespace GTR {
 		int max_num_lights;
 		std::vector<LightEntity* > light_entities;
 
+		//Decals
+		std::vector<DecalEntity* > decal_entities;
 		
 		//FBO & SSAO
 		FBO gbuffers_fbo;
 		FBO illumination_fbo;
+		FBO decals_fbo;
 		FBO irr_fbo; //irradiance
 		SSAOFX ssao;
 		
@@ -103,6 +106,7 @@ namespace GTR {
 		ePipelineMode pipeline_mode;
 
 		bool update_shadowmaps;
+		bool show_shadowmap;
 		bool rendering_shadowmap;
 		bool show_ao;
 		bool show_ao_deferred;
@@ -134,6 +138,8 @@ namespace GTR {
 		void renderForward(GTR::Scene* scene, std::vector<RenderCall>& rendercalls, Camera* camera, bool apply_clear);
 
 		void createGbuffers(int width, int height, std::vector<RenderCall>& rendercalls, Camera* camera);
+
+		void createDecalsFBO(int width, int height, Camera* c );
 
 		void showGbuffers(int width, int height, Camera* camera);
 
@@ -171,6 +177,8 @@ namespace GTR {
         void uploadIrradianceUniforms(Shader* shader, Camera* camera);
 
 		void applyfinalHDR();
+
+		void renderDecals(Camera* camera);
 
 	};
 

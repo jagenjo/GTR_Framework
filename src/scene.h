@@ -21,7 +21,7 @@ namespace GTR {
 		LIGHT = 2,
 		CAMERA = 3,
 		REFLECTION_PROBE = 4,
-		DECALL = 5
+		DECAL = 5
 	};
 
 	class Scene;
@@ -96,6 +96,21 @@ namespace GTR {
 
 	};
 
+	enum eDecalTextureType {
+		albedo = 0,
+		normal = 1
+	};
+	
+
+	class DecalEntity : public GTR::BaseEntity
+	{
+	public:
+		Texture* decal_texture;
+		DecalEntity();
+		eDecalTextureType texture_type;
+		//virtual void renderInMenu();
+		virtual void configure(cJSON* json);
+	};
 
 	//contains all entities of the scene
 	class Scene

@@ -19,6 +19,7 @@ applyHDRgamma quad.vs applyHDRgamma.fs
 
 probe basic.vs probe.fs //basic ya q es una esfera que lo vamos a proyectar
 irradiance_sh quad.vs irradiance_sh.fs 
+decal basic.vs decal.fs
 
 // ----------------------GET PARAMETERS-----------------------------
 \get_parm_from_vs
@@ -54,6 +55,12 @@ uniform float u_light_area_size;
 
 uniform float u_light_spotCosineCutoff;
 uniform float u_light_spotExponent;
+
+\get_shadow_uniforms
+
+uniform mat4 u_shadow_viewproj;
+uniform float u_shadow_bias;
+uniform sampler2D u_shadow_map;
 
 \get_irradiance_uniforms
 
@@ -439,6 +446,46 @@ float dither4x4(vec2 position, float brightness)
   return brightness < limit ? 0.0 : 1.0;
 }
 
+//----------------------Compute irradiance/probes functions-----------------------------
+
+\find_probe_row_of_texture
+
+//computing nearest probe index based on world position
+
+vec3 irr_range = u_irr_end - u_irr_start;
+
+vec3 irr_local_pos = clamp( world_position - u_irr_start 	+ N * u_irr_normal_distance, vec3(0.0), irr_range );
+
+//convert from world pos to grid pos
+vec3 irr_norm_pos = irr_local_pos / u_irr_delta;
+
+//round values as we cannot fetch between rows for now
+vec3 local_indices = floor(irr_norm_pos + 0.5); //round( irr_norm_pos ); Lo sustituyo por esta función ya que en OpenGL 2.1 no hay la función round()
+
+//compute in which row is the probe stored
+float row = local_indices.x + local_indices.y * u_irr_dims.x + local_indices.z * u_irr_dims.x * u_irr_dims.y;
+
+//find the UV.y coord of that row in the probes texture
+float row_uv = (row + 1.0) / (u_num_probes + 1.0); 
+
+
+\get_irradiance
+
+	SH9Color sh;
+	
+	
+	#include "find_probe_row_of_texture"
+	
+	//fill the coefficients
+	const float d_uvx = 1.0 / 9.0;
+	for(int i = 0; i < 9; ++i)
+	{
+		vec2 coeffs_uv = vec2( (float(i)+0.5) * d_uvx, row_uv );
+		sh.c[i] = texture2D( u_probes_texture, coeffs_uv ).xyz;
+	}
+
+	vec4 irradiance = vec4( ComputeSHIrradiance( N, sh ) , 1.0);
+
 
 // -------------------------------------------------------------------------------------------------------------------------
 \basic.vs
@@ -591,9 +638,7 @@ uniform vec3 u_ambient_light;
 #include "get_shadow_functions"
 //#include "get_gamma_functions"
 
-uniform mat4 u_shadow_viewproj;
-uniform float u_shadow_bias;
-uniform sampler2D u_shadow_map;
+#include "get_shadow_uniforms"
 
 
 //out vec4 FragColor;
@@ -618,8 +663,7 @@ void main()
 	float NdotL = 0.0;
 	float att_factor = compute_attfactor(  u_light_position, v_world_position, u_light_maxdist);
 	float shadow_factor = get_shadow_factor( v_world_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
-	//get_shadow_factor( vec3 pos, mat4 u_shadow_viewproj, float u_shadow_bias, sampler2D shadowmap )
-
+	
 	#include "compute_light_phong"
 	
 
@@ -735,8 +779,8 @@ void main()
 {
 	vec2 uv = v_uv;
 	vec4 color = u_color;
-	color *= texture2D( u_color_texture, uv );///----------
-
+	color *= texture2D( u_color_texture, uv );
+	
 	//discard some pixels depending on the pixel screen position and its transparency
 	if( color.a < 0.9 && floor(mod(gl_FragCoord.x,2.0)) != floor(mod(gl_FragCoord.y,2.0)) ) 
 		discard;
@@ -800,6 +844,10 @@ uniform bool u_ao_show;
 #include "get_lights_functions"
 #include "get_PBR_functions"
 #include "get_gamma_functions"
+#include "get_shadow_functions"
+#include "get_shadow_uniforms"
+
+
 
 //layout(location=0) out vec4 FragColor;
 //out vec4 FragColor;
@@ -841,7 +889,7 @@ void main()
 	float metalness = albedo.a; 
 	float roughness = normal.a;
 	float att_factor =  compute_attfactor(  u_light_position, world_position, u_light_maxdist);
-	
+	float shadow_factor = get_shadow_factor( world_position, u_shadow_viewproj, u_shadow_bias, u_shadow_map);
 	float ao_factor = 1.0;
 	if( u_ao_show ){
 		ao_factor = texture2D(u_ao_texture, uv).x ;
@@ -856,7 +904,7 @@ void main()
 		float NoL = max( dot(N,L) , 0.0);
 		//vec3 diffspecular_light = get_diffspecular_light(  L ,  u_light_vector,  u_light_position,  u_camera_position,  N,  metalness, roughness ,  color,  NoL );
 
-		light += NoL * u_light_color * u_light_intensity;
+		light += NoL * u_light_color * u_light_intensity; //* shadow_factor;
 
 	}
 	color.xyz *= light;
@@ -867,52 +915,7 @@ void main()
 }
 // -------------------------------------------------------------------------------------------------------------------------
 
-//float find_probe_row_of_texture(vec3 v_world_position, vec3 u_irr_end, vec3 u_irr_start, vec3 N, vec3 u_irr_normal_distance, vec3 u_irr_delta, vec3 u_irr_dims, int u_num_probes )
-\find_probe_row_of_texture
-
-//computing nearest probe index based on world position
-
-vec3 irr_range = u_irr_end - u_irr_start;
-
-vec3 irr_local_pos = clamp( world_position - u_irr_start 	+ N * u_irr_normal_distance, vec3(0.0), irr_range );
-
-//convert from world pos to grid pos
-vec3 irr_norm_pos = irr_local_pos / u_irr_delta;
-
-//round values as we cannot fetch between rows for now
-vec3 local_indices = floor(irr_norm_pos + 0.5); //round( irr_norm_pos ); Lo sustituyo por esta función ya que en OpenGL 2.1 no hay la función round()
-
-//compute in which row is the probe stored
-float row = local_indices.x + local_indices.y * u_irr_dims.x + local_indices.z * u_irr_dims.x * u_irr_dims.y;
-
-//find the UV.y coord of that row in the probes texture
-float row_uv = (row + 1.0) / (u_num_probes + 1.0); 
-
-
-	//return row_uv;
-	
-
-\get_irradiance
-
-	SH9Color sh;
-	
-	
-	#include "find_probe_row_of_texture"
-	
-	//fill the coefficients
-	const float d_uvx = 1.0 / 9.0;
-	for(int i = 0; i < 9; ++i)
-	{
-		vec2 coeffs_uv = vec2( (float(i)+0.5) * d_uvx, row_uv );
-		sh.c[i] = texture2D( u_probes_texture, coeffs_uv ).xyz;
-	}
-
-	vec4 irradiance = vec4( ComputeSHIrradiance( N, sh ) , 1.0);
-
-
 \deferred_ws.fs
-
-
 
 uniform mat4 u_inverse_viewprojection;
 uniform vec2 u_iRes;
@@ -998,8 +1001,6 @@ void main()
 
 \applyHDRgamma.fs
 
-
-
 varying vec2 v_uv;
 uniform sampler2D u_texture;
 #include "get_gamma_functions"
@@ -1019,8 +1020,6 @@ void main()
 // -------------------------------------------------------------------------------------------------------------------------
 
 \ssao.fs
-
-
 
 varying vec2 v_uv;
 
@@ -1102,7 +1101,7 @@ void main()
 		z_old = n * (pdepth + 1.0) / (f + n - pdepth * (f - n));
 		z_new = n * (proj.z + 1.0) / (f + n - proj.z * (f - n));
 		z_diff = z_new - z_old;
-																		//--- poner la distancia max / dist_far etc...
+		
 		//compare true depth with its depth
 		if( z_old < z_new && z_diff > 0.001) //if true depth smaller, is inside
 
@@ -1160,6 +1159,7 @@ vec3 ComputeSHIrradiance(in vec3 normal, in SH9Color sh)
 	return irradiance;
 }
 
+// -------------------------------------------------------------------------------------------------------------------------
 
 \probe.fs
 
@@ -1191,7 +1191,7 @@ void main()
 	sh.c[8] = u_coeffs[8];
 	
 
-	/*
+	/* 
 	SH9Color sh;
 	#include "find_probe_row_of_texture"
 	
@@ -1262,14 +1262,9 @@ void main()
 	gl_FragColor.xyz = color * irradiance;
 }
 
-
-
-
 // -------------------------------------------------------------------------------------------------------------------------
 
 \multi.fs
-
-
 
 varying vec3 v_position;
 varying vec3 v_world_position;
@@ -1312,7 +1307,7 @@ void main()
 	//example of linearizing depthmap inside shader so we can show it on the screen
 	float n = u_camera_nearfar.x;
 	float f = u_camera_nearfar.y;
-	float z = texture2D(u_texture,v_uv).x;
+	float z = texture2D(u_texture, v_uv).x;
 	float color = n * (z + 1.0) / (f + n - z * (f - n));
 	gl_FragColor = vec4(color);
 }
@@ -1354,3 +1349,63 @@ void main()
 	gl_Position = u_viewprojection * vec4( v_world_position, 1.0 );
 }
 
+// -------------------------------------------------------------------------------------------------------------------------
+
+\decal.fs
+
+#include "get_textures_uniforms"
+uniform sampler2D u_decal_texture;
+uniform int u_decal_texture_type;
+uniform mat4 u_inverse_viewprojection;
+uniform vec2 u_iRes;
+// we need the inv of the model to be able pass from world space to obj decal space
+uniform mat4 u_iModel;
+
+void main()
+{
+	// we need to extract uvs from pixel screenpos, no use uvs of the cube
+	vec2 uv = gl_FragCoord.xy * u_iRes.xy ;
+
+	vec4 albedo = texture2D(u_color_texture, uv);
+	vec4 normal = texture2D(u_normal_texture, uv);
+	vec4 extra = texture2D(u_extra_texture, uv);
+	vec4 depth = texture2D(u_depth_texture, uv);
+	
+	//ignore pixels in the background
+	float depth_fact = depth.x ;
+	if( depth_fact >= 1.0)
+		discard;
+
+	//reconstruct world position from depth and inv. viweproj
+	vec4 screen_pos = vec4( uv.x *2.0 -1.0, uv.y * 2.0 -1.0, depth_fact*2.0-1.0, 1.0 ); // conv todo de -1 a 1
+	vec4 proj_worldpos = u_inverse_viewprojection * screen_pos;
+	vec3 world_position = proj_worldpos.xyz / proj_worldpos.w ;
+
+	//Convert to decal space by inverse model od the decal 
+	vec3 localpos = (u_iModel * vec4(world_position, 1.0) ).xyz;
+	
+	//use x and z to compute uvs where fetch the pixel , from -1,1 to 0,1
+	uv = (localpos.xz / 2.0) + vec2(0.5);
+	//check if its of out of the range[0,1] to avoid projecting points outside the bbox[0,1] of the decal
+	if(uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0)
+		discard;
+
+	vec4 decal = texture2D(u_decal_texture, uv);
+	//discard pixels in decal_texture that have transparency
+	if(decal.a < 0.5)
+		discard;
+	
+	if (u_decal_texture_type == 0){
+		albedo.xyz = decal.xyz;
+	}
+	else if (u_decal_texture_type == 1){
+		normal.xyz = decal.xyz;
+	}
+	
+	
+	//albedo = vec4(1, 0, 0, 1);
+	gl_FragData[0] = albedo ;
+	gl_FragData[1] = normal ;
+	gl_FragData[2] = extra ;
+	
+}

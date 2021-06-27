@@ -577,15 +577,28 @@ Texture* Texture::getWhiteTexture()
 	return white;
 }
 
-/*
+
 void Texture::copyTo(Texture* destination, Shader* shader)
 {
-	if (!destination)
+	if (!destination) //to current viewport
 	{
-		glDepthFunc(GL_ALWAYS);
-		glEnable(GL_DEPTH_TEST);
-		shader = Shader::getDefaultShader("screen_depth");
-		toViewport(shader);
+		if (format == GL_DEPTH_COMPONENT) //to clone depth buffer
+		{
+			glEnable(GL_DEPTH_TEST); //we need to use the depth buffer
+			glDepthFunc(GL_ALWAYS); //but ignore the test, every fragment should update the depth
+			glColorMask(false, false, false, false); //block drawing to colors
+			if (!shader)
+				shader = Shader::getDefaultShader("screen_depth");
+		}
+		else if (!shader)
+			shader = Shader::getDefaultShader("texture");
+		Mesh* quad = Mesh::getQuad();
+		shader->enable();
+		shader->setUniform("u_texture", this, 0);
+		shader->setUniform("u_color", Vector4(1, 1, 1, 1));
+		glDisable(GL_CULL_FACE);
+		quad->render(GL_TRIANGLES);
+		glColorMask(true, true, true, true);
 		glDisable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		return;
@@ -607,26 +620,7 @@ void Texture::copyTo(Texture* destination, Shader* shader)
 	glDepthFunc(GL_LESS);
 }
 
-*/
-void Texture::copyTo(Texture* destination, Shader* shader)
-{
-	if (!destination && format == GL_DEPTH_COMPONENT && !shader)
-	{
-		glEnable(GL_DEPTH_TEST); //we need to use the depth buffer
-		glDepthFunc(GL_ALWAYS); //but ignore the test, every fragment should update the depth
-		glColorMask(false, false, false, false); //block drawing to colors
-		shader = Shader::getDefaultShader("screen_depth");
-		Mesh* quad = Mesh::getQuad();
-		shader->enable();
-		shader->setUniform("u_texture", this, 0);
-		glDisable(GL_CULL_FACE);
-		quad->render(GL_TRIANGLES);
-		glColorMask(true, true, true, true);
-		glDisable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LESS);
-		return;
-	}
-}
+
 
 void Image::fromScreen(int width, int height)
 {

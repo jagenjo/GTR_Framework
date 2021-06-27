@@ -57,10 +57,29 @@
 			"scale": [ 0.8, 0.8, 0.8 ]
 		},
 		{
+			"name": "decal",
+			"type": "DECAL",
+			"filename": "textures/graffiti.png",
+			"texture_type": "albedo",
+			"position": [ -25.427, -11.140, -40.830 ],
+			"angle": -45,
+			"scale": [ 18, 980, 14 ]
+		},
+		{
+			"name": "decal2",
+			"type": "DECAL",
+			"filename": "textures/texture2.png",
+			"texture_type": "normal",
+			"position": [ -33.321, -51.441, 52.254 ],
+			"angle": -10,
+			"scale": [ 100, 100, 68 ]
+		},
+
+		{
 			"name": "spot",
 			"type": "LIGHT",
 			"position": [ 0, 36, -16 ],
-			
+
 			"angle": -45,
 			"color": [ 1, 0.9, 0.8 ],
 			"intensity": 10,
@@ -103,7 +122,6 @@
 			"cast_shadows": true,
 			"light_type": "DIRECTIONAL"
 		}
-
 
 
 	]

@@ -40,6 +40,7 @@ public:
 	Matrix44 projection_matrix;
 	Matrix44 viewprojection_matrix;
 
+	Matrix44 inverse_viewprojection_matrix;
 	Camera();
 
 	//set as current
