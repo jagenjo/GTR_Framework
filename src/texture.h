@@ -6,7 +6,9 @@
 
 #include "includes.h"
 #include "framework.h"
+#include "task.h"
 #include <map>
+#include <set>
 #include <string>
 #include <cassert>
 
@@ -65,6 +67,8 @@ public:
 	void fromTexture(Texture* texture);
 	void fromScreen(int width, int height);
 
+	bool load(const char* filename);
+
 	bool loadTGA(const char* filename);
 	bool loadPNG(const char* filename, bool flip_y = true);
 	bool loadPNG(std::vector<unsigned char>& buffer, bool flip_y = false);
@@ -114,6 +118,7 @@ public:
 	float height;
 	float depth;	//Optional for 3dTexture or 2dTexture array
 	std::string filename;
+	bool loading;
 
 	unsigned int format; //GL_RGB, GL_RGBA
 	unsigned int type; //GL_UNSIGNED_INT, GL_FLOAT
@@ -163,6 +168,7 @@ public:
 
 	//load using the manager (caching loaded ones to avoid reloading them)
 	static Texture* Get(const char* filename, bool mipmaps = true, bool wrap = true);
+	static Texture* GetAsync(const char* filename, bool mipmaps = true, bool wrap = true);
 	static Texture* Find(const char* filename);
 	void setName(const char* name) {
 		filename = name;
@@ -182,5 +188,28 @@ public:
 };
 
 bool isPowerOfTwo(int n);
+
+//When loading textures asyncrhonously, first we load them from the hard drive in a background thread
+//afterwards we pass the data to the main thread as bg threads cannot access opengl, and main thread
+//uploads to GPU. While loading a fake 1x1 texture is created
+
+class LoadTextureTask : public Task {
+public:
+	std::string filename;
+	Image* image;
+
+	LoadTextureTask(const char* filename);
+	void onExecute();
+};
+
+class UploadTextureTask : public Task {
+public:
+	std::string filename;
+	Image* image;
+
+	UploadTextureTask(const char* filename, Image* image);
+	void onExecute();
+};
+
 
 #endif

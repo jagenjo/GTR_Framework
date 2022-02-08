@@ -15,6 +15,7 @@
 #include "utils.h"
 #include "input.h"
 #include "application.h"
+#include "task.h"
 
 #include <iostream> //to output
 
@@ -125,6 +126,8 @@ void mainLoop(SDL_Window* window)
 	long now = start_time;
 	long frames_this_second = 0;
 
+	TaskManager::background.startThread();
+
 	while (!app->must_exit)
 	{
 		//render frame
@@ -197,6 +200,9 @@ void mainLoop(SDL_Window* window)
 		//update app logic
 		app->update(elapsed_time);
 
+		//execute a task in the main task manager (blocking)
+		TaskManager::foreground.fetchTask();
+
 		//check errors in opengl only when working in debug
 		#ifdef _DEBUG
 				checkGLErrors();
@@ -218,6 +224,11 @@ int main(int argc, char **argv)
 
 	if(fullscreen)
 		size = getDesktopSize(0);
+
+	//TaskManager tm;
+	//tm.startThread();
+	//Task* t = new Task([]() { std::cout << "TEST" << std::endl; });
+	//tm.addTask(t);
 
 	//create the application window (WINDOW_WIDTH and WINDOW_HEIGHT are two macros defined in includes.h)
 	SDL_Window*window = createWindow("TJE", (int)size.x, (int)size.y, fullscreen );

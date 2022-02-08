@@ -58,6 +58,7 @@ Vector4 Image::getPixelInterpolatedHigh(float x, float y, bool repeat) {
 
 
 std::map<std::string, Texture*> Texture::sTexturesLoaded;
+
 int Texture::default_mag_filter = GL_LINEAR;
 int Texture::default_min_filter = GL_LINEAR_MIPMAP_LINEAR;
 FBO* Texture::global_fbo = NULL;
@@ -72,16 +73,19 @@ Texture::Texture()
 	format = 0;
 	type = 0;
 	texture_type = GL_TEXTURE_2D;
+	loading = false;
 }
 
 Texture::Texture(unsigned int width, unsigned int height, unsigned int format, unsigned int type, bool mipmaps, Uint8* data, unsigned int internal_format)
 {
+	loading = false;
 	texture_id = 0;
 	create(width, height, format, type, mipmaps, data, internal_format);
 }
 
 Texture::Texture(Image* img)
 {
+	loading = false;
 	texture_id = 0;
 	create(img->width, img->height, img->num_channels == 3 ? GL_RGB : GL_RGBA, GL_UNSIGNED_BYTE, true, img->data);
 }
@@ -99,7 +103,8 @@ void Texture::clear()
 	if( texture_type != GL_TEXTURE_EXTERNAL_OES)
 		glDeleteTextures(1, &texture_id);
 
-	stdlog("Destroy texture: " + filename );
+	if(!loading) //when loading the texture of 1x1 is replaced with the new one
+		stdlog("Destroy texture: " + filename );
 	texture_id = 0;
 
 	if (filename.size())
@@ -239,48 +244,45 @@ Texture* Texture::Get(const char* filename, bool mipmaps, bool wrap)
 	return texture;
 }
 
+Texture* Texture::GetAsync(const char* filename, bool mipmaps, bool wrap)
+{
+	//check if exists
+	Texture* texture = Find(filename);
+	if (texture)
+		return texture;
+
+	//create temp texture
+	Texture* temp = new Texture();
+	temp->create(1, 1);
+	//register
+	temp->setName(filename);
+	temp->loading = true;
+
+	//add action to BG Thread 
+	LoadTextureTask* task = new LoadTextureTask(filename);
+	TaskManager::background.addTask(task);
+
+	return temp;
+}
+
 bool Texture::load(const char* filename, bool mipmaps, bool wrap, unsigned int type)
 {
-	std::string str = filename;
-	std::string ext = str.substr(str.size() - 4, 4);
-	Image* image = NULL;
-	double time = getTime();
-
-	std::cout << " + Texture loading: " << filename << " ... ";
-
-	image = new Image();
-	bool found = false;
-
-	if (ext == ".tga" || ext == ".TGA")
-		found = image->loadTGA(filename);
-	else if (ext == ".png" || ext == ".PNG")
-		found = image->loadPNG(filename);
-	else if (ext == ".jpg" || ext == ".JPG" || ext == "JPEG" || ext == "jpeg")
-		found = image->loadJPG(filename);
-	else
+	Image* image = new Image();
+	if (!image->load(filename))
 	{
-		std::cout << "[ERROR]: unsupported format" << std::endl;
-		return false; //unsupported file type
-	}
-
-	if (!found) //file not found
-	{
-		std::cout << " [ERROR]: Texture not found " << std::endl;
+		delete image;
 		return false;
 	}
 
 	loadFromImage(image,mipmaps,wrap,type);
-	this->filename = filename;
 	setName(filename);
 
-	std::cout << "[OK] Size: " << width << "x" << height << " Time: " << (getTime() - time) * 0.001 << "sec" << std::endl;
-	this->image.clear();
+	this->image.clear(); //remove from RAM after loading. ???
 	return true;
 }
 
 void Texture::loadFromImage(Image* image, bool mipmaps, bool wrap, unsigned int type)
 {
-
 	unsigned int internal_format = 0;
 	if (type == GL_FLOAT)
 		internal_format = (image->num_channels == 3 ? GL_RGB32F : GL_RGBA32F);
@@ -654,6 +656,38 @@ void Image::fromTexture(Texture* texture)
 	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 }
 
+bool Image::load(const char* filename)
+{
+	std::string str = filename;
+	std::string ext = str.substr(str.size() - 4, 4);
+	double time = getTime();
+	std::cout << " + Image loading: " << filename << " ... ";
+
+	bool found = false;
+
+	if (ext == ".tga" || ext == ".TGA")
+		found = loadTGA(filename);
+	else if (ext == ".png" || ext == ".PNG")
+		found = loadPNG(filename);
+	else if (ext == ".jpg" || ext == ".JPG" || ext == "JPEG" || ext == "jpeg")
+		found = loadJPG(filename);
+	else
+	{
+		std::cout << "[ERROR]: unsupported format" << std::endl;
+		return false; //unsupported file type
+	}
+
+	if (!found) //file not found
+	{
+		std::cout << " [ERROR]: Texture not found " << std::endl;
+		return false;
+	}
+
+	std::cout << "[OK] Size: " << width << "x" << height << " Time: " << (getTime() - time) * 0.001 << "sec" << std::endl;
+
+	return true;
+}
+
 //TGA format from: http://www.paulbourke.net/dataformats/tga/
 //also on https://gshaw.ca/closecombat/formats/tga.html
 bool Image::loadTGA(const char* filename)
@@ -981,4 +1015,60 @@ void FloatImage::fromTexture(Texture* texture)
 bool isPowerOfTwo( int n )
 {
 	return (n & (n - 1)) == 0;
+}
+
+//*********************
+
+LoadTextureTask::LoadTextureTask(const char* str)
+{
+	filename = str;
+	image = NULL;
+}
+
+void LoadTextureTask::onExecute()
+{
+	image = new Image();
+	if (!image->load(filename.c_str()))
+	{
+		delete image;
+		image = NULL;
+	}
+
+	//image loaded, ready to go back to main thread
+	UploadTextureTask* upload_task = new UploadTextureTask(filename.c_str(), image);
+	TaskManager::foreground.addTask(upload_task);
+}
+
+UploadTextureTask::UploadTextureTask(const char* filename, Image* image)
+{
+	this->filename = filename;
+	this->image = image;
+}
+
+void UploadTextureTask::onExecute()
+{
+	Texture* texture = NULL;
+
+	//in case somehow it got loaded while I was loading it in the background
+	auto it = Texture::sTexturesLoaded.find(filename);
+	if (it == Texture::sTexturesLoaded.end())
+	{
+		/*
+		//create texture
+		if (!texture)
+			texture = new Texture();
+		*/
+		delete image;
+		std::cout << "Warning: image loaded in background not found foreground thread" << std::endl;
+		return;
+	}
+
+	texture = it->second;
+
+	//upload to GPU
+	texture->loadFromImage(image);
+	texture->loading = false;
+
+	//delete image
+	delete image;
 }

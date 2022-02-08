@@ -232,7 +232,7 @@ Texture* parseGLTFTexture(cgltf_image* image, const char* filename)
 	std::string fullpath = filename ? filename : "";
 
 	if (image->uri)
-		return Texture::Get((std::string(base_folder) + "/" + image->uri).c_str());
+		return Texture::GetAsync((std::string(base_folder) + "/" + image->uri).c_str());
 	else
 	if (filename)
 	{
