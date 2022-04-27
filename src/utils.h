@@ -56,6 +56,7 @@ char* fetchBufferVec3u(char* data, std::vector<unsigned int>& vector);
 char* fetchBufferVec4ub(char* data, std::vector<Vector4ub>& vector);
 char* fetchBufferVec4(char* data, std::vector<Vector4>& vector);
 
+bool readJSONBool(cJSON* obj, const char* name, bool default_value);
 float readJSONNumber(cJSON* obj, const char* name, float default_value);
 std::string readJSONString(cJSON* obj, const char* name, const char* default_str);
 bool readJSONVector(cJSON* obj, const char* name, std::vector<float>& dst);

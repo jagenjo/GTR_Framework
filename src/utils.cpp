@@ -504,6 +504,14 @@ char* fetchBufferVec4(char* data, std::vector<Vector4>& vector)
 	return data;
 }
 
+bool readJSONBool(cJSON* obj, const char* name, bool default_value)
+{
+	cJSON* str_json = cJSON_GetObjectItemCaseSensitive((cJSON*)obj, name);
+	if (!str_json)
+		return default_value;
+	return str_json->type == cJSON_True;
+}
+
 float readJSONNumber(cJSON* obj, const char* name, float default_value)
 {
 	cJSON* str_json = cJSON_GetObjectItemCaseSensitive((cJSON*)obj, name);
