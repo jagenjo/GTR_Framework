@@ -133,8 +133,10 @@ void main()
 	float n = u_camera_nearfar.x;
 	float f = u_camera_nearfar.y;
 	float z = texture2D(u_texture,v_uv).x;
-	float color = n * (z + 1.0) / (f + n - z * (f - n));
-	gl_FragColor = vec4(color);
+	if( n == 0.0 && f == 1.0 )
+		gl_FragColor = vec4(z);
+	else
+		gl_FragColor = vec4( n * (z + 1.0) / (f + n - z * (f - n)) );
 }
 
 \instanced.vs
