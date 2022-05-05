@@ -753,7 +753,7 @@ typedef struct
 	char extra[32]; //unused
 } sMeshInfo;
 
-bool Mesh::readBin(const char* filename, bool bFromNetwork)
+bool Mesh::readBin(const char* filename)
 {
 	FILE *f;
 	assert(filename);
@@ -1556,7 +1556,7 @@ Mesh* Mesh::getQuad()
 	return quad;
 }
 
-Mesh* Mesh::Get(const char* filename, bool bFromNetwork, bool skip_load)
+Mesh* Mesh::Get(const char* filename, bool skip_load)
 {
 	assert(filename);
 	std::map<std::string, Mesh*>::iterator it = sMeshesLoaded.find(filename);
@@ -1595,7 +1595,7 @@ Mesh* Mesh::Get(const char* filename, bool bFromNetwork, bool skip_load)
 		binfilename = binfilename + ".mbin";
 
 	//try loading the binary version
-	if (use_binary && m->readBin(binfilename.c_str(), bFromNetwork) )
+	if (use_binary && m->readBin(binfilename.c_str()) )
 	{
 		if (interleave_meshes && m->interleaved.size() == 0)
 		{
@@ -1613,8 +1613,6 @@ Mesh* Mesh::Get(const char* filename, bool bFromNetwork, bool skip_load)
 		sMeshesLoaded[filename] = m;
 		return m;
 	}
-
-	assert(!bFromNetwork);
 
 	//load the ascii version
 	bool loaded = false;

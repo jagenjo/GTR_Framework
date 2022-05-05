@@ -95,7 +95,7 @@ public:
 	void drawCall(unsigned int primitive, int submesh_id, int num_instances);
 	void disableBuffers(Shader* shader);
 
-	bool readBin(const char* filename, bool bFromNetwork);
+	bool readBin(const char* filename);
 	bool writeBin(const char* filename);
 
 	unsigned int getNumSubmeshes() { return (unsigned int)submeshes.size(); }
@@ -109,7 +109,7 @@ public:
 	bool testSphereCollision(Matrix44 model, Vector3 center, float radius, Vector3& collision, Vector3& normal);
 
 	//loader
-	static Mesh* Get(const char* filename, bool bFromNetwork, bool skip_load = false);
+	static Mesh* Get(const char* filename, bool skip_load = false);
 	static void Release();
 	void registerMesh(std::string name);
 
