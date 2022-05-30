@@ -61,9 +61,10 @@ Shader::Shader()
 {
 	if(!Shader::s_ready)
 		Shader::init();
-	vs = fs = 0;
+	program = vs = fs = 0;
 	compiled = false;
 	from_atlas = false;
+
 }
 
 Shader::~Shader()
@@ -303,6 +304,8 @@ bool Shader::compileFromMemory(const std::string& vsm, const std::string& psm)
 		exit(0);
 	}
 
+	if (program != 0)
+		glDeleteProgram(program);
 	program = glCreateProgram();
 	assert (glGetError() == GL_NO_ERROR);
 
@@ -338,6 +341,7 @@ bool Shader::compileFromMemory(const std::string& vsm, const std::string& psm)
 #endif
 
 	compiled = true;
+	locations.clear(); //regenerate table
 
 	return true;
 }
@@ -373,6 +377,9 @@ bool Shader::createFragmentShaderObject(const std::string& shader)
 
 bool Shader::createShaderObject(unsigned int type, GLuint& handle, const std::string& code)
 {
+	if (handle != 0)
+		glDeleteShader(handle);
+
 	handle = glCreateShader(type);
 	assert( glGetError() == GL_NO_ERROR );
     
