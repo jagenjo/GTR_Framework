@@ -148,6 +148,8 @@ void Node::renderInMenu()
 {
 #ifndef SKIP_IMGUI
 	ImGui::Text("Name: %s", name.c_str()); // Edit 3 floats representing a color
+	if(mesh)
+		ImGui::Text("Mesh: %s", mesh->name.c_str()); // Edit 3 floats representing a color
 
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.75f, 0.75f, 0.75f, 1.0f));
 

@@ -152,7 +152,7 @@ void parseGLTFBufferIndices(std::vector<unsigned int>& container, cgltf_accessor
 	}
 }
 
-std::vector<Mesh*> parseGLTFMesh(cgltf_mesh* meshdata)
+std::vector<Mesh*> parseGLTFMesh(cgltf_mesh* meshdata, const char* basename)
 {
 	std::vector<Mesh*> result;
 
@@ -168,7 +168,7 @@ std::vector<Mesh*> parseGLTFMesh(cgltf_mesh* meshdata)
 		std::string submesh_name;
 		if (meshdata->name)
 		{
-			submesh_name = std::string(meshdata->name) + std::string("::") + std::to_string(i);
+			submesh_name = std::string(basename) + std::string("::") + std::string(meshdata->name) + std::string("::") + std::to_string(i);
 			mesh = Mesh::Get(submesh_name.c_str(), true);
 			if (mesh)
 			{
@@ -286,15 +286,22 @@ Texture* parseGLTFTexture(cgltf_image* image, const char* filename)
 	return NULL;
 }
 
-GTR::Material* parseGLTFMaterial(cgltf_material* matdata)
+GTR::Material* parseGLTFMaterial(cgltf_material* matdata, const char* basename)
 {
-	GTR::Material* material = matdata->name ? GTR::Material::Get(matdata->name) : NULL;
+	GTR::Material* material = NULL;
+	std::string name;
+	if (matdata->name)
+	{
+		name = std::string(basename) + std::string("::") + std::string(matdata->name);
+		material = GTR::Material::Get(name.c_str());
+	}
+	
 	if (material)
 		return material;
 
 	material = new GTR::Material();
 	if (matdata->name)
-		material->registerMaterial(matdata->name);
+		material->registerMaterial(name.c_str());
 
 	material->alpha_mode = (GTR::eAlphaMode)matdata->alpha_mode;
 	material->alpha_cutoff = matdata->alpha_cutoff;
@@ -373,7 +380,7 @@ void parseGLTFTransform(cgltf_node* node, Matrix44 &model)
 }
 
 //GLTF PARSING: you can pass the node or it will create it
-GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL)
+GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL, const char* basename = NULL)
 {
 	if (scenenode == NULL)
 		scenenode = new GTR::Node();
@@ -392,14 +399,14 @@ GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL)
 		if (node->mesh->primitives_count > 1)
 		{
 			std::vector<Mesh*> meshes;
-			meshes = parseGLTFMesh(node->mesh);
+			meshes = parseGLTFMesh(node->mesh, basename);
 
 			for (int i = 0; i < node->mesh->primitives_count; ++i)
 			{
 				GTR::Node* subnode = new GTR::Node();
 				subnode->mesh = meshes[i];
 				if (node->mesh->primitives[i].material)
-					subnode->material = parseGLTFMaterial(node->mesh->primitives[i].material);
+					subnode->material = parseGLTFMaterial(node->mesh->primitives[i].material, basename );
 				scenenode->addChild(subnode);
 			}
 		}
@@ -411,7 +418,7 @@ GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL)
 			if (!scenenode->mesh)
 			{
 				std::vector<Mesh*> meshes;
-				meshes = parseGLTFMesh(node->mesh);
+				meshes = parseGLTFMesh(node->mesh, basename);
 				//printf("Parsed GLTF mesh %s (success)\n", node->name);
 				//return nullptr;
 				if(meshes.size())
@@ -419,12 +426,12 @@ GTR::Node* parseGLTFNode(cgltf_node* node, GTR::Node* scenenode = NULL)
 			}
 
 			if (node->mesh->primitives->material)
-				scenenode->material = parseGLTFMaterial(node->mesh->primitives->material);
+				scenenode->material = parseGLTFMaterial(node->mesh->primitives->material, basename );
 		}
 	}
 
 	for (int i = 0; i < node->children_count; ++i)
-		scenenode->addChild(parseGLTFNode(node->children[i]));
+		scenenode->addChild(parseGLTFNode(node->children[i],NULL, basename));
 
 	return scenenode;
 }
@@ -468,10 +475,13 @@ GTR::Prefab* loadGLTF(const char *filename, cgltf_data *data, cgltf_options& opt
 	cgltf_scene* scene = &data->scenes[0];
 
 	char folder[1024];
+	char basename[1024];
 	strcpy(folder, filename);
 	char* name_start = strrchr(folder, '/');
 	*name_start = '\0';
 	base_folder = folder; //global
+	const char* basename_start = strrchr(filename, '/');
+	strcpy(basename, basename_start+1);
 
 	{
 		result = cgltf_load_buffers(&options, data, filename);
@@ -491,13 +501,13 @@ GTR::Prefab* loadGLTF(const char *filename, cgltf_data *data, cgltf_options& opt
 			for (int i = 0; i < scene->nodes_count; ++i)
 			{
 				float fProgress = ((float) i * fiTotal) * 100.0f;
-				GTR::Node *node = parseGLTFNode(scene->nodes[i]);
+				GTR::Node *node = parseGLTFNode(scene->nodes[i], NULL, filename);
 				prefab->root.addChild(node);
 			}
 		}
 		else
 		{
-			parseGLTFNode(scene->nodes[0], &prefab->root);
+			parseGLTFNode(scene->nodes[0], &prefab->root, filename);
 		}
 	}
 
