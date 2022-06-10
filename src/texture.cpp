@@ -616,8 +616,15 @@ void Texture::copyTo(Texture* destination, Shader* shader)
 		shader = Shader::getDefaultShader("screen_depth");
 		glDepthFunc(GL_ALWAYS);
 		glEnable(GL_DEPTH_TEST);
+		Mesh* quad = Mesh::getQuad();
+		shader->enable();
+		if (shader->getUniformLocation("u_texture") != -1)
+			shader->setUniform("u_texture", this, 0);
+		quad->render(GL_TRIANGLES);
+		shader->disable();
 	}
-	toViewport(shader);
+	else
+		toViewport(shader);
 	fbo->unbind();
 	glDisable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);

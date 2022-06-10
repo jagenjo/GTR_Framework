@@ -34,6 +34,7 @@ public:
 
 	//to render momentarily to a single buffer
 	void enableSingleBuffer(int num);
+	void enableBuffers(bool buffer0, bool buffer1, bool buffer2, bool buffer3);
 	void enableAllBuffers(); //back to all
 
 	void freeTextures();

@@ -252,6 +252,18 @@ void FBO::enableSingleBuffer(int num)
 	glDrawBuffers(1, DrawBuffers); // "1" is the size of DrawBuffers
 }
 
+void FBO::enableBuffers(bool buffer0, bool buffer1, bool buffer2, bool buffer3)
+{
+	GLenum bufs[4];
+	int index = 0;
+	bufs[index++] = buffer0 ? static_cast<GLenum>((int)GL_COLOR_ATTACHMENT0) + 0 : GL_NONE;
+	bufs[index++] = buffer1 ? static_cast<GLenum>((int)GL_COLOR_ATTACHMENT0) + 1 : GL_NONE;
+	bufs[index++] = buffer2 ? static_cast<GLenum>((int)GL_COLOR_ATTACHMENT0) + 2 : GL_NONE;
+	bufs[index++] = buffer3 ? static_cast<GLenum>((int)GL_COLOR_ATTACHMENT0) + 3 : GL_NONE;
+
+	glDrawBuffers(index, bufs);
+}
+
 void FBO::enableAllBuffers()
 {
 	glDrawBuffers(4, bufs);

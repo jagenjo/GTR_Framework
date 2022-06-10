@@ -753,7 +753,7 @@ typedef struct
 	char extra[32]; //unused
 } sMeshInfo;
 
-bool Mesh::readBin(const char* filename)
+bool Mesh::readBin(const char* filename, bool bFromNetwork)
 {
 	FILE *f;
 	assert(filename);
@@ -1296,7 +1296,7 @@ bool Mesh::loadMESH(const char* filename)
 	return true;
 }
 
-void Mesh::createCube()
+void Mesh::createCube(Vector3 size)
 {
 	const float _verts[] = { -1, 1, -1, -1, -1, +1, -1, 1, 1,    -1, 1, -1, -1, -1, -1, -1, -1, +1,     1, 1, -1,  1, 1, 1,  1, -1, +1,     1, 1, -1,   1, -1, +1,   1, -1, -1,    -1, 1, 1,  1, -1, 1,  1, 1, 1,    -1, 1, 1, -1,-1,1,  1, -1, 1,    -1,1,-1, 1,1,-1,  1,-1,-1,   -1,1,-1, 1,-1,-1, -1,-1,-1,   -1,1,-1, 1,1,1, 1,1,-1,    -1,1,-1, -1,1,1, 1,1,1,    -1,-1,-1, 1,-1,-1, 1,-1,1,   -1,-1,-1, 1,-1,1, -1,-1,1 };
 	const float _uvs[] = {       0,  1, 1, 0, 1, 1,			 	     0, 1,       0,  0,      1,  0,        0, 1,      1, 1,      1, 0,         0, 1,        1, 0,        0, 0,          0, 1, 1, 0, 1, 1,               0, 1,  0, 0,  1,  0,              0,1,  1,1, 1,0,              0,1,    1,0,    0,0,           0,0, 1,1, 1,0,           0,0,    0,1,   1,1,        0,0, 1,0, 1,1,              0,0, 1,1, 0,1 };
@@ -1305,9 +1305,11 @@ void Mesh::createCube()
 	uvs.resize(6 * 2 * 3);
 	memcpy(&vertices[0], _verts, sizeof(Vector3) * vertices.size());
 	memcpy(&uvs[0], _uvs, sizeof(Vector2) * uvs.size());
+	for (int i = 0; i < vertices.size(); ++i)
+		vertices[i] = vertices[i] * (size * 0.5);
 
 	box.center.set(0, 0, 0);
-	box.halfsize.set(1, 1, 1);
+	box.halfsize = size * 0.5;
 	radius = (float)box.halfsize.length();
 }
 
@@ -1556,7 +1558,7 @@ Mesh* Mesh::getQuad()
 	return quad;
 }
 
-Mesh* Mesh::Get(const char* filename, bool skip_load)
+Mesh* Mesh::Get(const char* filename, bool bFromNetwork, bool skip_load)
 {
 	assert(filename);
 	std::map<std::string, Mesh*>::iterator it = sMeshesLoaded.find(filename);
@@ -1595,7 +1597,7 @@ Mesh* Mesh::Get(const char* filename, bool skip_load)
 		binfilename = binfilename + ".mbin";
 
 	//try loading the binary version
-	if (use_binary && m->readBin(binfilename.c_str()) )
+	if (use_binary && m->readBin(binfilename.c_str(), bFromNetwork) )
 	{
 		if (interleave_meshes && m->interleaved.size() == 0)
 		{
@@ -1613,6 +1615,8 @@ Mesh* Mesh::Get(const char* filename, bool skip_load)
 		sMeshesLoaded[filename] = m;
 		return m;
 	}
+
+	assert(!bFromNetwork);
 
 	//load the ascii version
 	bool loaded = false;
