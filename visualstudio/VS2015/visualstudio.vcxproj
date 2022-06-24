@@ -212,6 +212,7 @@
     <ClInclude Include="..\..\src\extra\PerlinNoise.hpp" />
     <ClInclude Include="..\..\src\extra\picopng.h" />
     <ClInclude Include="..\..\src\extra\textparser.h" />
+    <ClInclude Include="..\..\src\extra\tiny_obj_loader.h" />
     <ClInclude Include="..\..\src\fbo.h" />
     <ClInclude Include="..\..\src\framework.h" />
     <ClInclude Include="..\..\src\application.h" />

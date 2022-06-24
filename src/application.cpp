@@ -56,14 +56,10 @@ Application::Application(int window_width, int window_height, SDL_Window* window
         exit(1);
     checkGLErrors();
 
-
 	// Create camera
 	camera = new Camera();
 	camera->lookAt(Vector3(-150.f, 150.0f, 250.f), Vector3(0.f, 0.0f, 0.f), Vector3(0.f, 1.f, 0.f));
 	camera->setPerspective( 45.f, window_width/(float)window_height, 1.0f, 10000.f);
-
-	//Example of loading a prefab
-	//prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
 
 	scene = new GTR::Scene();
 	if (!scene->load("data/scene.json"))
@@ -98,10 +94,13 @@ void Application::render(void)
 	else
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-	//lets render something
-	//Matrix44 model;
-	//renderer->renderPrefab( model, prefab, camera );
-
+	//lets render an individual prefab
+	// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); //clear is done inside renderScene so no need here
+	// Matrix44 model;
+	// prefab = GTR::Prefab::Get("data/prefabs/gmc/scene.gltf");
+	// renderer->renderPrefab( model, prefab, camera );
+	
+	//render the whole scene
 	renderer->renderScene(scene, camera);
 
 	//Draw the floor grid, helpful to have a reference point

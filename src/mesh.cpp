@@ -753,7 +753,7 @@ typedef struct
 	char extra[32]; //unused
 } sMeshInfo;
 
-bool Mesh::readBin(const char* filename, bool bFromNetwork)
+bool Mesh::readBin(const char* filename)
 {
 	FILE *f;
 	assert(filename);
@@ -1215,6 +1215,53 @@ bool Mesh::loadOBJ(const char* filename)
 	return true;
 }
 
+/*
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "extra/tiny_obj_loader.h"
+
+bool Mesh::loadOBJTiny(const char* filename)
+{
+	std::string data;
+
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warn;
+	std::string err;
+
+	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, filename, NULL, true);
+	if (!ret)
+		return false;
+
+	std::vector<Vector3> individual_vertices;
+	std::vector<Vector3> individual_normals;
+	std::vector<Vector2> individual_uvs;
+
+	individual_vertices.resize( attrib.vertices.size() / 3 );
+	memcpy(&individual_vertices[0], &attrib.vertices[0], sizeof(float) * attrib.vertices.size() );
+
+	individual_normals.resize(attrib.normals.size() / 3);
+	memcpy(&individual_normals[0], &attrib.normals[0], sizeof(float) * attrib.normals.size());
+
+	individual_uvs.resize(attrib.texcoords.size() / 2);
+	memcpy( &individual_uvs[0], &attrib.texcoords[0], sizeof(float) * attrib.texcoords.size());
+
+	for (int i = 0; i < shapes.size(); ++i)
+	{
+		auto shape = shapes[i];
+		auto mesh = shape.mesh;
+		int index = 0;
+		for (int j = 0; j < mesh.indices.size(); j+=3)
+		{
+			//I need to pack shared V/N/UV I guess, so it will be complex
+		}
+	}
+
+	return true;
+}
+*/
+
 bool Mesh::loadMESH(const char* filename)
 {
 	struct stat stbuffer;
@@ -1558,7 +1605,7 @@ Mesh* Mesh::getQuad()
 	return quad;
 }
 
-Mesh* Mesh::Get(const char* filename, bool bFromNetwork, bool skip_load)
+Mesh* Mesh::Get(const char* filename, bool skip_load)
 {
 	assert(filename);
 	std::map<std::string, Mesh*>::iterator it = sMeshesLoaded.find(filename);
@@ -1597,7 +1644,7 @@ Mesh* Mesh::Get(const char* filename, bool bFromNetwork, bool skip_load)
 		binfilename = binfilename + ".mbin";
 
 	//try loading the binary version
-	if (use_binary && m->readBin(binfilename.c_str(), bFromNetwork) )
+	if (use_binary && m->readBin(binfilename.c_str()) )
 	{
 		if (interleave_meshes && m->interleaved.size() == 0)
 		{
@@ -1615,8 +1662,6 @@ Mesh* Mesh::Get(const char* filename, bool bFromNetwork, bool skip_load)
 		sMeshesLoaded[filename] = m;
 		return m;
 	}
-
-	assert(!bFromNetwork);
 
 	//load the ascii version
 	bool loaded = false;

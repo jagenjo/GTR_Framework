@@ -231,6 +231,9 @@
     <ClInclude Include="..\..\src\task.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\extra\tiny_obj_loader.h">
+      <Filter>extra</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="extra">

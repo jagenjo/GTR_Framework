@@ -1,17 +1,17 @@
 ﻿  application.cpp
-F:\COURSES\GTR\GTR_Framework\src\scene.h(8,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class'
+F:\COURSES\GTR\GTR_Framework\src\scene.h(9,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class'
 F:\COURSES\GTR\GTR_Framework\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON'
-F:\COURSES\GTR\GTR_Framework\src\application.cpp(116,14): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-F:\COURSES\GTR\GTR_Framework\src\application.cpp(117,20): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-F:\COURSES\GTR\GTR_Framework\src\application.cpp(133,55): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+F:\COURSES\GTR\GTR_Framework\src\application.cpp(118,14): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+F:\COURSES\GTR\GTR_Framework\src\application.cpp(119,20): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
 F:\COURSES\GTR\GTR_Framework\src\application.cpp(135,55): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-F:\COURSES\GTR\GTR_Framework\src\application.cpp(256,20): warning C4018: '<': no coinciden signed/unsigned
-F:\COURSES\GTR\GTR_Framework\src\application.cpp(344,36): warning C4244: '*=': conversión de 'double' a 'float'; posible pérdida de datos
-F:\COURSES\GTR\GTR_Framework\src\application.cpp(346,35): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+F:\COURSES\GTR\GTR_Framework\src\application.cpp(137,55): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+F:\COURSES\GTR\GTR_Framework\src\application.cpp(258,20): warning C4018: '<': no coinciden signed/unsigned
+F:\COURSES\GTR\GTR_Framework\src\application.cpp(351,36): warning C4244: '*=': conversión de 'double' a 'float'; posible pérdida de datos
+F:\COURSES\GTR\GTR_Framework\src\application.cpp(353,35): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
      Creando biblioteca ..\..\framework.lib y objeto ..\..\framework.exp
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
-  2 of 4046 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  2 of 4229 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     50 functions had inline decision re-evaluated but remain unchanged
   Generación de código finalizada
