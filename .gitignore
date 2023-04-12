@@ -46,3 +46,4 @@ visualstudio/VS2015/Final
 *.log
 *.pdb
 *.tlog
+*.exp

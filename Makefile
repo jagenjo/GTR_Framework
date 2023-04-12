@@ -2,12 +2,12 @@
 
 include Makefile.inc
 
-SOURCES = src/*.cpp src/extra/*.cpp src/extra/coldet/*.cpp src/extra/*.c 
+SOURCES = src/*.cpp src/core/*.cpp src/gfx/*.cpp src/pipeline/*.cpp src/utils/*.cpp src/extra/*.cpp src/extra/coldet/*.cpp src/extra/*.c src/extra/imgui/*.cpp
 
 OBJECTS = $(patsubst %.cpp, %.o, $(wildcard $(SOURCES)))
 DEPENDS = $(patsubst %.cpp, %.d, $(wildcard $(SOURCES)))
 
-SDL_LIB = -lSDL2 
+SDL_LIB = -lSDL2 -ldl
 GLUT_LIB = -lGL -lGLU 
 
 LIBS = $(SDL_LIB) $(GLUT_LIB)

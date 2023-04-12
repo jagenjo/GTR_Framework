@@ -57,7 +57,7 @@
     ],
     "materials" : [
         {
-            "doubleSided" : true,
+            "doubleSided" : false,
             "name" : "Material",
             "normalTexture" : {
                 "index" : 0

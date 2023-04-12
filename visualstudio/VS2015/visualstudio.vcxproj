@@ -18,7 +18,7 @@
     <ProjectGuid>{D25DFFC1-8AEE-45BD-9345-D74387579CA7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>visualstudio</RootNamespace>
-    <ProjectName>framework</ProjectName>
+    <ProjectName>litengine</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -132,7 +132,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\camera.cpp" />
+    <ClCompile Include="..\..\src\core\core.cpp" />
+    <ClCompile Include="..\..\src\core\input.cpp" />
+    <ClCompile Include="..\..\src\core\math.cpp" />
+    <ClCompile Include="..\..\src\core\task.cpp" />
+    <ClCompile Include="..\..\src\core\ui.cpp" />
+    <ClCompile Include="..\..\src\editor.cpp" />
     <ClCompile Include="..\..\src\extra\cJSON.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\box.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\box_bld.cpp" />
@@ -143,8 +148,6 @@
     <ClCompile Include="..\..\src\extra\coldet\sysdep.cpp" />
     <ClCompile Include="..\..\src\extra\coldet\tritri.cpp" />
     <ClCompile Include="..\..\src\extra\hdre.cpp" />
-    <ClCompile Include="..\..\src\extra\imgui\ImCurveEdit.cpp" />
-    <ClCompile Include="..\..\src\extra\imgui\ImGradient.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\imgui.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\ImGuizmo.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\imgui_demo.cpp" />
@@ -154,31 +157,38 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\src\extra\imgui\imgui_impl_opengl3.cpp" />
-    <ClCompile Include="..\..\src\extra\imgui\imgui_impl_sdl.cpp" />
+    <ClCompile Include="..\..\src\extra\imgui\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="..\..\src\extra\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\..\src\extra\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="..\..\src\extra\imgui\ImSequencer.cpp" />
     <ClCompile Include="..\..\src\extra\jpgd.cpp" />
     <ClCompile Include="..\..\src\extra\picopng.cpp" />
     <ClCompile Include="..\..\src\extra\textparser.cpp" />
-    <ClCompile Include="..\..\src\fbo.cpp" />
-    <ClCompile Include="..\..\src\framework.cpp" />
     <ClCompile Include="..\..\src\application.cpp" />
-    <ClCompile Include="..\..\src\gltf_loader.cpp" />
-    <ClCompile Include="..\..\src\input.cpp" />
+    <ClCompile Include="..\..\src\gfx\fbo.cpp" />
+    <ClCompile Include="..\..\src\gfx\gfx.cpp" />
+    <ClCompile Include="..\..\src\gfx\mesh.cpp" />
+    <ClCompile Include="..\..\src\gfx\shader.cpp" />
+    <ClCompile Include="..\..\src\gfx\sphericalharmonics.cpp" />
+    <ClCompile Include="..\..\src\gfx\texture.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
-    <ClCompile Include="..\..\src\material.cpp" />
-    <ClCompile Include="..\..\src\mesh.cpp" />
-    <ClCompile Include="..\..\src\renderer.cpp" />
-    <ClCompile Include="..\..\src\prefab.cpp" />
-    <ClCompile Include="..\..\src\scene.cpp" />
-    <ClCompile Include="..\..\src\shader.cpp" />
-    <ClCompile Include="..\..\src\sphericalharmonics.cpp" />
-    <ClCompile Include="..\..\src\task.cpp" />
-    <ClCompile Include="..\..\src\texture.cpp" />
-    <ClCompile Include="..\..\src\utils.cpp" />
+    <ClCompile Include="..\..\src\pipeline\animation.cpp" />
+    <ClCompile Include="..\..\src\pipeline\camera.cpp" />
+    <ClCompile Include="..\..\src\pipeline\light.cpp" />
+    <ClCompile Include="..\..\src\pipeline\material.cpp" />
+    <ClCompile Include="..\..\src\pipeline\prefab.cpp" />
+    <ClCompile Include="..\..\src\pipeline\renderer.cpp" />
+    <ClCompile Include="..\..\src\pipeline\scene.cpp" />
+    <ClCompile Include="..\..\src\utils\gltf_loader.cpp" />
+    <ClCompile Include="..\..\src\utils\utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\camera.h" />
+    <ClInclude Include="..\..\src\core\core.h" />
+    <ClInclude Include="..\..\src\core\includes.h" />
+    <ClInclude Include="..\..\src\core\input.h" />
+    <ClInclude Include="..\..\src\core\math.h" />
+    <ClInclude Include="..\..\src\core\task.h" />
+    <ClInclude Include="..\..\src\core\ui.h" />
+    <ClInclude Include="..\..\src\editor.h" />
     <ClInclude Include="..\..\src\extra\cJSON.h" />
     <ClInclude Include="..\..\src\extra\coldet\box.h" />
     <ClInclude Include="..\..\src\extra\coldet\coldet.h" />
@@ -186,10 +196,9 @@
     <ClInclude Include="..\..\src\extra\coldet\math3d.h" />
     <ClInclude Include="..\..\src\extra\coldet\mytritri.h" />
     <ClInclude Include="..\..\src\extra\coldet\sysdep.h" />
+    <ClInclude Include="..\..\src\extra\duk_config.h" />
     <ClInclude Include="..\..\src\extra\hdre.h" />
     <ClInclude Include="..\..\src\extra\imgui\imconfig.h" />
-    <ClInclude Include="..\..\src\extra\imgui\ImCurveEdit.h" />
-    <ClInclude Include="..\..\src\extra\imgui\ImGradient.h" />
     <ClInclude Include="..\..\src\extra\imgui\imgui.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">false</ExcludedFromBuild>
@@ -201,34 +210,30 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="..\..\src\extra\imgui\imgui_impl_sdl.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Final|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\imgui_impl_sdl2.h" />
     <ClInclude Include="..\..\src\extra\imgui\imgui_internal.h" />
-    <ClInclude Include="..\..\src\extra\imgui\ImSequencer.h" />
     <ClInclude Include="..\..\src\extra\jpgd.h" />
     <ClInclude Include="..\..\src\extra\PerlinNoise.hpp" />
     <ClInclude Include="..\..\src\extra\picopng.h" />
     <ClInclude Include="..\..\src\extra\textparser.h" />
     <ClInclude Include="..\..\src\extra\tiny_obj_loader.h" />
-    <ClInclude Include="..\..\src\fbo.h" />
-    <ClInclude Include="..\..\src\framework.h" />
     <ClInclude Include="..\..\src\application.h" />
-    <ClInclude Include="..\..\src\gltf_loader.h" />
-    <ClInclude Include="..\..\src\includes.h" />
-    <ClInclude Include="..\..\src\input.h" />
-    <ClInclude Include="..\..\src\material.h" />
-    <ClInclude Include="..\..\src\mesh.h" />
-    <ClInclude Include="..\..\src\renderer.h" />
-    <ClInclude Include="..\..\src\prefab.h" />
-    <ClInclude Include="..\..\src\scene.h" />
-    <ClInclude Include="..\..\src\shader.h" />
-    <ClInclude Include="..\..\src\sphericalharmonics.h" />
-    <ClInclude Include="..\..\src\task.h" />
-    <ClInclude Include="..\..\src\texture.h" />
-    <ClInclude Include="..\..\src\utils.h" />
+    <ClInclude Include="..\..\src\gfx\fbo.h" />
+    <ClInclude Include="..\..\src\gfx\gfx.h" />
+    <ClInclude Include="..\..\src\gfx\mesh.h" />
+    <ClInclude Include="..\..\src\gfx\shader.h" />
+    <ClInclude Include="..\..\src\gfx\sphericalharmonics.h" />
+    <ClInclude Include="..\..\src\gfx\texture.h" />
+    <ClInclude Include="..\..\src\litengine.h" />
+    <ClInclude Include="..\..\src\pipeline\animation.h" />
+    <ClInclude Include="..\..\src\pipeline\camera.h" />
+    <ClInclude Include="..\..\src\pipeline\light.h" />
+    <ClInclude Include="..\..\src\pipeline\material.h" />
+    <ClInclude Include="..\..\src\pipeline\prefab.h" />
+    <ClInclude Include="..\..\src\pipeline\renderer.h" />
+    <ClInclude Include="..\..\src\pipeline\scene.h" />
+    <ClInclude Include="..\..\src\utils\gltf_loader.h" />
+    <ClInclude Include="..\..\src\utils\utils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

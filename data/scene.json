@@ -1,134 +1,144 @@
 {
-	"background_color":[0.01,0.01,0.1],
-	"ambient_light":[0.18,0.16,0.2],
-	"camera_position":[-300,90,-150],
-	"camera_target":[0,40,0],
-	"camera_fov":60,
-	"entities":[
-		{
-			"name":"floor",
-			"type":"PREFAB",
-			"filename":"prefabs/road/road.gltf",
-			"position":[0,0,0],
-			"scale":[10,10,10]
-		},
-		{
-			"name":"floor2",
-			"type":"PREFAB",
-			"filename":"prefabs/road/road.gltf",
-			"position":[0,0,300],
-			"scale":[10,10,10]
-		},
-		{
-			"name":"floor3",
-			"type":"PREFAB",
-			"filename":"prefabs/road/road.gltf",
-			"position":[0,0,-300],
-			"scale":[10,10,10]
-		},
-		{
-			"name":"decal",
-			"type":"DECAL",
-			"albedo":"textures/graffiti.png",
-			"position":[0,0,0],
-			"scale":[2,1,1]
-		},
-		{
-			"name":"car1",
-			"type":"PREFAB",
-			"filename":"prefabs/gmc/scene.gltf",
-			"position":[-80,0,-100],
-			"angle":-45
-		},
-		{
-			"name":"car2",
-			"type":"PREFAB",
-			"filename":"prefabs/gmc/scene.gltf",
-			"position":[-50,0,233],
-			"angle":200
-		},
-		{
-			"name":"house",
-			"type":"PREFAB",
-			"filename":"prefabs/house_test/scene.gltf",
-			"position":[300,20,200],
-			"scale":[0.4,0.4,0.4]
-		},
-		{
-			"name":"sign",
-			"type":"PREFAB",
-			"filename":"prefabs/sign.glb",
-			"position":[118,48,-400],
-			"angle":120,
-			"scale":[60,60,60]
-		},
-		{
-			"name":"house",
-			"type":"PREFAB",
-			"filename":"prefabs/house_test/scene.gltf",
-			"position":[300,20,-200],
-			"scale":[0.4,0.4,0.4]
-		},
-		{
-			"name":"trash",
-			"type":"PREFAB",
-			"filename":"prefabs/trash_can/scene.gltf",
-			"position":[140,20,110],
-			"scale":[0.5,0.5,0.5]
-		},
-		{
-			"name":"tree",
-			"type":"PREFAB",
-			"filename":"prefabs/tree/scene.gltf",
-			"position":[102,0,401],
-			"angle":-90,
-			"scale":[0.8,0.8,0.8]
-		},
-		{
-			"name":"spot",
-			"type":"LIGHT",
-			"position":[0,36,-16],
-			"angle": 135,
-			"color":[1,0.9,0.8],
-			"intensity":10,
-			"max_dist":1000,
-			"cone_angle":45,
-			"cone_exp":60,
-			"light_type":"SPOT",
-			"cast_shadows": true,
-			"shadow_bias": 0.001
-		},
-		{
-			"name":"pointlight",
-			"type":"LIGHT",
-			"position":[-187,38,-156],
-			"angle": 0,
-			"color":[1,0.2,0.1],
-			"intensity":2.5,
-			"max_dist":70,
-			"light_type":"POINT"
-		},
-		{
-			"name":"pointlight2",
-			"type":"LIGHT",
-			"position":[-131,38,-205],
-			"angle": 0,
-			"color":[1,0.2,0.1],
-			"intensity":2.5,
-			"max_dist":70,
-			"light_type":"POINT"
-		},
-		{
-			"name":"moonlight",
-			"type":"LIGHT",
-			"position":[150,300,50],
-			"target":[-80,0,-50],
-			"color":[0.1,0.2,0.4],
-			"intensity":1.5,
-			"area_size":1500,
-			"max_dist":1000,
-			"cast_shadows": true,
-			"light_type":"DIRECTIONAL"
-		}
-	]
+	"background_color":	[0.00999999977648258, 0.00999999977648258, 0.10000000149011612],
+	"ambient_light":	[0.18000000715255737, 0.15999999642372131, 0.20000000298023224],
+	"camera_position":	[-300, 90, -150],
+	"camera_target":	[0, 40, 0],
+	"camera_fov":	60,
+	"skybox": "data/night.hdre",
+	"entities":	[{
+			"type":	"PREFAB",
+			"name":	"floor",
+			"layers":	3,
+			"position":	[0, 0, 0],
+			"scale":	[10, 10, 10],
+			"rotation":	[0, 0, 0, 1],
+			"filename":	"prefabs/road/road.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"floor2",
+			"layers":	3,
+			"position":	[0, 0, 300],
+			"scale":	[10, 10, 10],
+			"rotation":	[0, 0, 0, 1],
+			"filename":	"prefabs/road/road.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"floor3",
+			"layers":	3,
+			"position":	[0, 0, -300],
+			"scale":	[10, 10, 10],
+			"rotation":	[0, 0, 0, 1],
+			"filename":	"prefabs/road/road.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"car1",
+			"layers":	3,
+			"position":	[-80, 0, -100],
+			"scale":	[1, 1, 1],
+			"rotation":	[0, 0.38268345594406128, 0, 0.92387950420379639],
+			"filename":	"prefabs/gmc/scene.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"car2",
+			"layers":	3,
+			"position":	[-50, 0, 233],
+			"scale":	[1.0000001192092896, 1, 1.0000001192092896],
+			"rotation":	[0, 0.98480778932571411, 0, 0.173648253083229],
+			"filename":	"prefabs/gmc/scene.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"house",
+			"layers":	3,
+			"position":	[300, 8, 200],
+			"scale":	[0.40000000596046448, 0.40000000596046448, 0.40000000596046448],
+			"rotation":	[0, 0, 0, 1],
+			"filename":	"prefabs/house_test/scene.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"sign",
+			"layers":	3,
+			"position":	[118, 48, -400],
+			"scale":	[60.000003814697266, 59.999996185302734, 60.000003814697266],
+			"rotation":	[0, 0.96400171518325806, 0, 0.26589608192443848],
+			"filename":	"prefabs/sign.glb"
+		}, {
+			"type":	"PREFAB",
+			"name":	"house",
+			"layers":	3,
+			"position":	[300, 20, -200],
+			"scale":	[0.40000000596046448, 0.40000000596046448, 0.40000000596046448],
+			"rotation":	[0, 0, 0, 1],
+			"filename":	"prefabs/house_test/scene.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"trash",
+			"layers":	3,
+			"position":	[140, 10, 110],
+			"scale":	[0.5, 0.5, 0.5],
+			"rotation":	[0, 0, 0, 1],
+			"filename":	"prefabs/trash_can/scene.gltf"
+		}, {
+			"type":	"PREFAB",
+			"name":	"tree",
+			"layers":	3,
+			"position":	[47.999969482421875, 9, 374.00009155273438],
+			"scale":	[111.23707580566406, 111.23711395263672, 111.23707580566406],
+			"rotation":	[-2.71960795897308e-12, 0.87708950042724609, -2.71960795897308e-12, 0.480326771736145],
+			"filename":	"prefabs/tree.glb"
+		}, {
+			"type":	"LIGHT",
+			"name":	"spot",
+			"layers":	3,
+			"position":	[0, 36, -16],
+			"scale":	[1.0000005960464478, 1, 1.0000005960464478],
+			"rotation":	[-1.18892353384581e-06, 0.92387962341308594, -1.18892398859316e-06, -0.38268336653709412],
+			"color":	[1, 0.89999997615814209, 0.800000011920929],
+			"intensity":	1.2680000066757202,
+			"max_dist":	1000,
+			"cast_shadows":	true,
+			"near_dist":	0.10000000149011612,
+			"cone_start":	25,
+			"cone_end":	39.049999237060547,
+			"light_type":	"SPOT"
+		}, {
+			"type":	"LIGHT",
+			"name":	"pointlight",
+			"layers":	3,
+			"position":	[-187, 38, -156],
+			"scale":	[1, 1, 1],
+			"rotation":	[0, 0, 0, 1],
+			"color":	[1, 0.20000000298023224, 0.10000000149011612],
+			"intensity":	2.5,
+			"max_dist":	70,
+			"cast_shadows":	false,
+			"near_dist":	0.10000000149011612,
+			"light_type":	"POINT"
+		}, {
+			"type":	"LIGHT",
+			"name":	"pointlight2",
+			"layers":	3,
+			"position":	[-131, 38, -205],
+			"scale":	[1, 1, 1],
+			"rotation":	[0, 0, 0, 1],
+			"color":	[1, 0.20000000298023224, 0.10000000149011612],
+			"intensity":	2.5,
+			"max_dist":	70,
+			"cast_shadows":	false,
+			"near_dist":	0.10000000149011612,
+			"light_type":	"POINT"
+		}, {
+			"type":	"LIGHT",
+			"name":	"moonlight",
+			"layers":	3,
+			"position":	[150, 300, 50],
+			"scale":	[1, 1.0000001192092896, 1],
+			"rotation":	[-0.35411795973777771, 0.49672037363052368, 0.23217630386352539, 0.75760382413864136],
+			"color":	[0.10000000149011612, 0.20000000298023224, 0.40000000596046448],
+			"intensity":	1.5,
+			"max_dist":	1000,
+			"cast_shadows":	true,
+			"near_dist":	-500,
+			"area":	1000,
+			"light_type":	"DIRECTIONAL"
+		}]
 }

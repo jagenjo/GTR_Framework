@@ -4,7 +4,7 @@
 #include <cassert>
 #include <algorithm>
 
-#include "../utils.h"
+#include "../utils/utils.h"
 #include "hdre.h"
 
 std::map<std::string, HDRE*> HDRE::s_loaded_hdres;

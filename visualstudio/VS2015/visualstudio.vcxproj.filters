@@ -29,27 +29,6 @@
     <ClCompile Include="..\..\src\extra\picopng.cpp">
       <Filter>extra</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\fbo.cpp">
-      <Filter>gfx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\texture.cpp">
-      <Filter>gfx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\shader.cpp">
-      <Filter>gfx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\mesh.cpp">
-      <Filter>gfx</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\framework.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\utils.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\input.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\application.cpp" />
     <ClCompile Include="..\..\src\extra\hdre.cpp">
       <Filter>extra</Filter>
@@ -69,41 +48,11 @@
     <ClCompile Include="..\..\src\extra\imgui\imgui_impl_opengl3.cpp">
       <Filter>extra\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\extra\imgui\imgui_impl_sdl.cpp">
-      <Filter>extra\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\extra\imgui\ImCurveEdit.cpp">
-      <Filter>extra\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\extra\imgui\ImGradient.cpp">
-      <Filter>extra\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\extra\imgui\ImGuizmo.cpp">
       <Filter>extra\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\extra\imgui\ImSequencer.cpp">
-      <Filter>extra\imgui</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\renderer.cpp">
-      <Filter>pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\gltf_loader.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\prefab.cpp">
-      <Filter>pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\camera.cpp">
-      <Filter>pipeline</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\material.cpp">
-      <Filter>pipeline</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\extra\jpgd.cpp">
       <Filter>extra</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\scene.cpp">
-      <Filter>pipeline</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\extra\cJSON.cpp">
       <Filter>extra</Filter>
@@ -111,11 +60,72 @@
     <ClCompile Include="..\..\src\extra\coldet\tritri.cpp">
       <Filter>extra\coldet</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\sphericalharmonics.cpp">
+    <ClCompile Include="..\..\src\extra\imgui\imgui_impl_sdl2.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\extra\imgui\imgui_tables.cpp">
+      <Filter>extra\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\core.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\input.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\math.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\task.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\ui.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gfx\fbo.cpp">
       <Filter>gfx</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\task.cpp">
+    <ClCompile Include="..\..\src\gfx\mesh.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gfx\shader.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gfx\sphericalharmonics.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gfx\texture.cpp">
+      <Filter>gfx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pipeline\animation.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pipeline\camera.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pipeline\material.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pipeline\prefab.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pipeline\renderer.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pipeline\scene.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\utils\gltf_loader.cpp">
       <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\utils\utils.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\editor.cpp" />
+    <ClCompile Include="..\..\src\pipeline\light.cpp">
+      <Filter>pipeline</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\gfx\gfx.cpp">
+      <Filter>gfx</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -143,30 +153,6 @@
     <ClInclude Include="..\..\src\extra\picopng.h">
       <Filter>extra</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\fbo.h">
-      <Filter>gfx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\texture.h">
-      <Filter>gfx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\shader.h">
-      <Filter>gfx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\mesh.h">
-      <Filter>gfx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\framework.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\utils.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\includes.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\input.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\application.h" />
     <ClInclude Include="..\..\src\extra\hdre.h">
       <Filter>extra</Filter>
@@ -180,59 +166,94 @@
     <ClInclude Include="..\..\src\extra\imgui\imgui_internal.h">
       <Filter>extra\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\extra\imgui\imgui_impl_sdl.h">
-      <Filter>extra\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\extra\imgui\imgui_impl_opengl3.h">
-      <Filter>extra\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\extra\imgui\ImCurveEdit.h">
-      <Filter>extra\imgui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\extra\imgui\ImGradient.h">
       <Filter>extra\imgui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\extra\imgui\ImGuizmo.h">
       <Filter>extra\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\extra\imgui\ImSequencer.h">
-      <Filter>extra\imgui</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\extra\PerlinNoise.hpp">
       <Filter>extra</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\renderer.h">
-      <Filter>pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\gltf_loader.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\prefab.h">
-      <Filter>pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\camera.h">
-      <Filter>pipeline</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\material.h">
-      <Filter>pipeline</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\extra\jpgd.h">
       <Filter>extra</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\scene.h">
-      <Filter>pipeline</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\extra\cJSON.h">
       <Filter>extra</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\sphericalharmonics.h">
-      <Filter>gfx</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\task.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\extra\tiny_obj_loader.h">
       <Filter>extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\extra\imgui\imgui_impl_sdl2.h">
+      <Filter>extra\imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\core.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\includes.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\input.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\math.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\task.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\ui.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gfx\fbo.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gfx\mesh.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gfx\shader.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gfx\sphericalharmonics.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gfx\texture.h">
+      <Filter>gfx</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\pipeline\animation.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\pipeline\camera.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\pipeline\material.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\pipeline\prefab.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\pipeline\renderer.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\pipeline\scene.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utils\gltf_loader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\utils\utils.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\litengine.h" />
+    <ClInclude Include="..\..\src\editor.h" />
+    <ClInclude Include="..\..\src\extra\duk_config.h">
+      <Filter>extra</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\pipeline\light.h">
+      <Filter>pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\gfx\gfx.h">
+      <Filter>gfx</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -253,6 +274,9 @@
     </Filter>
     <Filter Include="pipeline">
       <UniqueIdentifier>{fe388127-614b-4a49-b829-ae6e56f88a34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{ec6aad67-3187-451b-b982-7651fbee071d}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

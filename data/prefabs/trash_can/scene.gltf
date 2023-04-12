@@ -626,7 +626,7 @@
   ],
   "materials": [
     {
-      "doubleSided": true,
+      "doubleSided": false,
       "emissiveFactor": [
         0,
         0,
