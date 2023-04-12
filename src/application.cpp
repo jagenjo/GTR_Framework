@@ -59,6 +59,8 @@ Application::Application()
 //what to do when the image has to be draw
 void Application::render(void)
 {
+	GFX::startGPULabel("Frame");
+
 	//no need to do it here but in case...
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -80,6 +82,9 @@ void Application::render(void)
 
     glDisable(GL_DEPTH_TEST);
     //render anything in the gui after this
+
+
+	GFX::endGPULabel();
 }
 
 void Application::update(double seconds_elapsed)

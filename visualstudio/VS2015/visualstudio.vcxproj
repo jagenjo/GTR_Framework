@@ -18,7 +18,7 @@
     <ProjectGuid>{D25DFFC1-8AEE-45BD-9345-D74387579CA7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>visualstudio</RootNamespace>
-    <ProjectName>litengine</ProjectName>
+    <ProjectName>GTR</ProjectName>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

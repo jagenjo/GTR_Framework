@@ -47,3 +47,6 @@ visualstudio/VS2015/Final
 *.pdb
 *.tlog
 *.exp
+*.idb
+*.idb
+*.pdb
