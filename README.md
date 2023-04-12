@@ -23,8 +23,3 @@ make
 ```
 
 
-## Others
-
-Similar projects:
- - [mgp](https://github.com/chunquedong/mgp)
- - [3Dev](https://github.com/1Kuso4ek1/3Dev)
