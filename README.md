@@ -1,27 +1,5 @@
-# LitEngine
-OpenGL C++ Framework used for small projects.
-It is meant to make easy to code C++ games but giving you freedom. Doesnt impose much.
-
-![Drag Racing](screenshots/litengine-screenshot1.png)
-
-It has basic features with a clean API:
-- Math stuff: vec3, Mat4, Quaternion
-- Classes for GPU stuff: Texture, Mesh, Shader and FBO
-- Classes for Scene: Camera, Node, Scene, Prefab 
-- SceneGraph with renderer and editor
-- Parsers for OBJ, GLTF, PNG, JPG, TGA, KTX, DDS
-- Ray-Mesh, Ray-Scene and Sphere-Scene collision.
-- Support for Animated Characters using custom format.
-- Other useful classes to wrap Threads, Scripts in JS.
-- ImGUI integrated
-- Visual Studio 2019 Project and Makefile + XCode project
-- Based in SDL2 and OpenGL 3.1
-
-Missing:
-- Physics
-- Path Finding
-- Audio
-- Network
+# GTR Framework
+OpenGL C++ Framework used for teach the Real-time Grapchics course at Universitat Pompeu Fabra.
 
 ## Compile
 
