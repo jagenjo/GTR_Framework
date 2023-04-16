@@ -17,6 +17,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../extra/stb_image.h"
 
+#include "../extra/hdre.h"
+
 //bilinear interpolation
 Color Image::getPixelInterpolated(float x, float y, bool repeat) {
 	int ix = repeat ? fmod(x,width) : clamp(x,0,width-1);
@@ -103,15 +105,18 @@ namespace GFX
 
 	void Texture::clear()
 	{
-		glBindTexture(this->texture_type, 0);
+		if (texture_id)
+		{
+			glBindTexture(this->texture_type, 0);
 
-		//external textures are handled by an outside system (like Android OS)
-		if (texture_type != GL_TEXTURE_EXTERNAL_OES)
-			glDeleteTextures(1, &texture_id);
+			//external textures are handled by an outside system (like Android OS)
+			if (texture_type != GL_TEXTURE_EXTERNAL_OES)
+				glDeleteTextures(1, &texture_id);
 
-		if (!loading) //when loading the texture of 1x1 is replaced with the new one
-			stdlog("Destroy texture: " + filename);
-		texture_id = 0;
+			if (!loading) //when loading the texture of 1x1 is replaced with the new one
+				stdlog("Destroy texture: " + filename);
+			texture_id = 0;
+		}
 
 		if (filename.size())
 		{
@@ -243,6 +248,7 @@ namespace GFX
 		texture = new Texture();
 		if (!texture->load(filename, mipmaps, wrap))
 		{
+			std::cout << "" << std::endl;
 			delete texture;
 			return NULL;
 		}
@@ -278,6 +284,18 @@ namespace GFX
 
 	bool Texture::load(const char* filename, bool mipmaps, bool wrap, unsigned int type)
 	{
+		//non-image based formats
+		std::string str = filename;
+		std::string ext = toLowerCase( getExtension(str) );
+		if (ext == "hdre")
+		{
+			if (!CubemapFromHDRE(filename, this))
+				return false;
+			setName(filename);
+			return true;
+		}
+
+		//image based textures
 		::Image* image = new ::Image();
 		if (!image->load(filename))
 		{
@@ -1032,6 +1050,34 @@ bool isPowerOfTwo( int n )
 {
 	return (n & (n - 1)) == 0;
 }
+
+GFX::Texture* CubemapFromHDRE(const char* filename, GFX::Texture* output)
+{
+	HDRE* hdre = HDRE::Get(filename);
+	if (!hdre)
+		return NULL;
+
+	GFX::Texture* texture = output ? output : new GFX::Texture();
+	if (hdre->getFacesf(0))
+	{
+		texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesf(0),
+			hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT);
+		for (int i = 1; i < hdre->levels; ++i)
+			texture->uploadCubemap(texture->format, texture->type, false,
+				(Uint8**)hdre->getFacesf(i), GL_RGBA32F, i);
+	}
+	else
+		if (hdre->getFacesh(0))
+		{
+			texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesh(0),
+				hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_HALF_FLOAT);
+			for (int i = 1; i < hdre->levels; ++i)
+				texture->uploadCubemap(texture->format, texture->type, false,
+					(Uint8**)hdre->getFacesh(i), GL_RGBA16F, i);
+		}
+	return texture;
+}
+
 
 //*********************
 

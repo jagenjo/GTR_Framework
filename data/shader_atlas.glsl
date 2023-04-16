@@ -1,6 +1,7 @@
 //example of some shaders compiled
 flat basic.vs flat.fs
 texture basic.vs texture.fs
+skybox basic.vs skybox.fs
 depth quad.vs depth.fs
 multi basic.vs multi.fs
 
@@ -101,6 +102,25 @@ void main()
 	if(color.a < u_alpha_cutoff)
 		discard;
 
+	FragColor = color;
+}
+
+
+\skybox.fs
+
+#version 330 core
+
+in vec3 v_position;
+in vec3 v_world_position;
+
+uniform samplerCube u_texture;
+uniform vec3 u_camera_position;
+out vec4 FragColor;
+
+void main()
+{
+	vec3 E = v_world_position - u_camera_position;
+	vec4 color = texture( u_texture, E );
 	FragColor = color;
 }
 

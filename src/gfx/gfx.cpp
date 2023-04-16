@@ -158,6 +158,24 @@ namespace GFX {
 		glPopAttrib();
 	}
 
+	void drawPoints(std::vector<Vector3f> points, Vector4f color, int size)
+	{
+		if (!points.size())
+			return;
+		Camera* camera = Camera::current;
+		assert(camera);
+		GFX::Mesh m;
+		m.vertices = points;
+		GFX::Shader* sh = GFX::Shader::getDefaultShader("flat");
+		sh->enable();
+		sh->setUniform("u_color", color);
+		sh->setUniform("u_model", Matrix44());
+		glPointSize(size);
+		sh->setUniform("u_viewprojection", camera->viewprojection_matrix );
+		sh->setUniform("u_camera_position", camera->eye );
+		m.render(GL_POINTS);
+	}
+
 	void displaceMesh(Mesh* mesh, ::Image* heightmap, float altitude)
 	{
 		assert(heightmap && heightmap->data && "image without data");

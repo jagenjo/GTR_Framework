@@ -26,16 +26,24 @@ namespace SCN {
 		bool render_wireframe;
 		bool render_boundaries;
 
+		GFX::Texture* skybox_cubemap;
+
 		SCN::Scene* scene;
 
 		//updated every frame
 		Renderer(const char* shaders_atlas_filename );
+
+		//just to be sure we have everything ready for the rendering
+		void setupScene();
 
 		//add here your functions
 		//...
 
 		//renders several elements of the scene
 		void renderScene(SCN::Scene* scene, Camera* camera);
+
+		//render the skybox
+		void renderSkybox(GFX::Texture* cubemap);
 	
 		//to render one node from the prefab and its children
 		void renderNode(SCN::Node* node, Camera* camera);
@@ -46,9 +54,6 @@ namespace SCN {
 		void showUI();
 
 		void cameraToShader(Camera* camera, GFX::Shader* shader); //sends camera uniforms to shader
-		void renderPoints(std::vector<Vector3f> points, Vector4f color); //debug stuff
 	};
-
-	GFX::Texture* CubemapFromHDRE(const char* filename);
 
 };

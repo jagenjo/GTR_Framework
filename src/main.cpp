@@ -24,9 +24,6 @@ int main(int argc, char **argv)
 	std::cout << "Initiating app..." << std::endl;
 	CORE::init();
 
-	//for(int i = 0; i < 0xFFFF; ++i)
-	//	SetKeyboardState((LPBYTE)i);
-
 	//define window size
 	bool fullscreen = false; 
 	Vector2f size(1024,768);
@@ -34,7 +31,7 @@ int main(int argc, char **argv)
 		size = CORE::getDesktopSize(0);
 
 	//create the application window 
-	CORE::Window* window = CORE::createWindow("LIT", (int)size.x, (int)size.y, fullscreen );
+	CORE::Window* window = CORE::createWindow("GTR", (int)size.x, (int)size.y, fullscreen );
 	if (!window)
 		return 0;
 

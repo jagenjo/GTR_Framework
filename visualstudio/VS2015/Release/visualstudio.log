@@ -1,82 +1,17 @@
-﻿  application.cpp
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\MSBuild\Microsoft\VC\v160\Microsoft.CppBuild.targets(467,5): warning MSB8028: El directorio intermedio (Release\) contiene archivos compartidos de otro proyecto (litengine.vcxproj). Esto puede dar lugar a un comportamiento incorrecto de limpieza y recompilación.
   ui.cpp
-  editor.cpp
-  main.cpp
-  light.cpp
-  renderer.cpp
-  scene.cpp
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct' (compilando archivo de origen ..\..\src\pipeline\scene.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\pipeline\scene.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct' (compilando archivo de origen ..\..\src\pipeline\light.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\pipeline\light.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\light.cpp(17,21): warning C4305: '=': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\light.cpp(18,21): warning C4305: '=': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\core\ui.cpp(96,71): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\core\ui.cpp(96,98): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\core\ui.cpp(169,31): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\core\ui.cpp(215,27): warning C4244: '=': conversión de 'float' a 'int64'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\scene.cpp(32,20): warning C4018: '<': no coinciden signed/unsigned
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\scene.cpp(119,16): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\scene.cpp(124,34): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\scene.h(12,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class' (compilando archivo de origen ..\..\src\main.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\main.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\scene.cpp(242,20): warning C4018: '<': no coinciden signed/unsigned
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct' (compilando archivo de origen ..\..\src\pipeline\renderer.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\pipeline\renderer.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\renderer.cpp(47,20): warning C4018: '<': no coinciden signed/unsigned
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\renderer.cpp(88,20): warning C4018: '<': no coinciden signed/unsigned
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\renderer.cpp(144,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\scene.h(12,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class' (compilando archivo de origen ..\..\src\application.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\application.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\pipeline\scene.h(12,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class' (compilando archivo de origen ..\..\src\editor.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\editor.cpp)
-E:\PROJECTS\REPOS\GTR2023\src\application.cpp(87,14): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\application.cpp(88,20): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(116,33): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(133,33): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(140,18): warning C4244: 'inicializando': conversión de 'T' a 'int'; posible pérdida de datos
-          with
-          [
-              T=float
-          ]
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(143,36): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(144,61): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(144,34): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(201,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(286,33): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(301,39): warning C4244: '=': conversión de 'T' a 'int'; posible pérdida de datos
-          with
-          [
-              T=float
-          ]
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(303,56): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(303,54): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(317,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(367,84): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(381,74): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(417,34): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(417,27): warning C4244: 'argumento': conversión de 'T' a 'int'; posible pérdida de datos
-          with
-          [
-              T=float
-          ]
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(417,19): warning C4244: 'argumento': conversión de 'T' a 'int'; posible pérdida de datos
-          with
-          [
-              T=float
-          ]
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(440,25): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(533,22): warning C4018: '<': no coinciden signed/unsigned
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(554,93): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(559,84): warning C4305: 'argumento': truncamiento de 'double' a 'float'
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(579,10): warning C4244: 'inicializando': conversión de 'float' a 'int'; posible pérdida de datos
-E:\PROJECTS\REPOS\GTR2023\src\editor.cpp(581,86): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
-     Creando biblioteca ..\..\litengine.lib y objeto ..\..\litengine.exp
+E:\PROJECTS\REPOS\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
+E:\PROJECTS\REPOS\GTR_Framework\src\extra\cJSON.h(103): message : vea la declaración de 'cJSON'
+E:\PROJECTS\REPOS\GTR_Framework\src\core\ui.cpp(97,71): warning C4305: 'argumento': truncamiento de 'double' a 'float'
+E:\PROJECTS\REPOS\GTR_Framework\src\core\ui.cpp(97,98): warning C4305: 'argumento': truncamiento de 'double' a 'float'
+E:\PROJECTS\REPOS\GTR_Framework\src\core\ui.cpp(203,31): warning C4305: 'inicializando': truncamiento de 'double' a 'float'
+E:\PROJECTS\REPOS\GTR_Framework\src\core\ui.cpp(249,27): warning C4244: '=': conversión de 'float' a 'int64'; posible pérdida de datos
+     Creando biblioteca ..\..\GTR.lib y objeto ..\..\GTR.exp
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
-  133 of 5511 functions ( 2.4%) were compiled, the rest were copied from previous compilation.
+  15 of 5601 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    201 functions had inline decision re-evaluated but remain unchanged
+    72 functions had inline decision re-evaluated but remain unchanged
   Generación de código finalizada
-glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB 'vc120.pdb' con 'glew32s.lib(glew.obj)' o en 'E:\PROJECTS\REPOS\GTR2023\vc120.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
-  visualstudio.vcxproj -> E:\PROJECTS\REPOS\GTR2023\visualstudio\VS2015\..\..\litengine.exe
+glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB 'vc120.pdb' con 'glew32s.lib(glew.obj)' o en 'E:\PROJECTS\REPOS\GTR_Framework\vc120.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
+  visualstudio.vcxproj -> E:\PROJECTS\REPOS\GTR_Framework\visualstudio\VS2015\..\..\GTR.exe

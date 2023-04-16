@@ -59,8 +59,6 @@ Application::Application()
 //what to do when the image has to be draw
 void Application::render(void)
 {
-	GFX::startGPULabel("Frame");
-
 	//no need to do it here but in case...
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -77,14 +75,11 @@ void Application::render(void)
 
 		//render debug points 
 		glDisable(GL_DEPTH_TEST);
-		renderer->renderPoints(debug_points, Vector4f(1, 1, 0, 1));
+		GFX::drawPoints(debug_points, Vector4f(1, 1, 0, 1),4);
 	}
 
-    glDisable(GL_DEPTH_TEST);
-    //render anything in the gui after this
-
-
-	GFX::endGPULabel();
+	glDisable(GL_DEPTH_TEST);
+	//render anything in the gui after this
 }
 
 void Application::update(double seconds_elapsed)

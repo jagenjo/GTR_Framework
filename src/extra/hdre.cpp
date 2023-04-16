@@ -114,7 +114,7 @@ bool HDRE::load(const char* filename)
 	fread(&HDREHeader, sizeof(sHDREHeader), 1, f);
 
 	if (HDREHeader.type != 3) {
-        printf("HDRE Header has wrong type: %d\n", HDREHeader.type);
+        std::cout << "HDRE Header has wrong type: " << HDREHeader.type << std::endl;
         throw ("ArrayType not supported. Please export in Float32Array.");
     }
 
@@ -165,7 +165,6 @@ bool HDRE::load(const char* filename)
 	assert(nFullMips <= N_MAX_LEVELS);
 	levels = nFullMips;
 	w = width;
-    printf("Load %d mips of HDRE texture\n", nFullMips);
 
     int i;
     for (i = 0; i < N_LEVELS; i++)
@@ -203,7 +202,7 @@ bool HDRE::load(const char* filename)
 		if (this->header.version > 2.0)
 			w = (int)(width / pow(2.0, mip_level));
 	}
-	std::cout << std::endl << " + '" << filename << "' (v" << this->header.version << ") loaded successfully" << std::endl;
+	std::cout << " + '" << filename << "' (v" << this->header.version << ") loaded successfully" << std::endl;
 	return true;
 }
 

@@ -77,6 +77,20 @@ void main()
 	gl_FragColor = color;
 }
 
+\skybox.fs
+
+varying vec3 v_world_position;
+
+uniform samplerCube u_texture;
+uniform vec3 u_camera_position;
+
+void main()
+{
+	vec3 E = v_world_position - u_camera_position;
+	vec4 color = textureCube( u_texture, E );
+	gl_FragColor = color;
+}
+
 \quad.vs
 
 attribute vec3 a_vertex;

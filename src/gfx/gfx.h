@@ -26,6 +26,7 @@ namespace GFX {
 	bool drawText3D(Vector3f pos, std::string text, Vector4f c, float scale);
 
 	void drawTexture2D(Texture* tex, vec4 pos);
+	void drawPoints(std::vector<Vector3f> points, Vector4f color, int size);
 
 	void displaceMesh(Mesh* mesh, ::Image* heightmap, float altitude);
 

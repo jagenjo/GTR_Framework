@@ -5,6 +5,7 @@
 #include "../gfx/mesh.h"
 #include "../gfx/texture.h"
 #include "../pipeline/scene.h"
+#include "../utils/utils.h"
 
 GFX::Texture* icons = nullptr;
 
@@ -105,6 +106,39 @@ void UI::Layers(const char* text, uint8* layers)
 		ImGui::PopID();
 	}
 #endif
+}
+
+bool UI::Filename(const char* text, std::string& filename, std::string base_folder)
+{
+	bool changed = false;
+#ifndef SKIP_IMGUI
+	char buff[255];
+	strcpy_s(buff, filename.c_str());
+	if (ImGui::InputText(text, buff, 255, ImGuiInputTextFlags_EnterReturnsTrue))
+	{
+		filename = buff;
+		changed = true;
+	}
+	ImGui::SameLine();
+
+	if (ImGui::Button("..."))
+	{
+		std::string result = CORE::openFileDialog();
+		if (!result.empty())
+		{
+			std::string relpath = makePathRelative(result);
+			if (base_folder == relpath.substr(0, base_folder.size()))
+			{
+				filename = relpath.substr(base_folder.size() + 1);
+				changed = true;
+			}
+			else
+				UI::addNotification("File be in the same folder as the scene", UI::eNotificationIconType::ICON_WARNING);
+		}
+	}
+#endif
+	return changed;
+
 }
 
 #ifndef SKIP_IMGUI

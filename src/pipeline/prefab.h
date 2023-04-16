@@ -14,7 +14,6 @@ namespace GFX {
 };
 
 class Camera;
-class Skeleton;
 
 namespace SCN {
 
@@ -41,8 +40,6 @@ namespace SCN {
 
 		GFX::Mesh* mesh;
 		Material* material;
-		Skeleton* skeleton;
-		//std::vector<Primitive*> primitives; //to support multimaterial
 
 		Matrix44 model;	//the matrix that defines where is the object (in relation to its parent)
 		Matrix44 global_model;	//the matrix that defines where is the object (in relation to the world)
@@ -102,7 +99,7 @@ namespace SCN {
 		Node root;
 		BoundingBox bounding;
 
-		//dtor
+		//ctor and dtor
 		Prefab();
 		~Prefab();
 

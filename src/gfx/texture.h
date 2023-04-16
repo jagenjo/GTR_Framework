@@ -201,6 +201,8 @@ namespace GFX {
 
 };
 
+GFX::Texture* CubemapFromHDRE(const char* filename, GFX::Texture* output = nullptr);
+
 
 bool isPowerOfTwo(int n);
 

@@ -1,6 +1,8 @@
 #include "utils.h"
 
 #include <cassert>
+#include <iostream>
+#include <algorithm>
 
 #include "../core/includes.h"
 #include "../core/core.h"
@@ -31,9 +33,23 @@ std::string getFolderName(std::string path)
 {
 	path = cleanPath(path); //remove weird slashes
 	size_t pos = path.find_last_of('/');
-	if (pos == -1)
+	if (pos == std::string::npos)
 		return "";
 	return path.substr(0, pos);
+}
+
+std::string getExtension(std::string path)
+{
+	size_t pos = path.find_last_of('.');
+	if (pos == std::string::npos)
+		return "";
+	return path.substr(pos + 1);
+}
+
+std::string toLowerCase(std::string str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+	return str;
 }
 
 std::string cleanPath(std::string filename)

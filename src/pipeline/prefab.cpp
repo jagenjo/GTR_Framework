@@ -18,7 +18,7 @@ using namespace SCN;
 int Node::s_NodeID = 0;
 Node* Node::s_selected = nullptr;
 
-Node::Node() : parent(nullptr), mesh(nullptr), material(nullptr), skeleton(nullptr), visible(true)
+Node::Node() : parent(nullptr), mesh(nullptr), material(nullptr), visible(true)
 {
 	m_Id = s_NodeID++;
 }
@@ -31,11 +31,9 @@ Node::~Node()
 	//cant delete mesh, material or skeleton as it is a shared resource
 	//delete mesh;
 	//delete material;
-	//delete skeleton;
 
 	mesh = nullptr;
 	material = nullptr;
-	skeleton = nullptr;
 
 	if (s_selected == this)
 		s_selected = nullptr;

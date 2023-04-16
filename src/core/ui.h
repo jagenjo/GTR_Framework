@@ -33,6 +33,8 @@ namespace UI {
 	void inspectObject(Matrix44& matrix);
 
 	void Layers(const char* text, uint8* layers);
+	bool Filename(const char* text, std::string& filename, std::string base_folder);
+
 
 #ifndef SKIP_IMGUI
 	extern ImGuizmo::OPERATION manipulate_operation;

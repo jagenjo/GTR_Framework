@@ -4,7 +4,7 @@
 	"camera_position":	[-300, 90, -150],
 	"camera_target":	[0, 40, 0],
 	"camera_fov":	60,
-	"skybox": "data/night.hdre",
+	"skybox": "night.hdre",
 	"entities":	[{
 			"type":	"PREFAB",
 			"name":	"floor",

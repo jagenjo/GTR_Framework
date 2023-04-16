@@ -21,6 +21,8 @@ bool writeFile(const std::string& filename, std::string& content);
 
 //work with file paths
 std::string getFolderName(std::string path);
+std::string getExtension(std::string path);
+std::string toLowerCase(std::string str);
 std::string cleanPath(std::string);
 std::string makePathRelative(std::string filename);
 

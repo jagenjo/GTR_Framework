@@ -241,6 +241,9 @@ void SceneEditor::render(Camera* camera)
 		ImGui::ColorEdit3("BG color", scene->background_color.v);
 		ImGui::ColorEdit3("Ambient Light", scene->ambient_light.v);
 
+		if (UI::Filename("Skybox", scene->skybox_filename, scene->base_folder))
+			renderer->setupScene();
+
 		//add info to the debug panel about the camera
 		if (ImGui::TreeNode(camera, "Camera")) {
 			inspectObject(camera);
@@ -333,23 +336,11 @@ void SceneEditor::inspectEntity(SCN::PrefabEntity* entity)
 
 	ImGui::Separator();
 
-	ImGui::Text("filename: %s", entity->filename.c_str());
-	ImGui::SameLine(300 - 40);
-	if (ImGui::Button("..."))
+	if (UI::Filename("filename", entity->filename, scene->base_folder))
 	{
-		std::string result = CORE::openFileDialog();
-		if (!result.empty())
-		{
-			std::string relpath = makePathRelative(result);
-			if (scene->base_folder == relpath.substr(0, scene->base_folder.size()))
-			{
-				entity->filename = relpath.substr(scene->base_folder.size() + 1);
-				entity->loadPrefab(entity->filename.c_str());
-			}
-			else
-				UI::addNotification("Prefab must be in the same folder as the scene", UI::eNotificationIconType::ICON_WARNING );
-		}
+		entity->loadPrefab(entity->filename.c_str());
 	}
+
 #endif
 }
 

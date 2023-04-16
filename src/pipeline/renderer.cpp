@@ -20,19 +20,36 @@
 
 using namespace SCN;
 
+//some globals
+GFX::Mesh sphere;
+
 Renderer::Renderer(const char* shader_atlas_filename)
 {
 	render_wireframe = false;
 	render_boundaries = false;
 	scene = nullptr;
+	skybox_cubemap = nullptr;
 
 	if (!GFX::Shader::LoadAtlas(shader_atlas_filename))
 		exit(1);
 	GFX::checkGLErrors();
+
+	sphere.createSphere(1.0f);
+}
+
+void Renderer::setupScene()
+{
+	if (scene->skybox_filename.size())
+		skybox_cubemap = GFX::Texture::Get(std::string(scene->base_folder + "/" + scene->skybox_filename).c_str());
+	else
+		skybox_cubemap = nullptr;
 }
 
 void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 {
+	this->scene = scene;
+	setupScene();
+
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 
@@ -42,6 +59,10 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 	// Clear the color and the depth buffer
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	GFX::checkGLErrors();
+
+	//render skybox
+	if(skybox_cubemap)
+		renderSkybox(skybox_cubemap);
 
 	//render entities
 	for (int i = 0; i < scene->entities.size(); ++i)
@@ -58,6 +79,34 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 				renderNode( &pent->root, camera);
 		}
 	}
+}
+
+
+void Renderer::renderSkybox(GFX::Texture* cubemap)
+{
+	Camera* camera = Camera::current;
+
+	glDisable(GL_BLEND);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	if (render_wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	GFX::Shader* shader = GFX::Shader::Get("skybox");
+	if (!shader)
+		return;
+	shader->enable();
+
+	Matrix44 m;
+	m.setTranslation(camera->eye.x, camera->eye.y, camera->eye.z);
+	m.scale(10, 10, 10);
+	shader->setUniform("u_model", m);
+	cameraToShader(camera, shader);
+	shader->setUniform("u_texture", cubemap, 0);
+	sphere.render(GL_TRIANGLES);
+	shader->disable();
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glEnable(GL_DEPTH_TEST);
 }
 
 //renders a node of the prefab and its children
@@ -165,53 +214,11 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
-GFX::Texture* SCN::CubemapFromHDRE(const char* filename)
-{
-	HDRE* hdre = HDRE::Get(filename);
-	if (!hdre)
-		return NULL;
-
-	GFX::Texture* texture = new GFX::Texture();
-	if (hdre->getFacesf(0))
-	{
-		texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesf(0),
-			hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_FLOAT);
-		for (int i = 1; i < hdre->levels; ++i)
-			texture->uploadCubemap(texture->format, texture->type, false,
-				(Uint8**)hdre->getFacesf(i), GL_RGBA32F, i);
-	}
-	else
-		if (hdre->getFacesh(0))
-		{
-			texture->createCubemap(hdre->width, hdre->height, (Uint8**)hdre->getFacesh(0),
-				hdre->header.numChannels == 3 ? GL_RGB : GL_RGBA, GL_HALF_FLOAT);
-			for (int i = 1; i < hdre->levels; ++i)
-				texture->uploadCubemap(texture->format, texture->type, false,
-					(Uint8**)hdre->getFacesh(i), GL_RGBA16F, i);
-		}
-	return texture;
-}
-
 void SCN::Renderer::cameraToShader(Camera* camera, GFX::Shader* shader)
 {
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
 	shader->setUniform("u_camera_position", camera->eye);
 }
-
-void SCN::Renderer::renderPoints(std::vector<Vector3f> points, Vector4f color) {
-	if (!points.size())
-		return;
-	GFX::Mesh m;
-	m.vertices = points;
-	GFX::Shader* sh = GFX::Shader::getDefaultShader("flat");
-	sh->enable();
-	sh->setUniform("u_color", color);
-	sh->setUniform("u_model", Matrix44());
-	glPointSize(4);
-	cameraToShader( Camera::current, sh);
-	m.render(GL_POINTS);
-}
-
 
 #ifndef SKIP_IMGUI
 
