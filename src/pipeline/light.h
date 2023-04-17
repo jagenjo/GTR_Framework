@@ -5,7 +5,7 @@
 namespace SCN {
 
 	enum eLightType : uint32 {
-		UNKNOWN = 0,
+		NO_LIGHT = 0,
 		POINT = 1,
 		SPOT = 2,
 		DIRECTIONAL = 3
@@ -41,7 +41,7 @@ namespace SCN {
 		sLightData light_data; //for internal 
 		//Texture* cookie;
 
-		ENTITY_METHODS(LightEntity, "LIGHT", 14,4);
+		ENTITY_METHODS(LightEntity, LIGHT, 14,4);
 
 		LightEntity();
 

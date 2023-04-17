@@ -39,6 +39,8 @@ namespace SCN {
 		VOLUME = 20,
 		SPLINE = 21,
 		TRIGGER = 22,
+
+		UNKNOWN = 0xFF
 	};
 
 	//used for ray picking against the scene
@@ -52,8 +54,11 @@ namespace SCN {
 
 	#define ENTITY_METHODS(_A,_B,_ICONX,_ICONY) \
 		virtual BaseEntity* clone() const { auto it = new _A(); *it = *this; it->scene = nullptr; return it; };\
-		virtual const char* getTypeAsStr() const { return _B; }; \
+		virtual eEntityType getType() const { return eEntityType::_B; }; \
+		virtual const char* getTypeAsStr() const { return #_B; }; \
 		virtual vec2 getTypeIcon() const { return vec2(_ICONX,_ICONY); };
+
+	#define REGISTER_ENTITY_TYPE(_A) SCN::BaseEntity::registerEntityType(new _A());
 
 	//represents one element of the scene (could be lights, prefabs, decals, etc)
 	class BaseEntity
@@ -65,17 +70,18 @@ namespace SCN {
 		SCN::Node root;
 
 		std::string name;
-		eEntityType entity_type;
 		bool visible;
 		uint8 layers;
 
-		BaseEntity() { scene = nullptr;  entity_type = eEntityType::NONE; visible = true; layers = 3; }
+		BaseEntity() { scene = nullptr; visible = true; layers = 3; }
 		virtual ~BaseEntity() { assert(!scene); if (s_selected == this) s_selected = nullptr; };
 		
 		virtual void configure(cJSON* json) {}
 		virtual void serialize(cJSON* json) {}
+
 		virtual BaseEntity* clone() const = 0; //must be implemented
-		virtual const char* getTypeAsStr() const { return "BASE"; }
+		virtual eEntityType getType() const { return eEntityType::NONE; }
+		virtual const char* getTypeAsStr() const { return "NONE"; }
 		virtual vec2 getTypeIcon() const { return { 0, 1 }; }
 
 		virtual bool testRay(const Ray& ray, Vector3f& coll, float max_dist = 100000.0f);
@@ -83,8 +89,6 @@ namespace SCN {
 		static void registerEntityType(BaseEntity* entity);
 		static BaseEntity* createEntity(const char* type);
 	};
-
-	#define REGISTER_ENTITY_TYPE(_A) SCN::BaseEntity::registerEntityType(new _A());
 
 	//represents one prefab in the scene
 	class PrefabEntity : public SCN::BaseEntity
@@ -95,7 +99,7 @@ namespace SCN {
 		
 		PrefabEntity();
 
-		ENTITY_METHODS(PrefabEntity, "PREFAB", 11,0);
+		ENTITY_METHODS(PrefabEntity, PREFAB, 11,0);
 
 		virtual void configure(cJSON* json);
 		virtual void serialize(cJSON* json);
@@ -112,7 +116,8 @@ namespace SCN {
 
 		UnknownEntity();
 		~UnknownEntity();
-		ENTITY_METHODS( UnknownEntity, "UNKNOWN",1,0 );
+
+		ENTITY_METHODS( UnknownEntity, UNKNOWN,1,0 );
 		virtual void configure(cJSON* json);
 		virtual void serialize(cJSON* json);
 		virtual const char* getTypeAsStr() { return original_type.c_str(); };

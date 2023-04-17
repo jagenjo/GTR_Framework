@@ -18,8 +18,6 @@ Application::Application()
 	instance = this;
 	mouse_locked = false;
 
-
-
 	//define valid entities (DO IT BEFORE LOADING ANY SCENE!!!)
 	REGISTER_ENTITY_TYPE(SCN::PrefabEntity);
 	//add here your own entities

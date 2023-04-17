@@ -72,7 +72,7 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 			continue;
 
 		//is a prefab!
-		if (ent->entity_type == PREFAB)
+		if (ent->getType())
 		{
 			PrefabEntity* pent = (SCN::PrefabEntity*)ent;
 			if (pent->prefab)

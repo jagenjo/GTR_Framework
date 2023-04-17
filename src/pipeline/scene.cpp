@@ -266,7 +266,6 @@ SCN::BaseEntity* SCN::BaseEntity::createEntity(const char* type)
 
 SCN::PrefabEntity::PrefabEntity()
 {
-	entity_type = PREFAB;
 	prefab = NULL;
 }
 

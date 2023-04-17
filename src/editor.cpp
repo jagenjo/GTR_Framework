@@ -174,7 +174,7 @@ void SceneEditor::render(Camera* camera)
 		for (size_t i = 0; i < scene->entities.size(); ++i)
 		{
 			SCN::BaseEntity* entity = scene->entities[i];
-			switch (entity->entity_type)
+			switch (entity->getType())
 			{
 				case SCN::eEntityType::PREFAB: renderInList((SCN::PrefabEntity*)entity); break;
 				default: renderInList(entity); break;
@@ -228,7 +228,7 @@ void SceneEditor::render(Camera* camera)
 	else if (SCN::BaseEntity::s_selected)
 	{
 		SCN::BaseEntity* ent = SCN::BaseEntity::s_selected;
-		switch (ent->entity_type)
+		switch (ent->getType())
 		{
 		case SCN::eEntityType::PREFAB: inspectEntity((SCN::PrefabEntity*)ent); break;
 		case SCN::eEntityType::LIGHT: inspectEntity((SCN::LightEntity*)ent); break;
