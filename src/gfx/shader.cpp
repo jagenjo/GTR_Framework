@@ -1,13 +1,18 @@
 #include "shader.h"
 #include <cassert>
 #include <iostream>
-#include "../utils/utils.h"
 #include <algorithm> 
 #include <functional> 
 #include <cctype>
 #include <locale>
 
+#include "../utils/utils.h"
+
 #include "texture.h"
+
+#ifndef MAX
+	#define MAX(A,B) ((A)>(B)?(A):(B))
+#endif 
 
 //typedef unsigned int GLhandle;
 
@@ -414,7 +419,7 @@ void Shader::saveShaderInfoLog(GLuint obj )
 
 	for (size_t i = 0; i < lines.size(); ++i)
 	{
-		lines_with_error[i] = max(0, stoi(lines[i].substr(2)) - 1);
+		lines_with_error[i] = MAX(0, stoi(lines[i].substr(2)) - 1);
 		std::cout << TermColor::RED << lines[i] << TermColor::DEFAULT << std::endl;
 	}
         
@@ -990,7 +995,7 @@ bool Shader::LoadAtlas(const char* filename, const char* base_path_cstr)
 				!GetShaderFile(fs_filename.c_str(), fs_code))
 			{
 				std::cout << " * Error in shader atlas, couldnt find files for " << name << std::endl;
-				return nullptr;
+				return false;
 			}
 
 			Shader* shader = CompileShader(name.c_str(), vs_code.c_str(), fs_code.c_str(), macros.c_str());
@@ -1151,7 +1156,7 @@ Shader* Shader::UberShader::get(uint64 macros)
 	if (macros)
 	{
 		int bit = 1;
-		int max_macros = min(64, this->macros.size());
+		int max_macros = this->macros.size() < 64 ? this->macros.size() : 64;
 		for (int i = 0; i < max_macros; ++i)
 		{
 			if (macros & bit << i)

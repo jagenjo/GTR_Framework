@@ -126,8 +126,8 @@ public:
 template<typename T> inline Vector3<T> operator + (const Vector3<T>& a, const Vector3<T>& b) { return Vector3<T>(a.x + b.x, a.y + b.y, a.z + b.z); }
 template<typename T> inline Vector3<T> operator - (const Vector3<T>& a, const Vector3<T>& b) { return Vector3<T>(a.x - b.x, a.y - b.y, a.z - b.z); }
 template<typename T> inline Vector3<T> operator * (const Vector3<T>& a, const Vector3<T>& b) { return Vector3<T>(a.x * b.x, a.y * b.y, a.z * b.z); }
-template<typename T> inline Vector3<T> operator * (const Vector3<T>& a, T v) { return Vector3f(a.x * v, a.y * v, a.z * v); }
-template<typename T> inline Vector3<T> operator * (float v, const Vector3<T>& a) { return Vector3f(a.x * v, a.y * v, a.z * v); }
+template<typename T> inline Vector3<T> operator * (const Vector3<T>& a, T v) { return Vector3<T>(a.x * v, a.y * v, a.z * v); }
+template<typename T> inline Vector3<T> operator * (float v, const Vector3<T>& a) { return Vector3<T>(a.x * v, a.y * v, a.z * v); }
 
 template<typename T> inline Vector3<T> normalize(Vector3<T> n) { return n.normalize(); }
 template<typename T> inline T dot(const Vector3<T>& a, const Vector3<T>& b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
