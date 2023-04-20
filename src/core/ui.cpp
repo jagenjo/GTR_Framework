@@ -1,5 +1,7 @@
 #include "ui.h"
 
+#include <stdio.h>
+
 #include "../pipeline/camera.h"
 #include "../pipeline/material.h"
 #include "../gfx/mesh.h"
@@ -113,7 +115,7 @@ bool UI::Filename(const char* text, std::string& filename, std::string base_fold
 	bool changed = false;
 #ifndef SKIP_IMGUI
 	char buff[255];
-	strcpy_s(buff, filename.c_str());
+	std::strncpy(buff, filename.c_str(), 255);
 	if (ImGui::InputText(text, buff, 255, ImGuiInputTextFlags_EnterReturnsTrue))
 	{
 		filename = buff;
@@ -286,7 +288,7 @@ void UI::drawNotifications()
 			continue;
 
 		char window_name[50];
-		sprintf_s(window_name, "##NOTIFY%d", n.index);
+		std::snprintf(window_name, 50, "##NOTIFY%d", n.index);
 		ImGui::SetNextWindowBgAlpha(opacity);
 		ImGui::SetNextWindowPos(ImVec2(vp_size.x - NOTIFY_PADDING_X + (1-alpha_factor) * 200, vp_size.y - NOTIFY_PADDING_Y - height), ImGuiCond_Always, ImVec2(1.0f, 1.0f));
 

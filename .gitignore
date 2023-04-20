@@ -53,3 +53,9 @@ visualstudio/VS2015/Final
 visualstudio/VS2015/Debug/vc142.idb
 visualstudio/VS2015/Debug/vc142.idb
 visualstudio/VS2015/Release/vc142.pdb
+*.idb
+*.idb
+visualstudio/VS2015/Debug/vc142.idb
+visualstudio/VS2015/Debug/vc142.idb
+visualstudio/VS2015/Release/vc142.pdb
+visualstudio/VS2015/Release/visualstudio.log

@@ -5,7 +5,6 @@
 
 SCN::LightEntity::LightEntity()
 {
-	memset(&light_data, 0, sizeof(sLightData));
 	light_type = eLightType::POINT;
 	color.set(1, 1, 1);
 	cone_info.set(25, 40);
