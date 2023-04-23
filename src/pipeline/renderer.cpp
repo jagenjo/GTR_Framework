@@ -36,6 +36,9 @@ Renderer::Renderer(const char* shader_atlas_filename)
 
 	sphere.createSphere(1.0f);
 	sphere.uploadToVRAM();
+
+	render_calls = *(new std::vector<RenderCall>());
+
 }
 
 void Renderer::setupScene()
@@ -46,8 +49,29 @@ void Renderer::setupScene()
 		skybox_cubemap = nullptr;
 }
 
+// Sorter for the RenderCall class
+struct rc_sorter
+{
+	inline bool operator () (const RenderCall& rc1, const RenderCall& rc2)
+	{
+		eAlphaMode mode1 = rc1.material->alpha_mode;
+		eAlphaMode mode2 = rc2.material->alpha_mode;
+
+		// if their modes are the same, we want to sort the render calls from furthest to closest to camera
+		if (mode1 == mode2) {
+			return rc1.distance_to_camera > rc2.distance_to_camera;
+		}// if their modes are not the same, we want to render opaque (no_alpha) nodes first (no_alpha = 0, alpha_cut = 1, alpha-blend = 2, thus < operator)
+		else {
+			return mode1 < mode2;
+		}
+	}
+};
+
 void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 {
+	// Delete all render_calls corresponding to the previous render to start fresh
+	render_calls.clear();
+
 	this->scene = scene;
 	setupScene();
 
@@ -79,6 +103,14 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 			if (pent->prefab)
 				renderNode( &pent->root, camera);
 		}
+	}
+
+	// order render calls
+	std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
+
+	// render everything
+	for (auto& rc : render_calls) {
+		renderMeshWithMaterial(rc.model, rc.mesh, rc.material);
 	}
 }
 
@@ -130,7 +162,8 @@ void Renderer::renderNode(SCN::Node* node, Camera* camera)
 		{
 			if(render_boundaries)
 				node->mesh->renderBounding(node_model, true);
-			renderMeshWithMaterial(node_model, node->mesh, node->material);
+			// create the render call associated with the node
+			createRenderCall(node_model, node->mesh, node->material);
 		}
 	}
 
@@ -236,3 +269,25 @@ void Renderer::showUI()
 #else
 void Renderer::showUI() {}
 #endif
+
+// *********************************************** MY CODE ***********************************************
+
+// Function that will create a render_call based on a model matrix, a mesh and a material and will store it
+// in the render_call vector
+void Renderer::createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* material)
+{
+	RenderCall rc;
+	Vector3f node_pos = model.getTranslation();
+
+	// Fill out model, mesth and material
+	rc.model = model;
+	rc.mesh = mesh;
+	rc.material = material;
+
+	// Compute distance to the camera
+	Camera* cam = Camera::current;
+	rc.distance_to_camera = node_pos.distance(cam->eye);
+
+	// Push RenderCall to the vector
+	render_calls.push_back(rc);
+}
