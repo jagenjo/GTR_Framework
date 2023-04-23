@@ -50,6 +50,8 @@ Renderer::Renderer(const char* shader_atlas_filename)
 
 void Renderer::setupScene(Camera * camera)
 {
+	render_calls.clear();
+
 	if (scene->skybox_filename.size())
 		skybox_cubemap = GFX::Texture::Get(std::string(scene->base_folder + "/" + scene->skybox_filename).c_str());
 	else
@@ -81,8 +83,6 @@ void Renderer::setupScene(Camera * camera)
 
 void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 {
-	render_calls.clear();
-
 	this->scene = scene;
 	setupScene(camera);
 
@@ -253,6 +253,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
 	GFX::Texture* emissive_texture = rc.material->textures[SCN::eTextureChannel::EMISSIVE].texture;
 	GFX::Texture* metallic_occlusion_texture = rc.material->textures[SCN::eTextureChannel::METALLIC_ROUGHNESS].texture;
+	GFX::Texture* normal_map = rc.material->textures[SCN::eTextureChannel::NORMALMAP].texture;
 
 	//texture = material->metallic_roughness_texture; 
 	//texture = material->normal_texture;
@@ -260,7 +261,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	/*if (albedo_texture == NULL)
 		albedo_texture = white_texture; //a 1x1 white texture*/
 
-		//select the blending
+	//select the blending
 	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
 	{
 		glEnable(GL_BLEND);
@@ -304,6 +305,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	shader->setUniform("u_albedo_texture", albedo_texture ? albedo_texture : white_texture, 0);
 	shader->setUniform("u_emissive_texture", emissive_texture ? emissive_texture : white_texture, 1);
 	shader->setUniform("u_metallic_occlusion_texture", metallic_occlusion_texture ? metallic_occlusion_texture : white_texture, 2);
+	shader->setUniform("u_normal_map", normal_map ? normal_map : white_texture, 3);
 
 
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
@@ -360,7 +362,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 		}
 	}
 	else {
-		shader->setUniform("u_light_type", (int)eLightType::NO_LIGHT);
+		shader->setUniform("u_light_info", vec4(eLightType::NO_LIGHT, 0.0, 0.0, 0.0));
 		rc.mesh->render(GL_TRIANGLES);
 	}
 
@@ -453,25 +455,28 @@ void Renderer::createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* 
 }
 
 void Renderer::updateRCLights() {
-	for (auto& rc : render_calls) {
-		BoundingBox world_bounding = transformBoundingBox(rc.model, rc.mesh->box);
-		for (int i = 0; i < lights.size(); i++) {
-			LightEntity* light = lights[i];
+	if (lights.size()) {
+		for (auto& rc : render_calls) {
+			rc.lights_affecting.clear();
+			BoundingBox world_bounding = transformBoundingBox(rc.model, rc.mesh->box);
 
-			if(light->light_type == eLightType::NO_LIGHT){
-				continue;
-			}// Directional light always affects, no need to compute if the bounding boxes overlap
-			else if (light->light_type == eLightType::DIRECTIONAL) {
-				rc.lights_affecting.push_back(light);
-				continue;
+			for (int i = 0; i < lights.size(); i++) {
+				LightEntity* light = lights[i];
+
+				if (light->light_type == eLightType::NO_LIGHT) {
+					continue;
+				}// Directional light always affects, no need to compute if the bounding boxes overlap
+				else if (light->light_type == eLightType::DIRECTIONAL) {
+					rc.lights_affecting.push_back(light);
+					continue;
+				}
+
+				// if it overlaps, push light pointer to the vector of lights that affect the node
+				if (BoundingBoxSphereOverlap(world_bounding, light->root.model.getTranslation(), light->max_distance))
+					rc.lights_affecting.push_back(light);
 			}
-
-			// if it overlaps, push light pointer to the vector of lights that affect the node
-			if (BoundingBoxSphereOverlap(world_bounding, light->root.model.getTranslation(), light->max_distance))
-				rc.lights_affecting.push_back(light);
 		}
 	}
-	
 
 }
 
