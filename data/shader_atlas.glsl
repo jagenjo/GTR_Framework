@@ -4,8 +4,8 @@ texture basic.vs texture.fs
 skybox basic.vs skybox.fs
 depth quad.vs depth.fs
 multi basic.vs multi.fs
-
 light basic.vs light.fs
+lightSinglePass basic.vs lightSinglePass.fs
 
 \basic.vs
 
@@ -219,9 +219,6 @@ void main()
 
 
 
-
-
-
 \light.fs
 
 #version 330 core
@@ -238,7 +235,7 @@ in vec3 v_normal;
 in vec2 v_uv;
 in vec4 v_color;
 
-uniform vec3 u_camera_pos;
+uniform vec3 u_camera_position;
 
 // material properties
 uniform vec4 u_color;
@@ -247,7 +244,7 @@ uniform vec4 u_color;
 uniform vec3 u_emissive_factor;
 uniform vec3 u_metal_rough_factor; // x = metal, y = roughness, z = add specular?
 
-
+// textures
 uniform sampler2D u_albedo_texture;
 uniform sampler2D u_emissive_texture;
 uniform sampler2D u_occl_metal_rough_texture;
@@ -262,7 +259,6 @@ uniform vec3 u_ambient_light;
 out vec4 FragColor;
 
 // light variables
-
 uniform vec4 u_light_info; // (type, near_dist, far_dist, use_normal_map?)
 uniform vec3 u_light_position;
 uniform vec3 u_light_front;
@@ -301,6 +297,7 @@ void main()
 
 	vec3 N = normalize( v_normal );
 
+	// w coordinate will either be 0 (no nmap) or 1
 	if(int(u_light_info.w) > 0.0){
 		vec3 n_pixel =  texture2D( u_normal_map, v_uv ).xyz; 
 		N = perturbNormal( v_normal , v_world_position, v_uv, n_pixel);
@@ -321,6 +318,7 @@ void main()
 	light +=  texture( u_occl_metal_rough_texture , v_uv).x * u_ambient_light;
 
 	if(int(u_light_info.x) == NO_LIGHT){}
+
 	else{
 		vec3 L = u_light_position - v_world_position;
 		float dist = length(L);
@@ -338,35 +336,197 @@ void main()
 
 			if(int(u_light_info.x) == SPOT_LIGHT){
 				float cos_angle = dot( u_light_front , L);
-				// max angle
+
+				// check if inside max angle
 				if( cos_angle < u_light_cone.y )
 					att = 0.0;
-				// ming angle
+
+				// inside min angle
 				else if( cos_angle < u_light_cone.x )
 					att *= 1.0 - (cos_angle - u_light_cone.x) / (u_light_cone.y - u_light_cone.x);
 			}
 
+			// quadratic attenuation
+			att = att * att;
+
 			// we can simply do max since both N and L are normal vectors
-			// quadratic attenuation factor
-			light += max(NdotL, 0.0) * u_light_color * att * att;
+			light += max(NdotL, 0.0) * u_light_color *att;
 
 		}
 		
+		// z coord of this factor indicates whether to add specular light (1) or not (0)
 		if(u_metal_rough_factor.z > 0.0){
-			// add specular light considering metal factor as sp_factor and roughness as the inverse of the shininess.
-			vec3 v = normalize(u_camera_pos - v_world_position);
+			vec3 v = normalize(u_camera_position - v_world_position);
 			vec3 r = reflect(-L, N);
-			float prod_s = max(0.0, dot(r, v));
+			float prod_s = max(0.0, dot(r,v));
 
 			int shininess = int(1/(u_metal_rough_factor.y * texture( u_occl_metal_rough_texture , v_uv).z));
-
 			prod_s = pow(prod_s, shininess);
-	
-			light += u_light_color * att * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y;
+
+			light += u_light_color * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y;
+
 		}
 	}
 
-	
+	// apply light to the color
+	vec3 color = light * albedo.xyz;
+	color += u_emissive_factor * texture( u_emissive_texture, v_uv ).xyz;
+
+	//color = vec3(u_metal_rough_factor.x);
+
+	FragColor = vec4(color, albedo.a);
+}
+
+\lightSinglePass.fs
+
+#version 330 core
+
+#define MAX_LIGHTS 4
+
+// light defines
+#define NO_LIGHT 0
+#define POINT_LIGHT 1
+#define SPOT_LIGHT 2
+#define DIRECTIONAL_LIGHT 3
+
+in vec3 v_position;
+in vec3 v_world_position;
+in vec3 v_normal;
+in vec2 v_uv;
+in vec4 v_color;
+
+uniform vec3 u_camera_position;
+
+// material properties
+uniform vec4 u_color;
+// REMEMBER -> although we call it factor, it is a vector3
+uniform vec3 u_emissive_factor;
+uniform vec3 u_metal_rough_factor; // x = metal, y = roughness, z = add specular?
+
+// textures
+uniform sampler2D u_albedo_texture;
+uniform sampler2D u_emissive_texture;
+uniform sampler2D u_occl_metal_rough_texture;
+uniform sampler2D u_normal_map;
+
+// global properties
+uniform float u_time;
+uniform float u_alpha_cutoff;
+
+uniform vec3 u_ambient_light;
+
+out vec4 FragColor;
+
+// light variables
+uniform int u_num_lights;
+
+uniform vec4 u_light_info[MAX_LIGHTS]; // (type, near_dist, far_dist, use_normal_map?)
+uniform vec3 u_light_position[MAX_LIGHTS];
+uniform vec3 u_light_front[MAX_LIGHTS];
+uniform vec3 u_light_color[MAX_LIGHTS];
+
+uniform vec2 u_light_cone[MAX_LIGHTS]; // cos(min_angle), cos(max_angle)
+
+mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
+{
+	// get edge vectors of the pixel triangle
+	vec3 dp1 = dFdx( p );
+	vec3 dp2 = dFdy( p );
+	vec2 duv1 = dFdx( uv );
+	vec2 duv2 = dFdy( uv );
+	// solve the linear system
+	vec3 dp2perp = cross( dp2, N );
+	vec3 dp1perp = cross( N, dp1 );
+	vec3 T = dp2perp * duv1.x + dp1perp * duv2.x;
+	vec3 B = dp2perp * duv1.y + dp1perp * duv2.y;
+	// construct a scale-invariant frame
+	float invmax = inversesqrt( max( dot(T,T), dot(B,B) ) );
+	return mat3( T * invmax, B * invmax, N );
+}
+
+ 
+vec3 perturbNormal(vec3 N, vec3 WP, vec2 uv, vec3 norm_pixel)
+{
+	norm_pixel = norm_pixel * 255./127. - 128./127.;
+	mat3 TBN = cotangent_frame(N, WP, uv);
+	return normalize(TBN * norm_pixel);
+}
+
+void main()
+{
+	vec2 uv = v_uv;
+	vec3 N = normalize( v_normal );
+
+	// w coordinate will either be 0 (no nmap) or 1
+	if(int(u_light_info[0].w) > 0.0){
+		vec3 n_pixel =  texture2D( u_normal_map, v_uv ).xyz; 
+		N = perturbNormal( v_normal , v_world_position, v_uv, n_pixel);
+	}
+
+	vec4 albedo = u_color;
+	albedo *= texture( u_albedo_texture, v_uv );
+
+	if(albedo.a < u_alpha_cutoff)
+		discard;
+
+	// compute light
+	vec3 light = vec3(0.0);
+
+	float att = 1.0;
+
+	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
+	light +=  texture( u_occl_metal_rough_texture , v_uv).x * u_ambient_light;
+
+	for( int i = 0; i < u_num_lights; i++){
+		if(int(u_light_info[i].x) == NO_LIGHT){}
+
+		else{
+			vec3 L = u_light_position[i] - v_world_position;
+			float dist = length(L);
+			L/=dist;
+
+			if(int(u_light_info[i].x) == DIRECTIONAL_LIGHT){
+				float NdotL = dot(N, u_light_front[i]);
+				light += max(0.0, NdotL) * u_light_color[i];
+			}else{
+				float NdotL = dot(N, L);
+				att = max(0.0, (u_light_info[i].z - dist) / u_light_info[i].z);
+
+
+				if(int(u_light_info[i].x) == SPOT_LIGHT){
+					float cos_angle = dot( u_light_front[i], L);
+
+					// check if inside max angle
+					if(cos_angle < u_light_cone[i].y)
+						att = 0.0;
+
+					// inside min angle
+					else if (cos_angle < u_light_cone[i].x)
+						att *= 1.0 - (cos_angle - u_light_cone[i].x) / (u_light_cone[i].y - u_light_cone[i].x);
+
+				}
+				
+				att = att * att;
+
+				light += max(0.0, NdotL) * u_light_color[i] * att;
+			}
+
+			// spec light
+			if(u_metal_rough_factor.z > 0.0){
+				vec3 v = normalize(u_camera_position - v_world_position);
+				vec3 r = reflect(-L, N);
+				float prod_s = max(0.0, dot(r,v));
+
+				int shininess = int(1/(u_metal_rough_factor.y * texture( u_occl_metal_rough_texture , v_uv).z));
+				prod_s = pow(prod_s, shininess);
+
+				light += u_light_color[i] * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y;
+
+			}
+
+		}
+
+	}
 
 	// apply light to the color
 	vec3 color = light * albedo.xyz;

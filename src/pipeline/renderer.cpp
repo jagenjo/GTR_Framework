@@ -39,7 +39,7 @@ Renderer::Renderer(const char* shader_atlas_filename)
 
 	alpha_sort_mode = eAlphaSortMode::SORTED;
 	render_mode = eRenderMode::LIGHTS;
-	lights_mode = eLightsMode::MULTI;
+	lights_mode = eLightsMode::SINGLE;
 	nmap_mode = eNormalMapMode::WITH_NMAP;
 	spec_mode = eSpecMode::WITH_SPEC;
 
@@ -114,14 +114,10 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 		case eRenderMode::LIGHTS:
 			updateRCLights();
 
-			for (auto& rc : render_calls) {
-				renderMeshWithMaterialLight(rc);
-			};
-
-			/*switch (lights_mode) {
+			switch (lights_mode) {
 				case MULTI:
 					for (auto& rc : render_calls) {
-						renderMeshWithMaterialLightMulti(rc);
+						renderMeshWithMaterialLight(rc);
 					}
 					break;
 				case SINGLE:
@@ -129,7 +125,7 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 						renderMeshWithMaterialLightSingle(rc);
 					}
 					break;
-			}*/
+			}
 
 			break;
 	}
@@ -177,11 +173,6 @@ void Renderer::renderMeshWithMaterial(const RenderCall rc)
 	Camera* camera = Camera::current;
 	
 	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
-
-	//texture = material->emissive_texture;
-	//texture = material->metallic_roughness_texture; 
-	//texture = material->normal_texture;
-	//texture = material->occlusion_texture;
 
 	//select the blending
 	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
@@ -239,8 +230,7 @@ void Renderer::renderMeshWithMaterial(const RenderCall rc)
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
-
-//renders a mesh given its transform and material adding lights using multi-pass
+//renders a mesh given its transform and material adding lights using, multi-pass
 void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 {
 	//in case there is nothing to do
@@ -256,12 +246,6 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	GFX::Texture* emissive_texture = rc.material->textures[SCN::eTextureChannel::EMISSIVE].texture;
 	GFX::Texture* occ_metal_rough_text = rc.material->textures[SCN::eTextureChannel::METALLIC_ROUGHNESS].texture;
 	GFX::Texture* normal_map = (nmap_mode == eNormalMapMode::WITH_NMAP) ? white_texture : rc.material->textures[SCN::eTextureChannel::NORMALMAP].texture;
-
-	//texture = material->metallic_roughness_texture; 
-	//texture = material->normal_texture;
-
-	/*if (albedo_texture == NULL)
-		albedo_texture = white_texture; //a 1x1 white texture*/
 
 	//select the blending
 	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
@@ -301,7 +285,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 
 	shader->setUniform("u_color", rc.material->color);
 	shader->setUniform("u_emissive_factor", rc.material->emissive_factor);
-	
+
 
 	// send textures to shader
 	// last parameter is the slot we assign
@@ -329,15 +313,17 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	// Draw pixels if the z is the same or less than what is already drawn (closer to camera)
 	glDepthFunc(GL_LEQUAL);
 
-	if (rc.lights_affecting.size()) {
+	int num_lights = rc.lights_affecting.size();
+
+	if (num_lights) {
 		// first iteration out of the loop
 		LightEntity* light = rc.lights_affecting[0];
 
 		shader->setUniform("u_light_position", light->root.model.getTranslation());
 		shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
-				
+
 		// When working with angle functions ALWAYS USE RADS
-		if(light->light_type == eLightType::SPOT) 
+		if (light->light_type == eLightType::SPOT)
 			shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
 
 		// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
@@ -355,15 +341,19 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 		shader->setUniform("u_emissive_factor", vec3(0.0, 0.0, 0.0));
 
 		// loop with rest of the lights
-		for (int i = 1; i < rc.lights_affecting.size(); i++) {
+		for (int i = 1; i < num_lights; i++) {
 			LightEntity* light = rc.lights_affecting[i];
+
+
+			if (light->light_type == eLightType::SPOT)
+				shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
 
 			shader->setUniform("u_light_position", light->root.model.getTranslation());
 			shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
 
 			// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
 			shader->setUniform("u_light_color", light->color * light->intensity);
-			shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance,light->max_distance, nmap_mode));
+			shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, nmap_mode));
 
 			rc.mesh->render(GL_TRIANGLES);
 		}
@@ -381,6 +371,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glDepthFunc(GL_LESS);
 }
+
 
 void SCN::Renderer::cameraToShader(Camera* camera, GFX::Shader* shader)
 {
@@ -463,6 +454,7 @@ void Renderer::createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* 
 	render_calls.push_back(rc);
 }
 
+
 void Renderer::updateRCLights() {
 	if (lights.size()) {
 		for (auto& rc : render_calls) {
@@ -489,10 +481,143 @@ void Renderer::updateRCLights() {
 
 }
 
-//void Renderer::applyLightsMulti(GFX::Mesh* mesh) {
-//	
-//}
-//
-//void Renderer::applyLightsSingle(GFX::Mesh* mesh) {
-//
-//}
+//renders a mesh given its transform and material adding lights, single - pass
+void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
+{
+	//in case there is nothing to do
+	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
+		return;
+	assert(glGetError() == GL_NO_ERROR);
+
+	//define locals to simplify coding
+	GFX::Shader* shader = NULL;
+	Camera* camera = Camera::current;
+
+	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
+	GFX::Texture* emissive_texture = rc.material->textures[SCN::eTextureChannel::EMISSIVE].texture;
+	GFX::Texture* occ_metal_rough_text = rc.material->textures[SCN::eTextureChannel::METALLIC_ROUGHNESS].texture;
+	GFX::Texture* normal_map = (nmap_mode == eNormalMapMode::WITH_NMAP) ? white_texture : rc.material->textures[SCN::eTextureChannel::NORMALMAP].texture;
+
+	//select the blending
+	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else
+		glDisable(GL_BLEND);
+
+	//select if render both sides of the triangles
+	if (rc.material->two_sided)
+		glDisable(GL_CULL_FACE);
+	else
+		glEnable(GL_CULL_FACE);
+	assert(glGetError() == GL_NO_ERROR);
+
+	glEnable(GL_DEPTH_TEST);
+
+	//chose a shader
+	shader = GFX::Shader::Get("lightSinglePass");
+
+	assert(glGetError() == GL_NO_ERROR);
+
+	//no shader? then nothing to render
+	if (!shader)
+		return;
+	shader->enable();
+
+	//upload uniforms
+	shader->setUniform("u_model", rc.model);
+	cameraToShader(camera, shader);
+	float t = getTime();
+	shader->setUniform("u_time", t);
+
+
+
+	shader->setUniform("u_color", rc.material->color);
+	shader->setUniform("u_emissive_factor", rc.material->emissive_factor);
+
+
+	// send textures to shader
+	// last parameter is the slot we assign
+	shader->setUniform("u_albedo_texture", albedo_texture ? albedo_texture : white_texture, 0);
+	shader->setUniform("u_emissive_texture", emissive_texture ? emissive_texture : white_texture, 1);
+	shader->setUniform("u_normal_map", normal_map ? normal_map : white_texture, 3);
+
+
+	shader->setUniform("u_metal_rough_factor", vec3(rc.material->metallic_factor, rc.material->roughness_factor, spec_mode));
+	if (spec_mode) {
+		shader->setUniform("u_occl_metal_rough_texture", occ_metal_rough_text ? occ_metal_rough_text : white_texture, 2);
+	}
+
+	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
+	shader->setUniform("u_alpha_cutoff", rc.material->alpha_mode == SCN::eAlphaMode::MASK ? rc.material->alpha_cutoff : 0.001f);
+
+	// pass the ambient light
+	shader->setUniform("u_ambient_light", scene->ambient_light);
+
+
+	if (render_wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+	// Draw pixels if the z is the same or less than what is already drawn (closer to camera)
+	glDepthFunc(GL_LEQUAL);
+
+	int num_lights = rc.lights_affecting.size();
+
+
+	vec2 light_cone[MAX_LIGHTS];
+	vec3 light_position[MAX_LIGHTS];
+	vec3 light_front[MAX_LIGHTS];
+	vec3 light_color[MAX_LIGHTS];
+	vec4 light_info[MAX_LIGHTS];
+
+	if (num_lights) {
+
+		// loop with the lights
+		for (int i = 0; i < num_lights; i++) {
+			LightEntity* light = rc.lights_affecting[i];
+
+			if (light->light_type == eLightType::SPOT)
+				light_cone[i] = vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD));
+
+
+			light_position[i] = light->root.model.getTranslation();
+			light_front[i] = light->root.model.rotateVector(vec3(0, 0, 1));
+			light_color[i] = light->color * light->intensity;
+			
+			light_info[i] = vec4((int)light->light_type, light->near_distance, light->max_distance, nmap_mode);
+
+
+			
+		}
+
+		shader->setUniform2Array("u_light_cone", (float*)&light_cone, MAX_LIGHTS);
+		shader->setUniform3Array("u_light_position", (float*)&light_position, MAX_LIGHTS);
+		shader->setUniform3Array("u_light_front", (float*)&light_front, MAX_LIGHTS);
+		shader->setUniform3Array("u_light_color", (float*)&light_color, MAX_LIGHTS);
+		shader->setUniform4Array("u_light_info", (float*)&light_info, MAX_LIGHTS);
+
+		shader->setUniform("u_num_lights", num_lights);
+
+		rc.mesh->render(GL_TRIANGLES);
+	}
+	else {
+		shader->setUniform("u_num_lights", 1);
+
+		light_info[0] = vec4(eLightType::NO_LIGHT, 0.0, 0.0, nmap_mode);
+		shader->setUniform4Array("u_light_info", (float*)&light_info, MAX_LIGHTS);
+
+		rc.mesh->render(GL_TRIANGLES);
+	}
+
+	//disable shader
+	shader->disable();
+
+	//set the render state as it was before to avoid problems with future renders
+	glDisable(GL_BLEND);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDepthFunc(GL_LESS);
+}
+

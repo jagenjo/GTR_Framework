@@ -4,6 +4,8 @@
 
 #include "light.h"
 
+#define MAX_LIGHTS 4
+
 //forward declarations
 class Camera;
 class Skeleton;
@@ -107,10 +109,11 @@ namespace SCN {
 
 		//create a single render call and store it
 		void createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
-
 		void updateRCLights();
-		/*void applyLightsMulti(GFX::Mesh* mesh);
-		void applyLightsSingle(GFX::Mesh* mesh);*/
+
+		//to render one mesh given its material and transformation matrix taking lights into account, single pass
+		void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc);
+
 
 		//******************************** END ********************************
 	
