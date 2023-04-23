@@ -1,15 +1,19 @@
 ﻿  renderer.cpp
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON'
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(93,20): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(171,20): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(227,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(60,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(105,22): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(127,22): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(223,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(252,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(306,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(386,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
      Creando biblioteca ..\..\GTR.lib y objeto ..\..\GTR.exp
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
-  168 of 5818 functions ( 2.9%) were compiled, the rest were copied from previous compilation.
-    47 functions were new in current compilation
-    96 functions had inline decision re-evaluated but remain unchanged
+  3 of 5860 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    66 functions had inline decision re-evaluated but remain unchanged
   Generación de código finalizada
 glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB '' con 'glew32s.lib(glew.obj)' o en ''; se vinculará el objeto sin tener en cuenta información de depuración
   visualstudio.vcxproj -> D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\GTR.exe

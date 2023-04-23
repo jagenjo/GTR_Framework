@@ -37,8 +37,14 @@ Renderer::Renderer(const char* shader_atlas_filename)
 	sphere.createSphere(1.0f);
 	sphere.uploadToVRAM();
 
+	alpha_sort_mode = eAlphaSortMode::SORTED;
+	render_mode = eRenderMode::LIGHTS;
+
+	// initialize render_calls vector
 	render_calls = *(new std::vector<RenderCall>());
 
+	// get white texture for the mesh renderer, we only get it once and can use it whenever we need to
+	white_texture = GFX::Texture::getWhiteTexture();
 }
 
 void Renderer::setupScene()
@@ -47,31 +53,31 @@ void Renderer::setupScene()
 		skybox_cubemap = GFX::Texture::Get(std::string(scene->base_folder + "/" + scene->skybox_filename).c_str());
 	else
 		skybox_cubemap = nullptr;
-}
 
-// Sorter for the RenderCall class
-struct rc_sorter
-{
-	inline bool operator () (const RenderCall& rc1, const RenderCall& rc2)
+	lights.clear();
+
+	//process entities
+	for (int i = 0; i < scene->entities.size(); ++i)
 	{
-		eAlphaMode mode1 = rc1.material->alpha_mode;
-		eAlphaMode mode2 = rc2.material->alpha_mode;
+		BaseEntity* ent = scene->entities[i];
+		if (!ent->visible)
+			continue;
 
-		// if their modes are the same, we want to sort the render calls from furthest to closest to camera
-		if (mode1 == mode2) {
-			return rc1.distance_to_camera > rc2.distance_to_camera;
-		}// if their modes are not the same, we want to render opaque (no_alpha) nodes first (no_alpha = 0, alpha_cut = 1, alpha-blend = 2, thus < operator)
-		else {
-			return mode1 < mode2;
+		//is a prefab!
+		if (ent->getType() == eEntityType::PREFAB)
+		{
+			PrefabEntity* pent = (SCN::PrefabEntity*)ent;
+		}
+		else if (ent->getType() == eEntityType::LIGHT)
+		{
+			lights.push_back((SCN::LightEntity*)ent);
 		}
 	}
-};
+	
+}
 
 void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 {
-	// Delete all render_calls corresponding to the previous render to start fresh
-	render_calls.clear();
-
 	this->scene = scene;
 	setupScene();
 
@@ -89,28 +95,64 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 	if(skybox_cubemap)
 		renderSkybox(skybox_cubemap);
 
-	//render entities
-	for (int i = 0; i < scene->entities.size(); ++i)
-	{
-		BaseEntity* ent = scene->entities[i];
-		if (!ent->visible )
-			continue;
+	// there is repetition of code but this way we only need to check the mode once and not 
+	// in each iteration of the loop
+	switch (alpha_sort_mode) {
+		case eAlphaSortMode::NOT_SORTED:
+			//render entities
+			for (int i = 0; i < scene->entities.size(); ++i)
+			{
+				BaseEntity* ent = scene->entities[i];
+				if (!ent->visible)
+					continue;
 
-		//is a prefab!
-		if (ent->getType() == eEntityType::PREFAB)
-		{
-			PrefabEntity* pent = (SCN::PrefabEntity*)ent;
-			if (pent->prefab)
-				renderNode( &pent->root, camera);
-		}
-	}
+				//is a prefab!
+				if (ent->getType() == eEntityType::PREFAB)
+				{
+					PrefabEntity* pent = (SCN::PrefabEntity*)ent;
+					if (pent->prefab)
+						renderNode(&pent->root, camera);
+				}
+			}
+			break;
 
-	// order render calls
-	std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
 
-	// render everything
-	for (auto& rc : render_calls) {
-		renderMeshWithMaterial(rc.model, rc.mesh, rc.material);
+		case eAlphaSortMode::SORTED:
+			// Delete all render_calls corresponding to the previous render to start fresh
+			render_calls.clear();
+
+			// Create render calls
+			for (int i = 0; i < scene->entities.size(); ++i)
+			{
+				BaseEntity* ent = scene->entities[i];
+				if (!ent->visible)
+					continue;
+
+				//is a prefab!
+				if (ent->getType() == eEntityType::PREFAB)
+				{
+					PrefabEntity* pent = (SCN::PrefabEntity*)ent;
+					if (pent->prefab)
+						createNodeRC(&pent->root, camera);
+				}
+			}
+
+			// order render calls
+			std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
+
+			// render everything
+			switch (render_mode) {
+				case eRenderMode::FLAT:
+					for (auto& rc : render_calls) {
+						renderMeshWithMaterial(rc.model, rc.mesh, rc.material);
+					}
+					break;
+				case eRenderMode::LIGHTS:
+					for (auto& rc : render_calls) {
+						renderMeshWithMaterialLight(rc.model, rc.mesh, rc.material);
+					}
+				}
+			break;
 	}
 }
 
@@ -162,6 +204,43 @@ void Renderer::renderNode(SCN::Node* node, Camera* camera)
 		{
 			if(render_boundaries)
 				node->mesh->renderBounding(node_model, true);
+			
+			// render
+			switch (render_mode) {
+				case eRenderMode::FLAT:
+					renderMeshWithMaterial(node_model, node->mesh, node->material);
+					break;
+				case eRenderMode::LIGHTS:
+					renderMeshWithMaterialLight(node_model, node->mesh, node->material);
+					break;
+			}
+		}
+	}
+
+	//iterate recursively with children
+	for (int i = 0; i < node->children.size(); ++i)
+		renderNode( node->children[i], camera);
+}
+
+void Renderer::createNodeRC(SCN::Node* node, Camera* camera)
+{
+	if (!node->visible)
+		return;
+
+	//compute global matrix
+	Matrix44 node_model = node->getGlobalMatrix(true);
+
+	//does this node have a mesh? then we must render it
+	if (node->mesh && node->material)
+	{
+		//compute the bounding box of the object in world space (by using the mesh bounding box transformed to world space)
+		BoundingBox world_bounding = transformBoundingBox(node_model, node->mesh->box);
+
+		//if bounding box is inside the camera frustum then the object is probably visible
+		if (camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize))
+		{
+			if (render_boundaries)
+				node->mesh->renderBounding(node_model, true);
 			// create the render call associated with the node
 			createRenderCall(node_model, node->mesh, node->material);
 		}
@@ -169,7 +248,7 @@ void Renderer::renderNode(SCN::Node* node, Camera* camera)
 
 	//iterate recursively with children
 	for (int i = 0; i < node->children.size(); ++i)
-		renderNode( node->children[i], camera);
+		createNodeRC(node->children[i], camera);
 }
 
 //renders a mesh given its transform and material
@@ -182,16 +261,14 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 
 	//define locals to simplify coding
 	GFX::Shader* shader = NULL;
-	GFX::Texture* texture = NULL;
 	Camera* camera = Camera::current;
 	
-	texture = material->textures[SCN::eTextureChannel::ALBEDO].texture;
+	GFX::Texture* albedo_texture = material->textures[SCN::eTextureChannel::ALBEDO].texture;
+
 	//texture = material->emissive_texture;
-	//texture = material->metallic_roughness_texture;
+	//texture = material->metallic_roughness_texture; 
 	//texture = material->normal_texture;
 	//texture = material->occlusion_texture;
-	if (texture == NULL)
-		texture = GFX::Texture::getWhiteTexture(); //a 1x1 white texture
 
 	//select the blending
 	if (material->alpha_mode == SCN::eAlphaMode::BLEND)
@@ -227,9 +304,10 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 	float t = getTime();
 	shader->setUniform("u_time", t );
 
+
+	// send textures to shader
 	shader->setUniform("u_color", material->color);
-	if(texture)
-		shader->setUniform("u_texture", texture, 0);
+	shader->setUniform("u_texture", albedo_texture ? albedo_texture : white_texture, 0);
 
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
 	shader->setUniform("u_alpha_cutoff", material->alpha_mode == SCN::eAlphaMode::MASK ? material->alpha_cutoff : 0.001f);
@@ -248,6 +326,95 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
+//renders a mesh given its transform and material adding lights
+void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material)
+{
+	//in case there is nothing to do
+	if (!mesh || !mesh->getNumVertices() || !material)
+		return;
+	assert(glGetError() == GL_NO_ERROR);
+
+	//define locals to simplify coding
+	GFX::Shader* shader = NULL;
+	Camera* camera = Camera::current;
+
+	GFX::Texture* albedo_texture = material->textures[SCN::eTextureChannel::ALBEDO].texture;
+	GFX::Texture* emissive_texture = material->textures[SCN::eTextureChannel::EMISSIVE].texture;
+	GFX::Texture* occlusion_texture = material->textures[SCN::eTextureChannel::OCCLUSION].texture;
+
+	//texture = material->emissive_texture;
+	//texture = material->metallic_roughness_texture; 
+	//texture = material->normal_texture;
+	//texture = material->occlusion_texture;
+
+	/*if (albedo_texture == NULL)
+		albedo_texture = white_texture; //a 1x1 white texture*/
+
+		//select the blending
+	if (material->alpha_mode == SCN::eAlphaMode::BLEND)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else
+		glDisable(GL_BLEND);
+
+	//select if render both sides of the triangles
+	if (material->two_sided)
+		glDisable(GL_CULL_FACE);
+	else
+		glEnable(GL_CULL_FACE);
+	assert(glGetError() == GL_NO_ERROR);
+
+	glEnable(GL_DEPTH_TEST);
+
+	//chose a shader
+	shader = GFX::Shader::Get("light");
+
+	assert(glGetError() == GL_NO_ERROR);
+
+	//no shader? then nothing to render
+	if (!shader)
+		return;
+	shader->enable();
+
+	//upload uniforms
+	shader->setUniform("u_model", model);
+	cameraToShader(camera, shader);
+	float t = getTime();
+	shader->setUniform("u_time", t);
+
+
+	// send textures to shader
+	shader->setUniform("u_color", material->color);
+	shader->setUniform("u_emissive_factor", material->emissive_factor);
+
+	// last parameter is the slot we assign
+	shader->setUniform("u_albedo_texture", albedo_texture ? albedo_texture : white_texture, 0);
+	shader->setUniform("u_emissive_texture", emissive_texture ? emissive_texture : white_texture, 1);
+	shader->setUniform("u_occlusion_texture", occlusion_texture ? occlusion_texture : white_texture, 2);
+
+
+	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
+	shader->setUniform("u_alpha_cutoff", material->alpha_mode == SCN::eAlphaMode::MASK ? material->alpha_cutoff : 0.001f);
+
+	// pass the ambient light
+	shader->setUniform("u_ambient_light", scene->ambient_light);
+
+	if (render_wireframe)
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	//do the draw call that renders the mesh into the screen
+	mesh->render(GL_TRIANGLES);
+
+	//disable shader
+	shader->disable();
+
+	//set the render state as it was before to avoid problems with future renders
+	glDisable(GL_BLEND);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
 void SCN::Renderer::cameraToShader(Camera* camera, GFX::Shader* shader)
 {
 	shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
@@ -261,6 +428,9 @@ void Renderer::showUI()
 		
 	ImGui::Checkbox("Wireframe", &render_wireframe);
 	ImGui::Checkbox("Boundaries", &render_boundaries);
+
+	ImGui::Combo("Alpha Sorting Mode", (int*) & alpha_sort_mode, "NOT SORTED\0SORTED", 2);
+	ImGui::Combo("Render Mode", (int*) & render_mode, "FLAT\0LIGHTS", 2);
 
 	//add here your stuff
 	//...

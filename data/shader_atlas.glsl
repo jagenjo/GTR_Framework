@@ -5,6 +5,8 @@ skybox basic.vs skybox.fs
 depth quad.vs depth.fs
 multi basic.vs multi.fs
 
+light basic.vs light.fs
+
 \basic.vs
 
 #version 330 core
@@ -213,4 +215,54 @@ void main()
 
 	//calcule the position of the vertex using the matrices
 	gl_Position = u_viewprojection * vec4( v_world_position, 1.0 );
+}
+
+\light.fs
+
+#version 330 core
+
+in vec3 v_position;
+in vec3 v_world_position;
+in vec3 v_normal;
+in vec2 v_uv;
+in vec4 v_color;
+
+// material properties
+uniform vec4 u_color;
+
+// REMEMBER -> although we call it factor, it is a vector3
+uniform vec3 u_emissive_factor;
+uniform sampler2D u_albedo_texture;
+uniform sampler2D u_emissive_texture;
+uniform sampler2D u_occlusion_texture;
+
+// global properties
+uniform float u_time;
+uniform float u_alpha_cutoff;
+
+uniform vec3 u_ambient_light;
+
+out vec4 FragColor;
+
+void main()
+{
+	vec2 uv = v_uv;
+	vec4 albedo = u_color;
+	albedo *= texture( u_albedo_texture, v_uv );
+
+	if(albedo.a < u_alpha_cutoff)
+		discard;
+
+	// LIGHT
+	vec3 light = vec3(0.0);
+
+	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
+	light +=  texture( u_occlusion_texture, v_uv).x * u_ambient_light;
+
+
+	// apply light to the color
+	vec3 color = light * albedo.xyz;
+	color += u_emissive_factor * texture( u_emissive_texture, v_uv ).xyz;
+
+	FragColor = vec4(color, albedo.a);
 }
