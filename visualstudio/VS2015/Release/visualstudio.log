@@ -1,39 +1,58 @@
 ﻿  renderer.cpp
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON'
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(63,20): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(215,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(295,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(334,82): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(65,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(217,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(297,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(313,111): warning C4244: 'argumento': conversión de 'SCN::eSpecMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(334,47): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(341,82): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(338,53): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(341,47): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(351,21): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(359,54): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(345,110): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(394,52): warning C4129: 'S': secuencia de escape de carácter no reconocida
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(432,20): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(463,22): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(345,53): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(358,21): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(366,110): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(366,54): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(372,75): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(441,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(472,22): warning C4018: '<': no coinciden signed/unsigned
      Creando biblioteca ..\..\GTR.lib y objeto ..\..\GTR.exp
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
-  3 of 5906 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  123 of 5906 functions ( 2.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    75 functions had inline decision re-evaluated but remain unchanged
+    96 functions had inline decision re-evaluated but remain unchanged
   Generación de código finalizada
 glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB '' con 'glew32s.lib(glew.obj)' o en ''; se vinculará el objeto sin tener en cuenta información de depuración
   visualstudio.vcxproj -> D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\GTR.exe

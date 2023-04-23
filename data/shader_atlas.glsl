@@ -238,14 +238,19 @@ in vec3 v_normal;
 in vec2 v_uv;
 in vec4 v_color;
 
+uniform vec3 u_camera_pos;
+
 // material properties
 uniform vec4 u_color;
 
 // REMEMBER -> although we call it factor, it is a vector3
 uniform vec3 u_emissive_factor;
+uniform vec3 u_metal_rough_factor; // x = metal, y = roughness, z = add specular?
+
+
 uniform sampler2D u_albedo_texture;
 uniform sampler2D u_emissive_texture;
-uniform sampler2D u_metallic_occlusion_texture;
+uniform sampler2D u_occl_metal_rough_texture;
 uniform sampler2D u_normal_map;
 
 // global properties
@@ -258,7 +263,7 @@ out vec4 FragColor;
 
 // light variables
 
-uniform vec4 u_light_info; // (type, near_dist, far_dist, -)
+uniform vec4 u_light_info; // (type, near_dist, far_dist, use_normal_map?)
 uniform vec3 u_light_position;
 uniform vec3 u_light_front;
 uniform vec3 u_light_color;
@@ -294,9 +299,12 @@ void main()
 {
 	vec2 uv = v_uv;
 
-	//vec3 N = normalize( v_normal );
-	vec3 n_pixel =  texture2D( u_normal_map, v_uv ).xyz; 
-	vec3 N = perturbNormal( v_normal , v_world_position, v_uv, n_pixel);
+	vec3 N = normalize( v_normal );
+
+	if(int(u_light_info.w) > 0.0){
+		vec3 n_pixel =  texture2D( u_normal_map, v_uv ).xyz; 
+		N = perturbNormal( v_normal , v_world_position, v_uv, n_pixel);
+	}
 
 	vec4 albedo = u_color;
 	albedo *= texture( u_albedo_texture, v_uv );
@@ -307,43 +315,64 @@ void main()
 	// compute light
 	vec3 light = vec3(0.0);
 
+	float att = 1.0;
+
 	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
-	light +=  texture( u_metallic_occlusion_texture, v_uv).x * u_ambient_light;
+	light +=  texture( u_occl_metal_rough_texture , v_uv).x * u_ambient_light;
 
 	if(int(u_light_info.x) == NO_LIGHT){}
-	else if(int(u_light_info.x) == DIRECTIONAL_LIGHT)
-	{
-		float NdotL = dot(N, u_light_front);
-		light += max(NdotL, 0.0) * u_light_color;
-	}
-	else
-	{
+	else{
 		vec3 L = u_light_position - v_world_position;
 		float dist = length(L);
 		L /= dist;
 
-		float NdotL = dot(N, L);
-		float att = max(0.0, (u_light_info.z - dist) / u_light_info.z);
-
-		if(int(u_light_info.x) == SPOT_LIGHT){
-			float cos_angle = dot( u_light_front , L);
-			// max angle
-			if( cos_angle < u_light_cone.y )
-				att = 0.0;
-			// ming angle
-			else if( cos_angle < u_light_cone.x )
-				att *= 1.0 - (cos_angle - u_light_cone.x) / (u_light_cone.y - u_light_cone.x);
+		if(int(u_light_info.x) == DIRECTIONAL_LIGHT)
+		{
+			float NdotL = dot(N, u_light_front);
+			light += max(NdotL, 0.0) * u_light_color;
 		}
+		else
+		{
+			float NdotL = dot(N, L);
+			att = max(0.0, (u_light_info.z - dist) / u_light_info.z);
 
-		// we can simply do max since both N and L are normal vectors
-		// quadratic attenuation factor
-		light += max(NdotL, 0.0) * u_light_color * att * att;
+			if(int(u_light_info.x) == SPOT_LIGHT){
+				float cos_angle = dot( u_light_front , L);
+				// max angle
+				if( cos_angle < u_light_cone.y )
+					att = 0.0;
+				// ming angle
+				else if( cos_angle < u_light_cone.x )
+					att *= 1.0 - (cos_angle - u_light_cone.x) / (u_light_cone.y - u_light_cone.x);
+			}
 
+			// we can simply do max since both N and L are normal vectors
+			// quadratic attenuation factor
+			light += max(NdotL, 0.0) * u_light_color * att * att;
+
+		}
+		
+		if(u_metal_rough_factor.z > 0.0){
+			// add specular light considering metal factor as sp_factor and roughness as the inverse of the shininess.
+			vec3 v = normalize(u_camera_pos - v_world_position);
+			vec3 r = reflect(-L, N);
+			float prod_s = max(0.0, dot(r, v));
+
+			int shininess = int(1/(u_metal_rough_factor.y * texture( u_occl_metal_rough_texture , v_uv).z));
+
+			prod_s = pow(prod_s, shininess);
+	
+			light += u_light_color * att * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y;
+		}
 	}
+
+	
 
 	// apply light to the color
 	vec3 color = light * albedo.xyz;
 	color += u_emissive_factor * texture( u_emissive_texture, v_uv ).xyz;
+
+	//color = vec3(u_metal_rough_factor.x);
 
 	FragColor = vec4(color, albedo.a);
 }

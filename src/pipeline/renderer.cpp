@@ -40,6 +40,8 @@ Renderer::Renderer(const char* shader_atlas_filename)
 	alpha_sort_mode = eAlphaSortMode::SORTED;
 	render_mode = eRenderMode::LIGHTS;
 	lights_mode = eLightsMode::MULTI;
+	nmap_mode = eNormalMapMode::WITH_NMAP;
+	spec_mode = eSpecMode::WITH_SPEC;
 
 	// initialize render_calls vector
 	render_calls = *(new std::vector<RenderCall>());
@@ -252,8 +254,8 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 
 	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
 	GFX::Texture* emissive_texture = rc.material->textures[SCN::eTextureChannel::EMISSIVE].texture;
-	GFX::Texture* metallic_occlusion_texture = rc.material->textures[SCN::eTextureChannel::METALLIC_ROUGHNESS].texture;
-	GFX::Texture* normal_map = rc.material->textures[SCN::eTextureChannel::NORMALMAP].texture;
+	GFX::Texture* occ_metal_rough_text = rc.material->textures[SCN::eTextureChannel::METALLIC_ROUGHNESS].texture;
+	GFX::Texture* normal_map = (nmap_mode == eNormalMapMode::WITH_NMAP) ? white_texture : rc.material->textures[SCN::eTextureChannel::NORMALMAP].texture;
 
 	//texture = material->metallic_roughness_texture; 
 	//texture = material->normal_texture;
@@ -299,14 +301,19 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 
 	shader->setUniform("u_color", rc.material->color);
 	shader->setUniform("u_emissive_factor", rc.material->emissive_factor);
+	
 
 	// send textures to shader
 	// last parameter is the slot we assign
 	shader->setUniform("u_albedo_texture", albedo_texture ? albedo_texture : white_texture, 0);
 	shader->setUniform("u_emissive_texture", emissive_texture ? emissive_texture : white_texture, 1);
-	shader->setUniform("u_metallic_occlusion_texture", metallic_occlusion_texture ? metallic_occlusion_texture : white_texture, 2);
 	shader->setUniform("u_normal_map", normal_map ? normal_map : white_texture, 3);
 
+
+	shader->setUniform("u_metal_rough_factor", vec3(rc.material->metallic_factor, rc.material->roughness_factor, spec_mode));
+	if (spec_mode) {
+		shader->setUniform("u_occl_metal_rough_texture", occ_metal_rough_text ? occ_metal_rough_text : white_texture, 2);
+	}
 
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
 	shader->setUniform("u_alpha_cutoff", rc.material->alpha_mode == SCN::eAlphaMode::MASK ? rc.material->alpha_cutoff : 0.001f);
@@ -335,7 +342,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 
 		// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
 		shader->setUniform("u_light_color", light->color * light->intensity);
-		shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, 0.0));
+		shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, nmap_mode));
 
 		rc.mesh->render(GL_TRIANGLES);
 
@@ -356,13 +363,13 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 
 			// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
 			shader->setUniform("u_light_color", light->color * light->intensity);
-			shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance,light->max_distance, 0.0));
+			shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance,light->max_distance, nmap_mode));
 
 			rc.mesh->render(GL_TRIANGLES);
 		}
 	}
 	else {
-		shader->setUniform("u_light_info", vec4(eLightType::NO_LIGHT, 0.0, 0.0, 0.0));
+		shader->setUniform("u_light_info", vec4(eLightType::NO_LIGHT, 0.0, 0.0, nmap_mode));
 		rc.mesh->render(GL_TRIANGLES);
 	}
 
@@ -391,7 +398,9 @@ void Renderer::showUI()
 
 	ImGui::Combo("Alpha Sorting Mode", (int*) & alpha_sort_mode, "NOT SORTED\0SORTED", 2);
 	ImGui::Combo("Render Mode", (int*) & render_mode, "FLAT\0LIGHTS", 2);
-	ImGui::Combo("Lights Mode", (int*) & lights_mode, "MULTI-PASS\SINGLE PASS", 2);
+	ImGui::Combo("Lights Mode", (int*) & lights_mode, "MULTI-PASS\0SINGLE PASS", 2);
+	ImGui::Combo("Normal Map Mode", (int*) & nmap_mode, "WITHOUT\0WITH", 2);
+	ImGui::Combo("Specular Light Mode", (int*) &spec_mode, "WITHOUT\0WITH", 2);
 
 	//add here your stuff
 	//...

@@ -30,6 +30,14 @@ namespace SCN {
 		MULTI, SINGLE
 	};
 
+	enum eNormalMapMode {
+		WITHOUT_NMAP, WITH_NMAP
+	};
+
+	enum eSpecMode {
+		WITHOUT_SPEC, WITH_SPEC
+	};
+
 	// Class that contains all information related to a render call.
 	class RenderCall {
 	public:
@@ -74,6 +82,8 @@ namespace SCN {
 		eAlphaSortMode alpha_sort_mode;
 		eRenderMode render_mode;
 		eLightsMode lights_mode;
+		eNormalMapMode nmap_mode;
+		eSpecMode spec_mode;
 
 		bool render_wireframe;
 		bool render_boundaries;
