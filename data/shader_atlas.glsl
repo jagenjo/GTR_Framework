@@ -320,17 +320,20 @@ void main()
 	if(int(u_light_info.x) == NO_LIGHT){}
 
 	else{
-		vec3 L = u_light_position - v_world_position;
-		float dist = length(L);
-		L /= dist;
+		vec3 L;
 
 		if(int(u_light_info.x) == DIRECTIONAL_LIGHT)
 		{
 			float NdotL = dot(N, u_light_front);
 			light += max(NdotL, 0.0) * u_light_color;
+			L = normalize(u_light_front);
 		}
 		else
 		{
+			L = u_light_position - v_world_position;
+			float dist = length(L);
+			L /= dist;
+
 			float NdotL = dot(N, L);
 			att = max(0.0, (u_light_info.z - dist) / u_light_info.z);
 
@@ -481,37 +484,44 @@ void main()
 		if(int(u_light_info[i].x) == NO_LIGHT){}
 
 		else{
-			vec3 L = u_light_position[i] - v_world_position;
-			float dist = length(L);
-			L/=dist;
-
-			if(int(u_light_info[i].x) == DIRECTIONAL_LIGHT){
+			vec3 L;
+			if(int(u_light_info[i].x) == DIRECTIONAL_LIGHT)
+			{
 				float NdotL = dot(N, u_light_front[i]);
-				light += max(0.0, NdotL) * u_light_color[i];
-			}else{
+				light += max(NdotL, 0.0) * u_light_color[i];
+
+				normalize(u_light_front[i]);
+			}
+			else
+			{
+				L = u_light_position[i] - v_world_position;
+				float dist = length(L);
+				L /= dist;
+
 				float NdotL = dot(N, L);
 				att = max(0.0, (u_light_info[i].z - dist) / u_light_info[i].z);
 
-
 				if(int(u_light_info[i].x) == SPOT_LIGHT){
-					float cos_angle = dot( u_light_front[i], L);
+					float cos_angle = dot( u_light_front[i] , L);
 
 					// check if inside max angle
-					if(cos_angle < u_light_cone[i].y)
+					if( cos_angle < u_light_cone[i].y )
 						att = 0.0;
 
 					// inside min angle
-					else if (cos_angle < u_light_cone[i].x)
+					else if( cos_angle < u_light_cone[i].x )
 						att *= 1.0 - (cos_angle - u_light_cone[i].x) / (u_light_cone[i].y - u_light_cone[i].x);
-
 				}
-				
+
+				// quadratic attenuation
 				att = att * att;
 
-				light += max(0.0, NdotL) * u_light_color[i] * att;
+				// we can simply do max since both N and L are normal vectors
+				light += max(NdotL, 0.0) * u_light_color[i] *att;
+
 			}
 
-			// spec light
+			// z coord of this factor indicates whether to add specular light (1) or not (0)
 			if(u_metal_rough_factor.z > 0.0){
 				vec3 v = normalize(u_camera_position - v_world_position);
 				vec3 r = reflect(-L, N);

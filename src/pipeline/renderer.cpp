@@ -316,15 +316,14 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	int num_lights = rc.lights_affecting.size();
 
 	if (num_lights) {
-		// first iteration out of the loop
 		LightEntity* light = rc.lights_affecting[0];
+
+
+		if (light->light_type == eLightType::SPOT)
+			shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
 
 		shader->setUniform("u_light_position", light->root.model.getTranslation());
 		shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
-
-		// When working with angle functions ALWAYS USE RADS
-		if (light->light_type == eLightType::SPOT)
-			shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
 
 		// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
 		shader->setUniform("u_light_color", light->color * light->intensity);
@@ -471,10 +470,10 @@ void Renderer::updateRCLights() {
 					rc.lights_affecting.push_back(light);
 					continue;
 				}
-
 				// if it overlaps, push light pointer to the vector of lights that affect the node
-				if (BoundingBoxSphereOverlap(world_bounding, light->root.model.getTranslation(), light->max_distance))
+				if (BoundingBoxSphereOverlap(world_bounding, light->root.model.getTranslation(), light->max_distance)) {
 					rc.lights_affecting.push_back(light);
+				}
 			}
 		}
 	}
@@ -533,10 +532,8 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 	shader->setUniform("u_time", t);
 
 
-
 	shader->setUniform("u_color", rc.material->color);
 	shader->setUniform("u_emissive_factor", rc.material->emissive_factor);
-
 
 	// send textures to shader
 	// last parameter is the slot we assign
@@ -555,7 +552,6 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 
 	// pass the ambient light
 	shader->setUniform("u_ambient_light", scene->ambient_light);
-
 
 	if (render_wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -588,8 +584,6 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 			light_color[i] = light->color * light->intensity;
 			
 			light_info[i] = vec4((int)light->light_type, light->near_distance, light->max_distance, nmap_mode);
-
-
 			
 		}
 

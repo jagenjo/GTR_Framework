@@ -9,80 +9,80 @@ D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\rend
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(327,82): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(323,82): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(327,47): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(323,47): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(331,110): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(330,110): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(331,53): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(330,53): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(349,83): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(348,83): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(349,48): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(348,48): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(356,111): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(355,111): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(356,54): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(355,54): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(362,75): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(361,75): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(432,20): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(464,22): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(532,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(548,111): warning C4244: 'argumento': conversión de 'SCN::eSpecMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(431,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(463,22): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(531,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(545,111): warning C4244: 'argumento': conversión de 'SCN::eSpecMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(583,64): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(579,64): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(583,29): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(579,29): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(590,92): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(586,92): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(590,35): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(586,35): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(609,56): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(603,56): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
