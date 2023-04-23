@@ -313,6 +313,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 				LightEntity* light = rc.lights_affecting[0];
 
 				shader->setUniform("u_light_position", light->root.model.getTranslation());
+				shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
 
 				// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
 				shader->setUniform("u_light_color", light->color * light->intensity);
@@ -331,19 +332,20 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 				
 				// loop with rest of the lights
 				for (int i = 1; i < rc.lights_affecting.size(); i++) {
-					LightEntity* light = lights[i];
+					LightEntity* light = rc.lights_affecting[i];
 
 					shader->setUniform("u_light_position", light->root.model.getTranslation());
 					// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
 					shader->setUniform("u_light_color", light->color * light->intensity);
 					shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance,light->max_distance, 0.0));
 
-					/*switch (light->light_type) {
+					switch (light->light_type) {
 						case eLightType::POINT:
+						case eLightType::DIRECTIONAL:
 							break;
 						default:
 							continue;
-					}*/
+					}
 
 					rc.mesh->render(GL_TRIANGLES);
 				}

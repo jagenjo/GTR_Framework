@@ -254,6 +254,7 @@ out vec4 FragColor;
 
 uniform vec4 u_light_info; // (type, near_dist, far_dist, -)
 uniform vec3 u_light_position;
+uniform vec3 u_light_front;
 uniform vec3 u_light_color;
 
 void main()
@@ -286,6 +287,12 @@ void main()
 
 		// we can simply do max since both N and L are normal vectors
 		light += max(NdotL, 0.0) * u_light_color * att * att;
+
+	}
+	else if(int(u_light_info.x) == DIRECTIONAL_LIGHT)
+	{
+		float NdotL = dot(N, u_light_front);
+		light += max(NdotL, 0.0) * u_light_color;
 	}
 
 	// apply light to the color
