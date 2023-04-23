@@ -490,7 +490,7 @@ void main()
 				float NdotL = dot(N, u_light_front[i]);
 				light += max(NdotL, 0.0) * u_light_color[i];
 
-				normalize(u_light_front[i]);
+				L = normalize(u_light_front[i]);
 			}
 			else
 			{
