@@ -113,7 +113,7 @@ namespace SCN {
 		//to render one mesh given its material and transformation matrix
 		void renderMeshWithMaterial(const RenderCall rc);
 
-		//to render one mesh given its material and transformation matrix taking lights into account
+		//to render one mesh given its material and transformation matrix taking lights into account, multi-pass
 		void renderMeshWithMaterialLight(const RenderCall rc);
 
 		void showUI();

@@ -111,9 +111,24 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 			break;
 		case eRenderMode::LIGHTS:
 			updateRCLights();
+
 			for (auto& rc : render_calls) {
 				renderMeshWithMaterialLight(rc);
-			}
+			};
+
+			/*switch (lights_mode) {
+				case MULTI:
+					for (auto& rc : render_calls) {
+						renderMeshWithMaterialLightMulti(rc);
+					}
+					break;
+				case SINGLE:
+					for (auto& rc : render_calls) {
+						renderMeshWithMaterialLightSingle(rc);
+					}
+					break;
+			}*/
+
 			break;
 	}
 
@@ -223,7 +238,7 @@ void Renderer::renderMeshWithMaterial(const RenderCall rc)
 }
 
 
-//renders a mesh given its transform and material adding lights
+//renders a mesh given its transform and material adding lights using multi-pass
 void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 {
 	//in case there is nothing to do
@@ -237,12 +252,10 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 
 	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
 	GFX::Texture* emissive_texture = rc.material->textures[SCN::eTextureChannel::EMISSIVE].texture;
-	GFX::Texture* occlusion_texture = rc.material->textures[SCN::eTextureChannel::OCCLUSION].texture;
+	GFX::Texture* metallic_occlusion_texture = rc.material->textures[SCN::eTextureChannel::METALLIC_ROUGHNESS].texture;
 
-	//texture = material->emissive_texture;
 	//texture = material->metallic_roughness_texture; 
 	//texture = material->normal_texture;
-	//texture = material->occlusion_texture;
 
 	/*if (albedo_texture == NULL)
 		albedo_texture = white_texture; //a 1x1 white texture*/
@@ -290,7 +303,7 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 	// last parameter is the slot we assign
 	shader->setUniform("u_albedo_texture", albedo_texture ? albedo_texture : white_texture, 0);
 	shader->setUniform("u_emissive_texture", emissive_texture ? emissive_texture : white_texture, 1);
-	shader->setUniform("u_occlusion_texture", occlusion_texture ? occlusion_texture : white_texture, 2);
+	shader->setUniform("u_metallic_occlusion_texture", metallic_occlusion_texture ? metallic_occlusion_texture : white_texture, 2);
 
 
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
@@ -306,59 +319,49 @@ void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 
 	// Draw pixels if the z is the same or less than what is already drawn (closer to camera)
 	glDepthFunc(GL_LEQUAL);
-	switch (lights_mode) {
-		case MULTI:
-			if (rc.lights_affecting.size()) {
-				// first iteration out of the loop
-				LightEntity* light = rc.lights_affecting[0];
 
-				shader->setUniform("u_light_position", light->root.model.getTranslation());
-				shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
+	if (rc.lights_affecting.size()) {
+		// first iteration out of the loop
+		LightEntity* light = rc.lights_affecting[0];
 
-				// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
-				shader->setUniform("u_light_color", light->color * light->intensity);
-				shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, 0.0));
-
-				rc.mesh->render(GL_TRIANGLES);
-
-				glEnable(GL_BLEND);
-				// GL_ONE -> take color of what is already drawn and mult by 1, then take whatever you are trying to color now and mult by its alpha, add them together
-				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-				// emissive and ambient light must be added only once
-				shader->setUniform("u_ambient_light", vec3(0.0, 0.0, 0.0));
-				shader->setUniform("u_emissive_factor", vec3(0.0, 0.0, 0.0));
-
+		shader->setUniform("u_light_position", light->root.model.getTranslation());
+		shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
 				
-				// loop with rest of the lights
-				for (int i = 1; i < rc.lights_affecting.size(); i++) {
-					LightEntity* light = rc.lights_affecting[i];
+		// When working with angle functions ALWAYS USE RADS
+		if(light->light_type == eLightType::SPOT) 
+			shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
 
-					shader->setUniform("u_light_position", light->root.model.getTranslation());
-					// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
-					shader->setUniform("u_light_color", light->color * light->intensity);
-					shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance,light->max_distance, 0.0));
+		// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
+		shader->setUniform("u_light_color", light->color * light->intensity);
+		shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, 0.0));
 
-					switch (light->light_type) {
-						case eLightType::POINT:
-						case eLightType::DIRECTIONAL:
-							break;
-						default:
-							continue;
-					}
+		rc.mesh->render(GL_TRIANGLES);
 
-					rc.mesh->render(GL_TRIANGLES);
-				}
-				break;
-			}
-			else {
-				shader->setUniform("u_light_type", (int)eLightType::NO_LIGHT);
-				rc.mesh->render(GL_TRIANGLES);
-			}
-			
-		case SINGLE:
-			//applyLightsSingle(mesh);
-			break;
+		glEnable(GL_BLEND);
+		// GL_ONE -> take color of what is already drawn and mult by 1, then take whatever you are trying to color now and mult by its alpha, add them together
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+		// emissive and ambient light must be added only once
+		shader->setUniform("u_ambient_light", vec3(0.0, 0.0, 0.0));
+		shader->setUniform("u_emissive_factor", vec3(0.0, 0.0, 0.0));
+
+		// loop with rest of the lights
+		for (int i = 1; i < rc.lights_affecting.size(); i++) {
+			LightEntity* light = rc.lights_affecting[i];
+
+			shader->setUniform("u_light_position", light->root.model.getTranslation());
+			shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
+
+			// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
+			shader->setUniform("u_light_color", light->color * light->intensity);
+			shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance,light->max_distance, 0.0));
+
+			rc.mesh->render(GL_TRIANGLES);
+		}
+	}
+	else {
+		shader->setUniform("u_light_type", (int)eLightType::NO_LIGHT);
+		rc.mesh->render(GL_TRIANGLES);
 	}
 
 	//disable shader
@@ -454,6 +457,15 @@ void Renderer::updateRCLights() {
 		BoundingBox world_bounding = transformBoundingBox(rc.model, rc.mesh->box);
 		for (int i = 0; i < lights.size(); i++) {
 			LightEntity* light = lights[i];
+
+			if(light->light_type == eLightType::NO_LIGHT){
+				continue;
+			}// Directional light always affects, no need to compute if the bounding boxes overlap
+			else if (light->light_type == eLightType::DIRECTIONAL) {
+				rc.lights_affecting.push_back(light);
+				continue;
+			}
+
 			// if it overlaps, push light pointer to the vector of lights that affect the node
 			if (BoundingBoxSphereOverlap(world_bounding, light->root.model.getTranslation(), light->max_distance))
 				rc.lights_affecting.push_back(light);

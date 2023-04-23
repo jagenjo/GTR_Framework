@@ -2,28 +2,38 @@
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON'
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(61,20): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(200,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(281,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(320,55): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(215,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(294,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(332,82): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(334,23): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(340,56): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(332,47): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(389,52): warning C4129: 'S': secuencia de escape de carácter no reconocida
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(427,20): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(455,21): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(336,53): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(349,21): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(357,54): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(392,52): warning C4129: 'S': secuencia de escape de carácter no reconocida
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(430,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(458,21): warning C4018: '<': no coinciden signed/unsigned
      Creando biblioteca ..\..\GTR.lib y objeto ..\..\GTR.exp
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
-  5 of 5905 functions (<0.1%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    64 functions had inline decision re-evaluated but remain unchanged
+  33 of 5907 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    74 functions had inline decision re-evaluated but remain unchanged
   Generación de código finalizada
 glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB '' con 'glew32s.lib(glew.obj)' o en ''; se vinculará el objeto sin tener en cuenta información de depuración
   visualstudio.vcxproj -> D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\GTR.exe

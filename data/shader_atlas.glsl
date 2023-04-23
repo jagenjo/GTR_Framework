@@ -240,7 +240,7 @@ uniform vec4 u_color;
 uniform vec3 u_emissive_factor;
 uniform sampler2D u_albedo_texture;
 uniform sampler2D u_emissive_texture;
-uniform sampler2D u_occlusion_texture;
+uniform sampler2D u_metallic_occlusion_texture;
 
 // global properties
 uniform float u_time;
@@ -256,6 +256,8 @@ uniform vec4 u_light_info; // (type, near_dist, far_dist, -)
 uniform vec3 u_light_position;
 uniform vec3 u_light_front;
 uniform vec3 u_light_color;
+
+uniform vec2 u_light_cone; // cos(min_angle), cos(max_angle)
 
 void main()
 {
@@ -273,26 +275,36 @@ void main()
 	vec3 light = vec3(0.0);
 
 	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
-	light +=  texture( u_occlusion_texture, v_uv).x * u_ambient_light;
+	light +=  texture( u_metallic_occlusion_texture, v_uv).x * u_ambient_light;
 
-	if (int(u_light_info.x) == POINT_LIGHT)
+	if(int(u_light_info.x) == DIRECTIONAL_LIGHT)
+	{
+		float NdotL = dot(N, u_light_front);
+		light += max(NdotL, 0.0) * u_light_color;
+	}
+	else
 	{
 		vec3 L = u_light_position - v_world_position;
 		float dist = length(L);
 		L /= dist;
 
 		float NdotL = dot(N, L);
-
 		float att = max(0.0, (u_light_info.z - dist) / u_light_info.z);
 
+		if(int(u_light_info.x) == SPOT_LIGHT){
+			float cos_angle = dot( u_light_front , L);
+			// max angle
+			if( cos_angle < u_light_cone.y )
+				att = 0.0;
+			// ming angle
+			else if( cos_angle < u_light_cone.x )
+				att *= 1.0 - (cos_angle - u_light_cone.x) / (u_light_cone.y - u_light_cone.x);
+		}
+
 		// we can simply do max since both N and L are normal vectors
+		// quadratic attenuation factor
 		light += max(NdotL, 0.0) * u_light_color * att * att;
 
-	}
-	else if(int(u_light_info.x) == DIRECTIONAL_LIGHT)
-	{
-		float NdotL = dot(N, u_light_front);
-		light += max(NdotL, 0.0) * u_light_color;
 	}
 
 	// apply light to the color
