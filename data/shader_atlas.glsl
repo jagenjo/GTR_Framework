@@ -221,6 +221,12 @@ void main()
 
 #version 330 core
 
+// light defines
+#define NO_LIGHT 0
+#define POINT_LIGHT 1
+#define SPOT_LIGHT 2
+#define DIRECTIONAL_LIGHT 3
+
 in vec3 v_position;
 in vec3 v_world_position;
 in vec3 v_normal;
@@ -244,21 +250,43 @@ uniform vec3 u_ambient_light;
 
 out vec4 FragColor;
 
+// light variables
+
+uniform vec4 u_light_info; // (type, near_dist, far_dist, -)
+uniform vec3 u_light_position;
+uniform vec3 u_light_color;
+
 void main()
 {
 	vec2 uv = v_uv;
+
+	vec3 N = normalize( v_normal );
+
 	vec4 albedo = u_color;
 	albedo *= texture( u_albedo_texture, v_uv );
 
 	if(albedo.a < u_alpha_cutoff)
 		discard;
 
-	// LIGHT
+	// compute light
 	vec3 light = vec3(0.0);
 
 	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
 	light +=  texture( u_occlusion_texture, v_uv).x * u_ambient_light;
 
+	if (int(u_light_info.x) == POINT_LIGHT)
+	{
+		vec3 L = u_light_position - v_world_position;
+		float dist = length(L);
+		L /= dist;
+
+		float NdotL = dot(N, L);
+
+		float att = max(0.0, (u_light_info.z - dist) / u_light_info.z);
+
+		// we can simply do max since both N and L are normal vectors
+		light += max(NdotL, 0.0) * u_light_color * att * att;
+	}
 
 	// apply light to the color
 	vec3 color = light * albedo.xyz;

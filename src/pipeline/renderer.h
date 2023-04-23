@@ -26,6 +26,10 @@ namespace SCN {
 		FLAT, LIGHTS
 	};
 
+	enum eLightsMode {
+		MULTI, SINGLE
+	};
+
 	// Class that contains all information related to a render call.
 	class RenderCall {
 	public:
@@ -33,6 +37,8 @@ namespace SCN {
 		GFX::Mesh* mesh;
 		Material* material;
 		float distance_to_camera;
+		std::vector<LightEntity*> lights_affecting;
+
 	};
 
 	// This class is in charge of rendering anything in our system.
@@ -67,6 +73,7 @@ namespace SCN {
 	public:
 		eAlphaSortMode alpha_sort_mode;
 		eRenderMode render_mode;
+		eLightsMode lights_mode;
 
 		bool render_wireframe;
 		bool render_boundaries;
@@ -84,25 +91,30 @@ namespace SCN {
 		//just to be sure we have everything ready for the rendering
 		void setupScene(Camera* camera);
 
-		//add here your functions
-		//create a single render call and store it
-		void createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
+		//******************************** MY FUNCTIONS ********************************
+		// create render call associated with a node
 		void createNodeRC(SCN::Node* node, Camera* camera);
 
+		//create a single render call and store it
+		void createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
+
+		void updateRCLights();
+		/*void applyLightsMulti(GFX::Mesh* mesh);
+		void applyLightsSingle(GFX::Mesh* mesh);*/
+
+		//******************************** END ********************************
+	
 		//renders several elements of the scene
 		void renderScene(SCN::Scene* scene, Camera* camera);
 
 		//render the skybox
 		void renderSkybox(GFX::Texture* cubemap);
 	
-		//to render one node from the prefab and its children
-		void renderNode(SCN::Node* node, Camera* camera);
-
 		//to render one mesh given its material and transformation matrix
-		void renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
+		void renderMeshWithMaterial(const RenderCall rc);
 
 		//to render one mesh given its material and transformation matrix taking lights into account
-		void renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
+		void renderMeshWithMaterialLight(const RenderCall rc);
 
 		void showUI();
 

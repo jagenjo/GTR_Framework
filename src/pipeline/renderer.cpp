@@ -39,6 +39,7 @@ Renderer::Renderer(const char* shader_atlas_filename)
 
 	alpha_sort_mode = eAlphaSortMode::SORTED;
 	render_mode = eRenderMode::LIGHTS;
+	lights_mode = eLightsMode::MULTI;
 
 	// initialize render_calls vector
 	render_calls = *(new std::vector<RenderCall>());
@@ -105,12 +106,13 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 	switch (render_mode) {
 		case eRenderMode::FLAT:
 			for (auto& rc : render_calls) {
-				renderMeshWithMaterial(rc.model, rc.mesh, rc.material);
+				renderMeshWithMaterial(rc);
 			}
 			break;
 		case eRenderMode::LIGHTS:
+			updateRCLights();
 			for (auto& rc : render_calls) {
-				renderMeshWithMaterialLight(rc.model, rc.mesh, rc.material);
+				renderMeshWithMaterialLight(rc);
 			}
 			break;
 	}
@@ -145,50 +147,11 @@ void Renderer::renderSkybox(GFX::Texture* cubemap)
 	glEnable(GL_DEPTH_TEST);
 }
 
-//renders a node of the prefab and its children
-void Renderer::renderNode(SCN::Node* node, Camera* camera)
-{
-	if (!node->visible)
-		return;
-
-	//compute global matrix
-	Matrix44 node_model = node->getGlobalMatrix(true);
-
-	//does this node have a mesh? then we must render it
-	if (node->mesh && node->material)
-	{
-		//compute the bounding box of the object in world space (by using the mesh bounding box transformed to world space)
-		BoundingBox world_bounding = transformBoundingBox(node_model,node->mesh->box);
-		
-		//if bounding box is inside the camera frustum then the object is probably visible
-		if (camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize) )
-		{
-			if(render_boundaries)
-				node->mesh->renderBounding(node_model, true);
-			
-			// render
-			switch (render_mode) {
-				case eRenderMode::FLAT:
-					renderMeshWithMaterial(node_model, node->mesh, node->material);
-					break;
-				case eRenderMode::LIGHTS:
-					renderMeshWithMaterialLight(node_model, node->mesh, node->material);
-					break;
-			}
-		}
-	}
-
-	//iterate recursively with children
-	for (int i = 0; i < node->children.size(); ++i)
-		renderNode( node->children[i], camera);
-}
-
-
 //renders a mesh given its transform and material
-void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material)
+void Renderer::renderMeshWithMaterial(const RenderCall rc)
 {
 	//in case there is nothing to do
-	if (!mesh || !mesh->getNumVertices() || !material )
+	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material )
 		return;
     assert(glGetError() == GL_NO_ERROR);
 
@@ -196,7 +159,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 	GFX::Shader* shader = NULL;
 	Camera* camera = Camera::current;
 	
-	GFX::Texture* albedo_texture = material->textures[SCN::eTextureChannel::ALBEDO].texture;
+	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
 
 	//texture = material->emissive_texture;
 	//texture = material->metallic_roughness_texture; 
@@ -204,7 +167,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 	//texture = material->occlusion_texture;
 
 	//select the blending
-	if (material->alpha_mode == SCN::eAlphaMode::BLEND)
+	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -213,7 +176,7 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 		glDisable(GL_BLEND);
 
 	//select if render both sides of the triangles
-	if(material->two_sided)
+	if(rc.material->two_sided)
 		glDisable(GL_CULL_FACE);
 	else
 		glEnable(GL_CULL_FACE);
@@ -232,24 +195,24 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 	shader->enable();
 
 	//upload uniforms
-	shader->setUniform("u_model", model);
+	shader->setUniform("u_model", rc.model);
 	cameraToShader(camera, shader);
 	float t = getTime();
 	shader->setUniform("u_time", t );
 
 
 	// send textures to shader
-	shader->setUniform("u_color", material->color);
+	shader->setUniform("u_color", rc.material->color);
 	shader->setUniform("u_texture", albedo_texture ? albedo_texture : white_texture, 0);
 
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
-	shader->setUniform("u_alpha_cutoff", material->alpha_mode == SCN::eAlphaMode::MASK ? material->alpha_cutoff : 0.001f);
+	shader->setUniform("u_alpha_cutoff", rc.material->alpha_mode == SCN::eAlphaMode::MASK ? rc.material->alpha_cutoff : 0.001f);
 
 	if (render_wireframe)
 		glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
 
 	//do the draw call that renders the mesh into the screen
-	mesh->render(GL_TRIANGLES);
+	rc.mesh->render(GL_TRIANGLES);
 
 	//disable shader
 	shader->disable();
@@ -259,11 +222,12 @@ void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
+
 //renders a mesh given its transform and material adding lights
-void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material)
+void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
 {
 	//in case there is nothing to do
-	if (!mesh || !mesh->getNumVertices() || !material)
+	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
 		return;
 	assert(glGetError() == GL_NO_ERROR);
 
@@ -271,9 +235,9 @@ void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh
 	GFX::Shader* shader = NULL;
 	Camera* camera = Camera::current;
 
-	GFX::Texture* albedo_texture = material->textures[SCN::eTextureChannel::ALBEDO].texture;
-	GFX::Texture* emissive_texture = material->textures[SCN::eTextureChannel::EMISSIVE].texture;
-	GFX::Texture* occlusion_texture = material->textures[SCN::eTextureChannel::OCCLUSION].texture;
+	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
+	GFX::Texture* emissive_texture = rc.material->textures[SCN::eTextureChannel::EMISSIVE].texture;
+	GFX::Texture* occlusion_texture = rc.material->textures[SCN::eTextureChannel::OCCLUSION].texture;
 
 	//texture = material->emissive_texture;
 	//texture = material->metallic_roughness_texture; 
@@ -284,7 +248,7 @@ void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh
 		albedo_texture = white_texture; //a 1x1 white texture*/
 
 		//select the blending
-	if (material->alpha_mode == SCN::eAlphaMode::BLEND)
+	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
 	{
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -293,7 +257,7 @@ void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh
 		glDisable(GL_BLEND);
 
 	//select if render both sides of the triangles
-	if (material->two_sided)
+	if (rc.material->two_sided)
 		glDisable(GL_CULL_FACE);
 	else
 		glEnable(GL_CULL_FACE);
@@ -312,16 +276,17 @@ void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh
 	shader->enable();
 
 	//upload uniforms
-	shader->setUniform("u_model", model);
+	shader->setUniform("u_model", rc.model);
 	cameraToShader(camera, shader);
 	float t = getTime();
 	shader->setUniform("u_time", t);
 
 
-	// send textures to shader
-	shader->setUniform("u_color", material->color);
-	shader->setUniform("u_emissive_factor", material->emissive_factor);
 
+	shader->setUniform("u_color", rc.material->color);
+	shader->setUniform("u_emissive_factor", rc.material->emissive_factor);
+
+	// send textures to shader
 	// last parameter is the slot we assign
 	shader->setUniform("u_albedo_texture", albedo_texture ? albedo_texture : white_texture, 0);
 	shader->setUniform("u_emissive_texture", emissive_texture ? emissive_texture : white_texture, 1);
@@ -329,16 +294,70 @@ void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh
 
 
 	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
-	shader->setUniform("u_alpha_cutoff", material->alpha_mode == SCN::eAlphaMode::MASK ? material->alpha_cutoff : 0.001f);
+	shader->setUniform("u_alpha_cutoff", rc.material->alpha_mode == SCN::eAlphaMode::MASK ? rc.material->alpha_cutoff : 0.001f);
 
 	// pass the ambient light
 	shader->setUniform("u_ambient_light", scene->ambient_light);
 
+
 	if (render_wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	//do the draw call that renders the mesh into the screen
-	mesh->render(GL_TRIANGLES);
+
+	// Draw pixels if the z is the same or less than what is already drawn (closer to camera)
+	glDepthFunc(GL_LEQUAL);
+	switch (lights_mode) {
+		case MULTI:
+			if (rc.lights_affecting.size()) {
+				// first iteration out of the loop
+				LightEntity* light = rc.lights_affecting[0];
+
+				shader->setUniform("u_light_position", light->root.model.getTranslation());
+
+				// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
+				shader->setUniform("u_light_color", light->color * light->intensity);
+				shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, 0.0));
+
+				rc.mesh->render(GL_TRIANGLES);
+
+				glEnable(GL_BLEND);
+				// GL_ONE -> take color of what is already drawn and mult by 1, then take whatever you are trying to color now and mult by its alpha, add them together
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+				// emissive and ambient light must be added only once
+				shader->setUniform("u_ambient_light", vec3(0.0, 0.0, 0.0));
+				shader->setUniform("u_emissive_factor", vec3(0.0, 0.0, 0.0));
+
+				
+				// loop with rest of the lights
+				for (int i = 1; i < rc.lights_affecting.size(); i++) {
+					LightEntity* light = lights[i];
+
+					shader->setUniform("u_light_position", light->root.model.getTranslation());
+					// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
+					shader->setUniform("u_light_color", light->color * light->intensity);
+					shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance,light->max_distance, 0.0));
+
+					/*switch (light->light_type) {
+						case eLightType::POINT:
+							break;
+						default:
+							continue;
+					}*/
+
+					rc.mesh->render(GL_TRIANGLES);
+				}
+				break;
+			}
+			else {
+				shader->setUniform("u_light_type", (int)eLightType::NO_LIGHT);
+				rc.mesh->render(GL_TRIANGLES);
+			}
+			
+		case SINGLE:
+			//applyLightsSingle(mesh);
+			break;
+	}
 
 	//disable shader
 	shader->disable();
@@ -346,6 +365,7 @@ void Renderer::renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh
 	//set the render state as it was before to avoid problems with future renders
 	glDisable(GL_BLEND);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDepthFunc(GL_LESS);
 }
 
 void SCN::Renderer::cameraToShader(Camera* camera, GFX::Shader* shader)
@@ -364,6 +384,7 @@ void Renderer::showUI()
 
 	ImGui::Combo("Alpha Sorting Mode", (int*) & alpha_sort_mode, "NOT SORTED\0SORTED", 2);
 	ImGui::Combo("Render Mode", (int*) & render_mode, "FLAT\0LIGHTS", 2);
+	ImGui::Combo("Lights Mode", (int*) & lights_mode, "MULTI-PASS\SINGLE PASS", 2);
 
 	//add here your stuff
 	//...
@@ -425,3 +446,25 @@ void Renderer::createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* 
 	// Push RenderCall to the vector
 	render_calls.push_back(rc);
 }
+
+void Renderer::updateRCLights() {
+	for (auto& rc : render_calls) {
+		BoundingBox world_bounding = transformBoundingBox(rc.model, rc.mesh->box);
+		for (int i = 0; i < lights.size(); i++) {
+			LightEntity* light = lights[i];
+			// if it overlaps, push light pointer to the vector of lights that affect the node
+			if (BoundingBoxSphereOverlap(world_bounding, light->root.model.getTranslation(), light->max_distance))
+				rc.lights_affecting.push_back(light);
+		}
+	}
+	
+
+}
+
+//void Renderer::applyLightsMulti(GFX::Mesh* mesh) {
+//	
+//}
+//
+//void Renderer::applyLightsSingle(GFX::Mesh* mesh) {
+//
+//}
