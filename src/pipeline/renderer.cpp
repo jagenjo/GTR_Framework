@@ -47,7 +47,7 @@ Renderer::Renderer(const char* shader_atlas_filename)
 	white_texture = GFX::Texture::getWhiteTexture();
 }
 
-void Renderer::setupScene()
+void Renderer::setupScene(Camera * camera)
 {
 	if (scene->skybox_filename.size())
 		skybox_cubemap = GFX::Texture::Get(std::string(scene->base_folder + "/" + scene->skybox_filename).c_str());
@@ -67,6 +67,8 @@ void Renderer::setupScene()
 		if (ent->getType() == eEntityType::PREFAB)
 		{
 			PrefabEntity* pent = (SCN::PrefabEntity*)ent;
+			if (pent->prefab)
+				createNodeRC(&pent->root, camera);
 		}
 		else if (ent->getType() == eEntityType::LIGHT)
 		{
@@ -78,8 +80,10 @@ void Renderer::setupScene()
 
 void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 {
+	render_calls.clear();
+
 	this->scene = scene;
-	setupScene();
+	setupScene(camera);
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
@@ -95,65 +99,22 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 	if(skybox_cubemap)
 		renderSkybox(skybox_cubemap);
 
-	// there is repetition of code but this way we only need to check the mode once and not 
-	// in each iteration of the loop
-	switch (alpha_sort_mode) {
-		case eAlphaSortMode::NOT_SORTED:
-			//render entities
-			for (int i = 0; i < scene->entities.size(); ++i)
-			{
-				BaseEntity* ent = scene->entities[i];
-				if (!ent->visible)
-					continue;
+	if(alpha_sort_mode == SORTED) std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
 
-				//is a prefab!
-				if (ent->getType() == eEntityType::PREFAB)
-				{
-					PrefabEntity* pent = (SCN::PrefabEntity*)ent;
-					if (pent->prefab)
-						renderNode(&pent->root, camera);
-				}
+	// render everything
+	switch (render_mode) {
+		case eRenderMode::FLAT:
+			for (auto& rc : render_calls) {
+				renderMeshWithMaterial(rc.model, rc.mesh, rc.material);
 			}
 			break;
-
-
-		case eAlphaSortMode::SORTED:
-			// Delete all render_calls corresponding to the previous render to start fresh
-			render_calls.clear();
-
-			// Create render calls
-			for (int i = 0; i < scene->entities.size(); ++i)
-			{
-				BaseEntity* ent = scene->entities[i];
-				if (!ent->visible)
-					continue;
-
-				//is a prefab!
-				if (ent->getType() == eEntityType::PREFAB)
-				{
-					PrefabEntity* pent = (SCN::PrefabEntity*)ent;
-					if (pent->prefab)
-						createNodeRC(&pent->root, camera);
-				}
+		case eRenderMode::LIGHTS:
+			for (auto& rc : render_calls) {
+				renderMeshWithMaterialLight(rc.model, rc.mesh, rc.material);
 			}
-
-			// order render calls
-			std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
-
-			// render everything
-			switch (render_mode) {
-				case eRenderMode::FLAT:
-					for (auto& rc : render_calls) {
-						renderMeshWithMaterial(rc.model, rc.mesh, rc.material);
-					}
-					break;
-				case eRenderMode::LIGHTS:
-					for (auto& rc : render_calls) {
-						renderMeshWithMaterialLight(rc.model, rc.mesh, rc.material);
-					}
-				}
 			break;
 	}
+
 }
 
 
@@ -222,34 +183,6 @@ void Renderer::renderNode(SCN::Node* node, Camera* camera)
 		renderNode( node->children[i], camera);
 }
 
-void Renderer::createNodeRC(SCN::Node* node, Camera* camera)
-{
-	if (!node->visible)
-		return;
-
-	//compute global matrix
-	Matrix44 node_model = node->getGlobalMatrix(true);
-
-	//does this node have a mesh? then we must render it
-	if (node->mesh && node->material)
-	{
-		//compute the bounding box of the object in world space (by using the mesh bounding box transformed to world space)
-		BoundingBox world_bounding = transformBoundingBox(node_model, node->mesh->box);
-
-		//if bounding box is inside the camera frustum then the object is probably visible
-		if (camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize))
-		{
-			if (render_boundaries)
-				node->mesh->renderBounding(node_model, true);
-			// create the render call associated with the node
-			createRenderCall(node_model, node->mesh, node->material);
-		}
-	}
-
-	//iterate recursively with children
-	for (int i = 0; i < node->children.size(); ++i)
-		createNodeRC(node->children[i], camera);
-}
 
 //renders a mesh given its transform and material
 void Renderer::renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material)
@@ -441,6 +374,37 @@ void Renderer::showUI() {}
 #endif
 
 // *********************************************** MY CODE ***********************************************
+
+// Create the render calls for one node
+void Renderer::createNodeRC(SCN::Node* node, Camera* camera)
+{
+	if (!node->visible)
+		return;
+
+	//compute global matrix
+	Matrix44 node_model = node->getGlobalMatrix(true);
+
+	//does this node have a mesh? then we must render it
+	if (node->mesh && node->material)
+	{
+		//compute the bounding box of the object in world space (by using the mesh bounding box transformed to world space)
+		BoundingBox world_bounding = transformBoundingBox(node_model, node->mesh->box);
+
+		//if bounding box is inside the camera frustum then the object is probably visible
+		if (camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize))
+		{
+			if (render_boundaries)
+				node->mesh->renderBounding(node_model, true);
+			// create the render call associated with the node
+			createRenderCall(node_model, node->mesh, node->material);
+		}
+	}
+
+	//iterate recursively with children
+	for (int i = 0; i < node->children.size(); ++i)
+		createNodeRC(node->children[i], camera);
+}
+
 
 // Function that will create a render_call based on a model matrix, a mesh and a material and will store it
 // in the render_call vector

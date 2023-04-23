@@ -82,7 +82,7 @@ namespace SCN {
 		Renderer(const char* shaders_atlas_filename );
 
 		//just to be sure we have everything ready for the rendering
-		void setupScene();
+		void setupScene(Camera* camera);
 
 		//add here your functions
 		//create a single render call and store it
