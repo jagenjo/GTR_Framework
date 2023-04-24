@@ -6,8 +6,8 @@
 
 // Make sure that MAX_LIGHTS in the CPU code <= shader, otherwise it will break
 #define MAX_LIGHTS 4
-#define SHADOWMAP_RES_X 1024
-#define SHADOWMAP_RES_Y 1024
+#define SHADOWMAP_RES_X 512
+#define SHADOWMAP_RES_Y 512
 
 //forward declarations
 class Camera;

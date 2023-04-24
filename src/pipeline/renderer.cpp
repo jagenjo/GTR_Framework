@@ -39,7 +39,7 @@ Renderer::Renderer(const char* shader_atlas_filename)
 
 	sort_alpha = true;
 	render_mode = eRenderMode::LIGHTS;
-	lights_mode = eLightsMode::MULTI;
+	lights_mode = eLightsMode::SINGLE;
 	nmap_mode = eNormalMapMode::WITH_NMAP;
 	spec_mode = eSpecMode::WITH_SPEC;
 	show_shadowmaps = false;
@@ -675,10 +675,9 @@ void Renderer::debugShadowMaps()
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
 
-	int x = 325;
 	vec2 size = CORE::getWindowSize();
 
-	for (auto light : lights) {
+	/*for (auto light : lights) {
 		if (!light->shadowmap)
 			continue;
 
@@ -693,7 +692,14 @@ void Renderer::debugShadowMaps()
 		// so we don't get out of the screen.
 		if (x < size.x - 130)
 			light->shadowmap->toViewport(shader);;
-	}
+	}*/
+
+	// only paint it if it doesn't go out of the screen size
+	if(SHADOWMAP_RES_X + 325 < size.x && SHADOWMAP_RES_Y + 100 < size.y)
+		glViewport(325, 100, SHADOWMAP_RES_X, SHADOWMAP_RES_Y);
+
+	if (shadowmap_atlas_fbo)
+		shadowmap_atlas->toViewport();
 
 	glViewport(0, 0, size.x, size.y);
 
@@ -703,10 +709,31 @@ void Renderer::generateShadowmaps(Camera* camera) {
 
 	Camera local_cam;
 
+	eRenderMode prev_mode = render_mode;
+	render_mode = eRenderMode::FLAT;
+
+	int num_shadowmaps = 0;
+
+	// If there is no shadow_atlas, create it. This function is only called if use_shadowmaps is active, so no need to check it here
+	if (!shadowmap_atlas_fbo) {
+		shadowmap_atlas_fbo = new GFX::FBO();
+		shadowmap_atlas_fbo->setDepthOnly(SHADOWMAP_RES_X * MAX_LIGHTS, SHADOWMAP_RES_Y * MAX_LIGHTS);
+		shadowmap_atlas = shadowmap_atlas_fbo->depth_texture;
+	}
+
+	// since we are painting to a single texture, we just need to bind / unbind once
+	shadowmap_atlas_fbo->bind();
+
+	int x_offset;
+	int y_offset;
 	for (auto light : lights) {
-		if (!light->cast_shadows) 
+		//check if we have reached the limit of shadowmaps that we support, if so break;
+		if (num_shadowmaps >= MAX_LIGHTS * MAX_LIGHTS)
+			break;
+
+		if (!light->cast_shadows)
 			continue;
-		
+
 		if ((light->light_type != eLightType::SPOT) && (light->light_type != eLightType::DIRECTIONAL))
 			continue;
 
@@ -717,13 +744,6 @@ void Renderer::generateShadowmaps(Camera* camera) {
 		//if bounding box is outside the camera frustum then the object is probably not visible
 		if (!camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize))
 			continue;
-
-		if (!light->shadowmap_fbo)
-		{
-			light->shadowmap_fbo = new GFX::FBO();
-			light->shadowmap_fbo->setDepthOnly(SHADOWMAP_RES_X, SHADOWMAP_RES_Y);
-			light->shadowmap = light->shadowmap_fbo->depth_texture;
-		}
 
 		vec3 position = light->root.model.getTranslation();
 		vec3 front = light->root.model.rotateVector(vec3(0, 0, -1));
@@ -739,18 +759,30 @@ void Renderer::generateShadowmaps(Camera* camera) {
 
 		if (light->light_type == eLightType::SPOT)
 			local_cam.setPerspective(light->cone_info.y * 2.0, aspect, light->near_distance, light->max_distance);
-		
+
 		else if (light->light_type == eLightType::DIRECTIONAL)
 		{
 			float half_area = light->area / 2;
 			local_cam.setOrthographic(-half_area, half_area, half_area * aspect, -half_area * aspect, light->near_distance, light->max_distance);
 		}
 
-		light->shadowmap_fbo->bind();
-		renderFrame(scene, &local_cam);
-		light->shadowmap_fbo->unbind();
-
-		light->shadow_viewproj = local_cam.viewprojection_matrix;
+		x_offset = SHADOWMAP_RES_X * (num_shadowmaps % MAX_LIGHTS);
+		y_offset = std::floor(num_shadowmaps / MAX_LIGHTS);
 		
+		
+		// set region and render the shadowmap into the shadow atlas, the formulas assume that it is a square texture
+		light->shadowmap_region = vec4(x_offset, y_offset, x_offset + SHADOWMAP_RES_X, x_offset + SHADOWMAP_RES_Y);
+		glViewport(x_offset, y_offset, SHADOWMAP_RES_X, SHADOWMAP_RES_Y);
+		renderFrame(scene, &local_cam);
+		
+		light->shadow_viewproj = local_cam.viewprojection_matrix;
+		num_shadowmaps++;
 	}
+	shadowmap_atlas_fbo->unbind();
+
+	// put viewport to what it was before.
+	vec2 size = CORE::getWindowSize();
+	glViewport(0, 0, size.x, size.y);
+
+	render_mode = prev_mode;
 }
