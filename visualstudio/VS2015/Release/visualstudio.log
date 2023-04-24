@@ -1,6 +1,9 @@
-﻿  renderer.cpp
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct'
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON'
+﻿  application.cpp
+  editor.cpp
+  main.cpp
+  renderer.cpp
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(104,1): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'class' ahora se ve usando 'struct' (compilando archivo de origen ..\..\src\pipeline\renderer.cpp)
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\pipeline\renderer.cpp)
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(65,20): warning C4018: '<': no coinciden signed/unsigned
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(208,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(281,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
@@ -55,44 +58,91 @@ D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\rend
               T=float
           ]
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(431,20): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\scene.h(12,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class' (compilando archivo de origen ..\..\src\editor.cpp)
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\editor.cpp)
 D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(463,22): warning C4018: '<': no coinciden signed/unsigned
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(531,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(545,111): warning C4244: 'argumento': conversión de 'SCN::eSpecMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(533,10): warning C4244: 'inicializando': conversión de 'long' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(547,111): warning C4244: 'argumento': conversión de 'SCN::eSpecMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(579,64): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(583,64): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(579,29): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(583,29): warning C4244: 'argumento': conversión de 'double' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(586,92): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(590,92): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(586,35): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(590,35): warning C4244: 'argumento': conversión de 'int' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
-D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(603,56): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\renderer.cpp(607,56): warning C4244: 'argumento': conversión de 'SCN::eNormalMapMode' a 'T'; posible pérdida de datos
           with
           [
               T=float
           ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(116,33): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(133,33): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(140,18): warning C4244: 'inicializando': conversión de 'T' a 'int'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(143,36): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(144,61): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(144,34): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\scene.h(12,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class' (compilando archivo de origen ..\..\src\main.cpp)
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\main.cpp)
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(201,3): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(289,33): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\pipeline\scene.h(12,12): warning C4099: 'cJSON': nombre de tipo visto anteriormente usando 'struct' ahora se ve usando 'class' (compilando archivo de origen ..\..\src\application.cpp)
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\extra\cJSON.h(103,16): message : vea la declaración de 'cJSON' (compilando archivo de origen ..\..\src\application.cpp)
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\application.cpp(85,14): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\application.cpp(86,20): warning C4244: 'inicializando': conversión de 'double' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(304,39): warning C4244: '=': conversión de 'T' a 'int'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(306,56): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(306,54): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(320,2): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(358,84): warning C4305: 'argumento': truncamiento de 'double' a 'float'
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(372,74): warning C4305: 'argumento': truncamiento de 'double' a 'float'
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(408,34): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(408,27): warning C4244: 'argumento': conversión de 'T' a 'int'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(408,19): warning C4244: 'argumento': conversión de 'T' a 'int'; posible pérdida de datos
+          with
+          [
+              T=float
+          ]
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(431,25): warning C4244: 'argumento': conversión de 'double' a 'float'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(524,22): warning C4018: '<': no coinciden signed/unsigned
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(545,93): warning C4305: 'argumento': truncamiento de 'double' a 'float'
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(550,84): warning C4305: 'argumento': truncamiento de 'double' a 'float'
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(570,10): warning C4244: 'inicializando': conversión de 'float' a 'int'; posible pérdida de datos
+D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\src\editor.cpp(572,86): warning C4244: 'argumento': conversión de 'int' a 'float'; posible pérdida de datos
      Creando biblioteca ..\..\GTR.lib y objeto ..\..\GTR.exp
 LINK : warning LNK4098: la biblioteca predeterminada'LIBCMT' entra en conflicto con otras bibliotecas; use la biblioteca /NODEFAULTLIB:biblioteca
   Generando código
-  1 of 5911 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+  38 of 5911 functions ( 0.6%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    64 functions had inline decision re-evaluated but remain unchanged
+    74 functions had inline decision re-evaluated but remain unchanged
   Generación de código finalizada
 glew32s.lib(glew.obj) : warning LNK4099: no se encontró PDB '' con 'glew32s.lib(glew.obj)' o en ''; se vinculará el objeto sin tener en cuenta información de depuración
   visualstudio.vcxproj -> D:\Usuario\Documents\UNI\3. TERCERO\3RD TERM\RTG\GTR_Framework\GTR.exe

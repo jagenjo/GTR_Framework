@@ -482,9 +482,9 @@ void main()
 	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
 	light +=  texture( u_occl_metal_rough_texture , v_uv).x * u_ambient_light;
 
-	for( int i = 0; i < u_num_lights; i++){
-		if(int(u_light_info[i].x) == NO_LIGHT){}
-
+	for( int i = 0; i < MAX_LIGHTS; i++){
+		if((i >= u_num_lights) || (int(u_light_info[i].x) == NO_LIGHT)){}
+		
 		else{
 			vec3 L;
 			if(int(u_light_info[i].x) == DIRECTIONAL_LIGHT)

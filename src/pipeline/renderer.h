@@ -4,6 +4,7 @@
 
 #include "light.h"
 
+// Make sure that MAX_LIGHTS in the CPU code <= shader, otherwise it will break
 #define MAX_LIGHTS 4
 
 //forward declarations
@@ -127,7 +128,7 @@ namespace SCN {
 		void renderMeshWithMaterial(const RenderCall rc);
 
 		//to render one mesh given its material and transformation matrix taking lights into account, multi-pass
-		void renderMeshWithMaterialLight(const RenderCall rc);
+		void renderMeshWithMaterialLightMulti(const RenderCall rc);
 
 		void showUI();
 

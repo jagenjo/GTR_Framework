@@ -117,7 +117,7 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 			switch (lights_mode) {
 				case MULTI:
 					for (auto& rc : render_calls) {
-						renderMeshWithMaterialLight(rc);
+						renderMeshWithMaterialLightMulti(rc);
 					}
 					break;
 				case SINGLE:
@@ -231,7 +231,7 @@ void Renderer::renderMeshWithMaterial(const RenderCall rc)
 }
 
 //renders a mesh given its transform and material adding lights using, multi-pass
-void Renderer::renderMeshWithMaterialLight(const RenderCall rc)
+void Renderer::renderMeshWithMaterialLightMulti(const RenderCall rc)
 {
 	//in case there is nothing to do
 	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
@@ -461,6 +461,8 @@ void Renderer::updateRCLights() {
 			BoundingBox world_bounding = transformBoundingBox(rc.model, rc.mesh->box);
 
 			for (int i = 0; i < lights.size(); i++) {
+				if (i >= MAX_LIGHTS) break; // we cannot send more lights than this max variable
+
 				LightEntity* light = lights[i];
 
 				if (light->light_type == eLightType::NO_LIGHT) {
@@ -573,6 +575,8 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 
 		// loop with the lights
 		for (int i = 0; i < num_lights; i++) {
+			// note that num_lights > MAX_LIGHTS is controlled when we set up the render calls
+
 			LightEntity* light = rc.lights_affecting[i];
 
 			if (light->light_type == eLightType::SPOT)
@@ -593,7 +597,7 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 		shader->setUniform3Array("u_light_color", (float*)&light_color, MAX_LIGHTS);
 		shader->setUniform4Array("u_light_info", (float*)&light_info, MAX_LIGHTS);
 
-		shader->setUniform("u_num_lights", num_lights);
+		shader->setUniform("u_num_lights", min(num_lights, MAX_LIGHTS));
 
 		rc.mesh->render(GL_TRIANGLES);
 	}
