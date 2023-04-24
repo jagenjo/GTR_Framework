@@ -230,151 +230,10 @@ void Renderer::renderMeshWithMaterial(const RenderCall rc)
 	glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 }
 
-//renders a mesh given its transform and material adding lights using, multi-pass
-void Renderer::renderMeshWithMaterialLightMulti(const RenderCall rc)
-{
-	//in case there is nothing to do
-	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
-		return;
-	assert(glGetError() == GL_NO_ERROR);
-
-	//define locals to simplify coding
-	GFX::Shader* shader = NULL;
-	Camera* camera = Camera::current;
-
-	GFX::Texture* albedo_texture = rc.material->textures[SCN::eTextureChannel::ALBEDO].texture;
-	GFX::Texture* emissive_texture = rc.material->textures[SCN::eTextureChannel::EMISSIVE].texture;
-	GFX::Texture* occ_metal_rough_text = rc.material->textures[SCN::eTextureChannel::METALLIC_ROUGHNESS].texture;
-	GFX::Texture* normal_map = (nmap_mode == eNormalMapMode::WITH_NMAP) ? white_texture : rc.material->textures[SCN::eTextureChannel::NORMALMAP].texture;
-
-	//select the blending
-	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
-	{
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	}
-	else
-		glDisable(GL_BLEND);
-
-	//select if render both sides of the triangles
-	if (rc.material->two_sided)
-		glDisable(GL_CULL_FACE);
-	else
-		glEnable(GL_CULL_FACE);
-	assert(glGetError() == GL_NO_ERROR);
-
-	glEnable(GL_DEPTH_TEST);
-
-	//chose a shader
-	shader = GFX::Shader::Get("light");
-
-	assert(glGetError() == GL_NO_ERROR);
-
-	//no shader? then nothing to render
-	if (!shader)
-		return;
-	shader->enable();
-
-	//upload uniforms
-	shader->setUniform("u_model", rc.model);
-	cameraToShader(camera, shader);
-	float t = getTime();
-	shader->setUniform("u_time", t);
-
-
-
-	shader->setUniform("u_color", rc.material->color);
-	shader->setUniform("u_emissive_factor", rc.material->emissive_factor);
-
-
-	// send textures to shader
-	// last parameter is the slot we assign
-	shader->setUniform("u_albedo_texture", albedo_texture ? albedo_texture : white_texture, 0);
-	shader->setUniform("u_emissive_texture", emissive_texture ? emissive_texture : white_texture, 1);
-	shader->setUniform("u_normal_map", normal_map ? normal_map : white_texture, 3);
-
-
-	shader->setUniform("u_metal_rough_factor", vec3(rc.material->metallic_factor, rc.material->roughness_factor, spec_mode));
-	if (spec_mode) {
-		shader->setUniform("u_occl_metal_rough_texture", occ_metal_rough_text ? occ_metal_rough_text : white_texture, 2);
-	}
-
-	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
-	shader->setUniform("u_alpha_cutoff", rc.material->alpha_mode == SCN::eAlphaMode::MASK ? rc.material->alpha_cutoff : 0.001f);
-
-	// pass the ambient light
-	shader->setUniform("u_ambient_light", scene->ambient_light);
-
-
-	if (render_wireframe)
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-
-	// Draw pixels if the z is the same or less than what is already drawn (closer to camera)
-	glDepthFunc(GL_LEQUAL);
-
-	int num_lights = rc.lights_affecting.size();
-
-	if (num_lights) {
-		LightEntity* light = rc.lights_affecting[0];
-
-
-		if (light->light_type == eLightType::SPOT)
-			shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
-
-		shader->setUniform("u_light_position", light->root.model.getTranslation());
-		shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
-
-		// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
-		shader->setUniform("u_light_color", light->color * light->intensity);
-		shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, nmap_mode));
-
-		rc.mesh->render(GL_TRIANGLES);
-
-		glEnable(GL_BLEND);
-		// GL_ONE -> take color of what is already drawn and mult by 1, then take whatever you are trying to color now and mult by its alpha, add them together
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-		// emissive and ambient light must be added only once
-		shader->setUniform("u_ambient_light", vec3(0.0, 0.0, 0.0));
-		shader->setUniform("u_emissive_factor", vec3(0.0, 0.0, 0.0));
-
-		// loop with rest of the lights
-		for (int i = 1; i < num_lights; i++) {
-			LightEntity* light = rc.lights_affecting[i];
-
-
-			if (light->light_type == eLightType::SPOT)
-				shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
-
-			shader->setUniform("u_light_position", light->root.model.getTranslation());
-			shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
-
-			// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
-			shader->setUniform("u_light_color", light->color * light->intensity);
-			shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, nmap_mode));
-
-			rc.mesh->render(GL_TRIANGLES);
-		}
-	}
-	else {
-		shader->setUniform("u_light_info", vec4(eLightType::NO_LIGHT, 0.0, 0.0, nmap_mode));
-		rc.mesh->render(GL_TRIANGLES);
-	}
-
-	//disable shader
-	shader->disable();
-
-	//set the render state as it was before to avoid problems with future renders
-	glDisable(GL_BLEND);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDepthFunc(GL_LESS);
-}
-
 
 void SCN::Renderer::cameraToShader(Camera* camera, GFX::Shader* shader)
 {
-	shader->setUniform("u_viewprojection", camera->viewprojection_matrix );
+	shader->setUniform("u_viewprojection", camera->viewprojection_matrix);
 	shader->setUniform("u_camera_position", camera->eye);
 }
 
@@ -382,15 +241,16 @@ void SCN::Renderer::cameraToShader(Camera* camera, GFX::Shader* shader)
 
 void Renderer::showUI()
 {
-		
+
 	ImGui::Checkbox("Wireframe", &render_wireframe);
 	ImGui::Checkbox("Boundaries", &render_boundaries);
 
-	ImGui::Combo("Alpha Sorting Mode", (int*) & alpha_sort_mode, "NOT SORTED\0SORTED", 2);
-	ImGui::Combo("Render Mode", (int*) & render_mode, "FLAT\0LIGHTS", 2);
-	ImGui::Combo("Lights Mode", (int*) & lights_mode, "MULTI-PASS\0SINGLE PASS", 2);
-	ImGui::Combo("Normal Map Mode", (int*) & nmap_mode, "WITHOUT\0WITH", 2);
-	ImGui::Combo("Specular Light Mode", (int*) &spec_mode, "WITHOUT\0WITH", 2);
+	ImGui::Combo("Render Mode", (int*)&render_mode, "FLAT\0LIGHTS", 2);
+
+	ImGui::Combo("Alpha Sorting Mode", (int*)&alpha_sort_mode, "NOT SORTED\0SORTED", 2);
+	ImGui::Combo("Lights Mode", (int*)&lights_mode, "MULTI-PASS\0SINGLE PASS", 2);
+	ImGui::Combo("Normal Map Mode", (int*)&nmap_mode, "WITHOUT\0WITH", 2);
+	ImGui::Combo("Specular Light Mode", (int*)&spec_mode, "WITHOUT\0WITH", 2);
 
 	//add here your stuff
 	//...
@@ -399,6 +259,7 @@ void Renderer::showUI()
 #else
 void Renderer::showUI() {}
 #endif
+
 
 // *********************************************** MY CODE ***********************************************
 
@@ -482,13 +343,8 @@ void Renderer::updateRCLights() {
 
 }
 
-//renders a mesh given its transform and material adding lights, single - pass
-void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
-{
-	//in case there is nothing to do
-	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
-		return;
-	assert(glGetError() == GL_NO_ERROR);
+
+GFX::Shader* Renderer::prep_shader(const RenderCall rc, const char* shader_name) {
 
 	//define locals to simplify coding
 	GFX::Shader* shader = NULL;
@@ -518,13 +374,13 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 	glEnable(GL_DEPTH_TEST);
 
 	//chose a shader
-	shader = GFX::Shader::Get("lightSinglePass");
+	shader = GFX::Shader::Get(shader_name);
 
 	assert(glGetError() == GL_NO_ERROR);
 
 	//no shader? then nothing to render
 	if (!shader)
-		return;
+		return NULL;
 	shader->enable();
 
 	//upload uniforms
@@ -534,8 +390,10 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 	shader->setUniform("u_time", t);
 
 
+
 	shader->setUniform("u_color", rc.material->color);
 	shader->setUniform("u_emissive_factor", rc.material->emissive_factor);
+
 
 	// send textures to shader
 	// last parameter is the slot we assign
@@ -555,20 +413,104 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 	// pass the ambient light
 	shader->setUniform("u_ambient_light", scene->ambient_light);
 
+
 	if (render_wireframe)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 
 	// Draw pixels if the z is the same or less than what is already drawn (closer to camera)
 	glDepthFunc(GL_LEQUAL);
 
+	return shader;
+}
+
+
+void Renderer::sendLightInfoMulti(LightEntity* light, GFX::Shader* shader) {
+	if (light->light_type == eLightType::SPOT)
+		shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
+
+	shader->setUniform("u_light_position", light->root.model.getTranslation());
+	shader->setUniform("u_light_front", light->root.model.rotateVector(vec3(0, 0, 1)));
+
+	// we can save some space on the shader if we directly multiply the color and intensity of the light in the CPU, as this will always be done
+	shader->setUniform("u_light_color", light->color * light->intensity);
+	shader->setUniform("u_light_info", vec4((int)light->light_type, light->near_distance, light->max_distance, nmap_mode));
+
+}
+
+
+//renders a mesh given its transform and material adding lights using, multi-pass
+void Renderer::renderMeshWithMaterialLightMulti(const RenderCall rc)
+{
+	//in case there is nothing to do
+	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
+		return;
+	assert(glGetError() == GL_NO_ERROR);
+
+	GFX::Shader* shader = prep_shader(rc, "light");
+	if (!shader)
+		return;
+
 	int num_lights = rc.lights_affecting.size();
 
+	if (num_lights) {
+		// first iter outside the loop
+		LightEntity* light = rc.lights_affecting[0];
+	
+		sendLightInfoMulti(light, shader);
+
+		rc.mesh->render(GL_TRIANGLES);
+
+		glEnable(GL_BLEND);
+		// GL_ONE -> take color of what is already drawn and mult by 1, then take whatever you are trying to color now and mult by its alpha, add them together
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+
+		// emissive and ambient light must be added only once
+		shader->setUniform("u_ambient_light", vec3(0.0, 0.0, 0.0));
+		shader->setUniform("u_emissive_factor", vec3(0.0, 0.0, 0.0));
+
+		// loop with rest of the lights
+		for (int i = 1; i < num_lights; i++) {
+			LightEntity* light = rc.lights_affecting[i];
+
+			sendLightInfoMulti(light, shader);
+
+			rc.mesh->render(GL_TRIANGLES);
+		}
+	}
+	else {
+		shader->setUniform("u_light_info", vec4(eLightType::NO_LIGHT, 0.0, 0.0, nmap_mode));
+		rc.mesh->render(GL_TRIANGLES);
+	}
+
+	//disable shader
+	shader->disable();
+
+	//set the render state as it was before to avoid problems with future renders
+	glDisable(GL_BLEND);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glDepthFunc(GL_LESS);
+}
+
+
+
+
+
+//renders a mesh given its transform and material adding lights, single - pass
+void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
+{
+	//in case there is nothing to do
+	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
+		return;
+	assert(glGetError() == GL_NO_ERROR);
+
+	GFX::Shader* shader = prep_shader(rc, "lightSinglePass");
+	if (!shader)
+		return;
+
+	int num_lights = rc.lights_affecting.size();
 
 	vec2 light_cone[MAX_LIGHTS];
-	vec3 light_position[MAX_LIGHTS];
-	vec3 light_front[MAX_LIGHTS];
-	vec3 light_color[MAX_LIGHTS];
+	vec3 light_position[MAX_LIGHTS], light_front[MAX_LIGHTS], light_color[MAX_LIGHTS];
 	vec4 light_info[MAX_LIGHTS];
 
 	if (num_lights) {

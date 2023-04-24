@@ -112,6 +112,12 @@ namespace SCN {
 		void createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
 		void updateRCLights();
 
+		// preps the shader and passes it the necessary textures
+		GFX::Shader* prep_shader(const RenderCall rc, const char* shader_name);
+
+		// auxiliary function of render mesh with material multi to send the information of a light to a specific shader
+		void sendLightInfoMulti(LightEntity* light, GFX::Shader* shader);
+
 		//to render one mesh given its material and transformation matrix taking lights into account, single pass
 		void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc);
 
