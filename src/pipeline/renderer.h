@@ -6,6 +6,8 @@
 
 // Make sure that MAX_LIGHTS in the CPU code <= shader, otherwise it will break
 #define MAX_LIGHTS 4
+#define SHADOWMAP_RES_X 1024
+#define SHADOWMAP_RES_Y 1024
 
 //forward declarations
 class Camera;
@@ -21,12 +23,8 @@ namespace SCN {
 	class Prefab;
 	class Material;
 
-	enum eAlphaSortMode {
-		NOT_SORTED, SORTED
-	};
-
 	enum eRenderMode {
-		FLAT, LIGHTS
+		FLAT, TEXTURED, LIGHTS
 	};
 
 	enum eLightsMode {
@@ -82,21 +80,21 @@ namespace SCN {
 		GFX::Texture* white_texture;
 
 	public:
-		eAlphaSortMode alpha_sort_mode;
-		eRenderMode render_mode;
 		eLightsMode lights_mode;
+		eRenderMode render_mode;
 		eNormalMapMode nmap_mode;
 		eSpecMode spec_mode;
 
+		bool sort_alpha;
 		bool render_wireframe;
 		bool render_boundaries;
+		bool show_shadowmaps;
 
 		GFX::Texture* skybox_cubemap;
 
 		SCN::Scene* scene;
 
 		std::vector<LightEntity*> lights;
-		std::vector<LightEntity*> visible_lights;
 
 		//updated every frame
 		Renderer(const char* shaders_atlas_filename );
@@ -118,14 +116,19 @@ namespace SCN {
 		// auxiliary function of render mesh with material multi to send the information of a light to a specific shader
 		void sendLightInfoMulti(LightEntity* light, GFX::Shader* shader);
 
-		//to render one mesh given its material and transformation matrix taking lights into account, single pass
-		void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc);
+		void renderMeshWithMaterialFlat(const RenderCall rc);
 
+		//to render one mesh given its material and transformation matrix taking lights into account, single pass
+		void renderMeshWithMaterialLightSingle(const RenderCall rc);
+
+		void generateShadowmaps(Camera* camera);
+		
 
 		//******************************** END ********************************
 	
 		//renders several elements of the scene
 		void renderScene(SCN::Scene* scene, Camera* camera);
+		void renderFrame(SCN::Scene* scene, Camera* camera);
 
 		//render the skybox
 		void renderSkybox(GFX::Texture* cubemap);
@@ -139,6 +142,9 @@ namespace SCN {
 		void showUI();
 
 		void cameraToShader(Camera* camera, GFX::Shader* shader); //sends camera uniforms to shader
+
+		//debug
+		void debugShadowMaps();
 	};
 
 };

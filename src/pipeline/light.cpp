@@ -14,6 +14,15 @@ SCN::LightEntity::LightEntity()
 	shadow_bias = 0.001;
 	near_distance = 0.1;
 	area = 1000;
+
+	shadowmap_fbo = nullptr;
+	shadowmap = nullptr;
+}
+
+SCN::LightEntity::~LightEntity()
+{
+	if (shadowmap_fbo)
+		delete shadowmap_fbo;
 }
 
 void SCN::LightEntity::configure(cJSON* json)

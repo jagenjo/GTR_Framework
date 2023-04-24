@@ -37,11 +37,12 @@ Renderer::Renderer(const char* shader_atlas_filename)
 	sphere.createSphere(1.0f);
 	sphere.uploadToVRAM();
 
-	alpha_sort_mode = eAlphaSortMode::SORTED;
+	sort_alpha = true;
 	render_mode = eRenderMode::LIGHTS;
 	lights_mode = eLightsMode::SINGLE;
 	nmap_mode = eNormalMapMode::WITH_NMAP;
 	spec_mode = eSpecMode::WITH_SPEC;
+	show_shadowmaps = false;
 
 	// initialize render_calls vector
 	render_calls = *(new std::vector<RenderCall>());
@@ -52,8 +53,6 @@ Renderer::Renderer(const char* shader_atlas_filename)
 
 void Renderer::setupScene(Camera * camera)
 {
-	render_calls.clear();
-
 	if (scene->skybox_filename.size())
 		skybox_cubemap = GFX::Texture::Get(std::string(scene->base_folder + "/" + scene->skybox_filename).c_str());
 	else
@@ -61,6 +60,48 @@ void Renderer::setupScene(Camera * camera)
 
 	lights.clear();
 
+	render_calls.clear();
+	//process entities
+	for (int i = 0; i < scene->entities.size(); ++i)
+	{
+		BaseEntity* ent = scene->entities[i];
+		if (!ent->visible)
+			continue;
+
+		// add  the lights
+		if (ent->getType() == eEntityType::LIGHT)
+		{
+			lights.push_back((SCN::LightEntity*)ent);
+		}
+	}
+
+	generateShadowmaps(camera);
+	
+}
+
+void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
+{
+	this->scene = scene;
+	setupScene(camera);
+
+	renderFrame(scene, camera);
+
+	//debug
+	if (show_shadowmaps)
+	{
+		debugShadowMaps();
+	}
+
+}
+
+// Function that will actually render the frame
+void Renderer::renderFrame(SCN::Scene * scene, Camera * camera)
+{
+	camera->enable();
+
+	// clear render calls structures
+	render_calls.clear();
+	
 	//process entities
 	for (int i = 0; i < scene->entities.size(); ++i)
 	{
@@ -75,21 +116,11 @@ void Renderer::setupScene(Camera * camera)
 			if (pent->prefab)
 				createNodeRC(&pent->root, camera);
 		}
-		else if (ent->getType() == eEntityType::LIGHT)
-		{
-			lights.push_back((SCN::LightEntity*)ent);
-		}
 	}
-	
-}
-
-void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
-{
-	this->scene = scene;
-	setupScene(camera);
 
 	glDisable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
+
 
 	//set the clear color (the background color)
 	glClearColor(scene->background_color.x, scene->background_color.y, scene->background_color.z, 1.0);
@@ -102,11 +133,16 @@ void Renderer::renderScene(SCN::Scene* scene, Camera* camera)
 	if(skybox_cubemap)
 		renderSkybox(skybox_cubemap);
 
-	if(alpha_sort_mode == SORTED) std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
+	if(sort_alpha) std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
 
 	// render everything
 	switch (render_mode) {
 		case eRenderMode::FLAT:
+			for (auto& rc : render_calls) {
+				renderMeshWithMaterialFlat(rc);
+			}
+			break;
+		case eRenderMode::TEXTURED:
 			for (auto& rc : render_calls) {
 				renderMeshWithMaterial(rc);
 			}
@@ -158,6 +194,47 @@ void Renderer::renderSkybox(GFX::Texture* cubemap)
 	shader->disable();
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_DEPTH_TEST);
+}
+
+//renders a mesh given its transform 
+void Renderer::renderMeshWithMaterialFlat(const RenderCall rc)
+{
+	//in case there is nothing to do
+	if (!rc.mesh || !rc.mesh->getNumVertices() || !rc.material)
+		return;
+	assert(glGetError() == GL_NO_ERROR);
+
+	//define locals to simplify coding
+	GFX::Shader* shader = NULL;
+
+	Camera* camera = Camera::current;
+	if (rc.material->alpha_mode == SCN::eAlphaMode::BLEND)
+		return;
+	if (rc.material->two_sided)
+		glDisable(GL_CULL_FACE);
+	else
+		glEnable(GL_CULL_FACE);
+	assert(glGetError() == GL_NO_ERROR);
+
+	glEnable(GL_DEPTH_TEST);
+
+	//chose a shader
+	shader = GFX::Shader::Get("flat");
+
+	assert(glGetError() == GL_NO_ERROR);
+	if (!shader)
+		return;
+	shader->enable();
+
+	//upload uniforms
+	shader->setUniform("u_model", rc.model);
+	cameraToShader(camera, shader);
+
+	//this is used to say which is the alpha threshold to what we should not paint a pixel on the screen (to cut polygons according to texture alpha)
+	//shader->setUniform("u_alpha_cutoff", rc.material->alpha_mode == SCN::eAlphaMode::MASK ? rc.material->alpha_cutoff : 0.001f);
+
+	rc.mesh->render(GL_TRIANGLES);
+	shader->disable();
 }
 
 //renders a mesh given its transform and material
@@ -237,6 +314,7 @@ void SCN::Renderer::cameraToShader(Camera* camera, GFX::Shader* shader)
 	shader->setUniform("u_camera_position", camera->eye);
 }
 
+
 #ifndef SKIP_IMGUI
 
 void Renderer::showUI()
@@ -245,9 +323,10 @@ void Renderer::showUI()
 	ImGui::Checkbox("Wireframe", &render_wireframe);
 	ImGui::Checkbox("Boundaries", &render_boundaries);
 
-	ImGui::Combo("Render Mode", (int*)&render_mode, "FLAT\0LIGHTS", 2);
+	ImGui::Checkbox("Show shadowmaps", &show_shadowmaps);
+	ImGui::Checkbox("Sort by alpha", &sort_alpha);
 
-	ImGui::Combo("Alpha Sorting Mode", (int*)&alpha_sort_mode, "NOT SORTED\0SORTED", 2);
+	ImGui::Combo("Render Mode", (int*)&render_mode, "FLAT\0TEXTURED NO LIGHTS\0WITH LIGHTS", 3);
 	ImGui::Combo("Lights Mode", (int*)&lights_mode, "MULTI-PASS\0SINGLE PASS", 2);
 	ImGui::Combo("Normal Map Mode", (int*)&nmap_mode, "WITHOUT\0WITH", 2);
 	ImGui::Combo("Specular Light Mode", (int*)&spec_mode, "WITHOUT\0WITH", 2);
@@ -263,6 +342,7 @@ void Renderer::showUI() {}
 
 // *********************************************** MY CODE ***********************************************
 
+/***************************  Render related  **************************/
 // Create the render calls for one node
 void Renderer::createNodeRC(SCN::Node* node, Camera* camera)
 {
@@ -491,10 +571,6 @@ void Renderer::renderMeshWithMaterialLightMulti(const RenderCall rc)
 	glDepthFunc(GL_LESS);
 }
 
-
-
-
-
 //renders a mesh given its transform and material adding lights, single - pass
 void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 {
@@ -561,3 +637,67 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 	glDepthFunc(GL_LESS);
 }
 
+
+/***************************  Shadowmap related  **************************/
+void Renderer::debugShadowMaps()
+{
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_BLEND);
+	for (auto light : lights) {
+		if (!light->shadowmap)
+			continue;
+
+		GFX::Shader* shader = GFX::Shader::getDefaultShader("linear_depth");
+		shader->enable();
+		shader->setUniform("u_camera_nearfar", vec2(light->near_distance, light->max_distance));
+
+		light->shadowmap->toViewport(shader);
+	}
+}
+
+void Renderer::generateShadowmaps(Camera* camera) {
+
+	Camera local_cam;
+
+	for (auto light : lights) {
+		if (!light->cast_shadows) 
+			continue;
+		
+		if (light->light_type != eLightType::SPOT)
+			continue;
+
+		// Check if light inside camera
+		//compute the bounding box of the light in world space
+		BoundingBox world_bounding = light->root.getBoundingBox();
+
+		//if bounding box is outside the camera frustum then the object is probably not visible
+		if (!camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize))
+			continue;
+
+		if (!light->shadowmap_fbo)
+		{
+			light->shadowmap_fbo = new GFX::FBO();
+			light->shadowmap_fbo->setDepthOnly(SHADOWMAP_RES_X, SHADOWMAP_RES_Y);
+			light->shadowmap = light->shadowmap_fbo->depth_texture;
+		}
+
+		vec3 position = light->root.model.getTranslation();
+		vec3 front = light->root.model.rotateVector(vec3(0, 0, -1));
+		vec3 up = vec3(0, 1, 0);
+
+		if (dot(up, front) == 0)
+			up = vec3(1, 0, 0);
+
+		// as long as the light is not looking straight down we use (0, 1, 0) as up vector
+		local_cam.lookAt(position, position + front, up);
+		if (light->light_type == eLightType::SPOT)
+			local_cam.setPerspective(light->cone_info.y, SHADOWMAP_RES_X / SHADOWMAP_RES_Y, light->near_distance, light->max_distance);
+		
+		light->shadowmap_fbo->bind();
+		renderFrame(scene, &local_cam);
+		light->shadowmap_fbo->unbind();
+
+		light->shadow_viewproj = local_cam.viewprojection_matrix;
+		
+	}
+}
