@@ -45,6 +45,10 @@ Renderer::Renderer(const char* shader_atlas_filename)
 	show_shadowmaps = false;
 	use_shadowmaps = true;
 
+	// initialize shadowmap atlas related ptrs to nullptrs;
+	shadowmap_atlas_fbo = nullptr;
+	shadowmap_atlas = nullptr;
+
 	// initialize render_calls vector
 	render_calls = *(new std::vector<RenderCall>());
 
@@ -76,6 +80,7 @@ void Renderer::setupScene(Camera * camera)
 		}
 	}
 
+	// no need to generate the shadowmaps if we don't use them
 	if(use_shadowmaps)
 		generateShadowmaps(camera);
 	
@@ -137,7 +142,8 @@ void Renderer::renderFrame(SCN::Scene * scene, Camera * camera)
 
 	if(sort_alpha) std::sort(render_calls.begin(), render_calls.end(), rc_sorter());
 
-	// render everything
+	// render everything, I decided to copy and paste the loops since this way we don't need to check
+	// in which case we are for every iteration, just once
 	switch (render_mode) {
 		case eRenderMode::FLAT:
 			for (auto& rc : render_calls) {
@@ -198,7 +204,7 @@ void Renderer::renderSkybox(GFX::Texture* cubemap)
 	glEnable(GL_DEPTH_TEST);
 }
 
-//renders a mesh given its transform 
+//renders a mesh given its transform, no textures
 void Renderer::renderMeshWithMaterialFlat(const RenderCall rc)
 {
 	//in case there is nothing to do
@@ -239,7 +245,7 @@ void Renderer::renderMeshWithMaterialFlat(const RenderCall rc)
 	shader->disable();
 }
 
-//renders a mesh given its transform and material
+//renders a mesh given its transform and material with textures
 void Renderer::renderMeshWithMaterial(const RenderCall rc)
 {
 	//in case there is nothing to do
@@ -325,17 +331,17 @@ void Renderer::showUI()
 	ImGui::Checkbox("Wireframe", &render_wireframe);
 	ImGui::Checkbox("Boundaries", &render_boundaries);
 
-	ImGui::Checkbox("Use shadowmaps", &use_shadowmaps);
+	
 	ImGui::Checkbox("Show shadowmaps", &show_shadowmaps);
-	ImGui::Checkbox("Sort by alpha", &sort_alpha);
 
 	ImGui::Combo("Render Mode", (int*)&render_mode, "FLAT\0TEXTURED NO LIGHTS\0WITH LIGHTS", 3);
+	
+	//add here your stuff
+	ImGui::Checkbox("Use shadowmaps", &use_shadowmaps);
+	ImGui::Checkbox("Sort by alpha", &sort_alpha);
 	ImGui::Combo("Lights Mode", (int*)&lights_mode, "MULTI-PASS\0SINGLE PASS", 2);
 	ImGui::Combo("Normal Map Mode", (int*)&nmap_mode, "WITHOUT\0WITH", 2);
 	ImGui::Combo("Specular Light Mode", (int*)&spec_mode, "WITHOUT\0WITH", 2);
-
-	//add here your stuff
-	//...
 }
 
 #else
@@ -398,14 +404,23 @@ void Renderer::createRenderCall(Matrix44 model, GFX::Mesh* mesh, SCN::Material* 
 }
 
 
+// function to compute and store the pointers of the lights that affect each render call
+// this way we can simply interate over them in the render and not have to check each time if a light affects or not
 void Renderer::updateRCLights() {
 	if (lights.size()) {
 		for (auto& rc : render_calls) {
 			rc.lights_affecting.clear();
+
+			// get bounding box just once
 			BoundingBox world_bounding = transformBoundingBox(rc.model, rc.mesh->box);
 
+			int affecting = 0;
+
 			for (int i = 0; i < lights.size(); i++) {
-				if (i >= MAX_LIGHTS) break; // we cannot send more lights than this max variable
+				// we cannot send more lights to the shader than this max variable
+				// we use affecting and not i, because we might checked more lights than the max
+				// but not all are affecting, so we could still pass them onto the shader
+				if (affecting >= MAX_LIGHTS) break; 
 
 				LightEntity* light = lights[i];
 
@@ -413,11 +428,13 @@ void Renderer::updateRCLights() {
 					continue;
 				}// Directional light always affects, no need to compute if the bounding boxes overlap
 				else if (light->light_type == eLightType::DIRECTIONAL) {
+					affecting++;
 					rc.lights_affecting.push_back(light);
 					continue;
 				}
 				// if it overlaps, push light pointer to the vector of lights that affect the node
 				if (BoundingBoxSphereOverlap(world_bounding, light->root.model.getTranslation(), light->max_distance)) {
+					affecting++;
 					rc.lights_affecting.push_back(light);
 				}
 			}

@@ -30,7 +30,7 @@ namespace SCN {
 		GFX::FBO* shadowmap_fbo;
 		GFX::Texture* shadowmap;
 		mat4 shadow_viewproj;
-
+		vec4 shadowmap_range;
 
 		ENTITY_METHODS(LightEntity, LIGHT, 14,4);
 

@@ -91,6 +91,11 @@ namespace SCN {
 		bool render_boundaries;
 		bool show_shadowmaps;
 
+		// shadowmap atlas
+		GFX::FBO* shadowmap_atlas_fbo;
+		GFX::Texture* shadowmap_atlas;
+
+
 		GFX::Texture* skybox_cubemap;
 
 		SCN::Scene* scene;
