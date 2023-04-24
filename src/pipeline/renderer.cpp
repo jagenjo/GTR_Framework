@@ -508,6 +508,17 @@ GFX::Shader* Renderer::prep_shader(const RenderCall rc, const char* shader_name)
 
 
 void Renderer::sendLightInfoMulti(LightEntity* light, GFX::Shader* shader) {
+	
+	if (!use_shadowmaps)
+		shader->setUniform("u_shadow_params", vec2(0, 0.0));
+	else {
+		shader->setUniform("u_shadow_params", vec2(light->shadowmap ? 1 : 0, light->shadow_bias));
+		if (light->shadowmap) {
+			shader->setTexture("u_shadowmap", light->shadowmap, 8);
+			shader->setUniform("u_shadow_viewproj", light->shadow_viewproj);
+		}
+	}
+
 	if (light->light_type == eLightType::SPOT)
 		shader->setUniform("u_light_cone", vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD)));
 

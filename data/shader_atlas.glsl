@@ -355,6 +355,14 @@ void main()
 	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
 	light +=  texture( u_occl_metal_rough_texture , v_uv).x * u_ambient_light;
 
+
+	// test shadowmap
+	float shadow_factor = 1.0;
+	
+	if( u_shadow_params.x != 0.0 )
+		shadow_factor = testShadow(v_world_position);
+
+
 	if(int(u_light_info.x) == NO_LIGHT){}
 
 	else{
@@ -363,7 +371,7 @@ void main()
 		if(int(u_light_info.x) == DIRECTIONAL_LIGHT)
 		{
 			float NdotL = dot(N, u_light_front);
-			light += max(NdotL, 0.0) * u_light_color;
+			light += max(NdotL, 0.0) * u_light_color * shadow_factor;
 
 			att = max(NdotL, 0.0);
 			L = normalize(u_light_front);
@@ -393,7 +401,7 @@ void main()
 			att = att * att;
 
 			// we can simply do max since both N and L are normal vectors
-			light += max(NdotL, 0.0) * u_light_color *att;
+			light += max(NdotL, 0.0) * u_light_color *att * shadow_factor;
 
 		}
 		
@@ -406,7 +414,7 @@ void main()
 			int shininess = int(1/(u_metal_rough_factor.y * texture( u_occl_metal_rough_texture , v_uv).z));
 			prod_s = pow(prod_s, shininess);
 
-			light += u_light_color * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y;
+			light += u_light_color * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y * shadow_factor;
 
 		}
 	}
