@@ -451,7 +451,7 @@ void Renderer::updateRCLights() {
 
 }
 
-
+// preps a shader for light - rendering, used in both single and multi-pass
 GFX::Shader* Renderer::prep_shader(const RenderCall rc, const char* shader_name) {
 
 	//define locals to simplify coding
@@ -532,9 +532,9 @@ GFX::Shader* Renderer::prep_shader(const RenderCall rc, const char* shader_name)
 }
 
 
+// sends the info of a single light to the shader
 void Renderer::sendLightInfoMulti(LightEntity* light, GFX::Shader* shader) {
 	
-	// DELETE LATER: THIS SHOULD NOT CRASH; BUT MAYBE IT DOES :)
 	if (!use_shadowmaps || !shadowmap_atlas)
 		shader->setUniform("u_shadow_params", vec2(0, 0.0));
 	else {
@@ -635,6 +635,11 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 	vec3 light_position[MAX_LIGHTS], light_front[MAX_LIGHTS], light_color[MAX_LIGHTS];
 	vec4 light_info[MAX_LIGHTS];
 
+	//shadowmap related
+	vec2 shadow_params[MAX_LIGHTS];
+	vec4 shadow_region[MAX_LIGHTS];
+	mat4 shadow_viewproj[MAX_LIGHTS];
+
 	if (num_lights) {
 
 		// loop with the lights
@@ -642,6 +647,19 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 			// note that num_lights > MAX_LIGHTS is controlled when we set up the render calls
 
 			LightEntity* light = rc.lights_affecting[i];
+
+			if (!use_shadowmaps || !shadowmap_atlas)
+				shadow_params[i] = vec2(0.0, 0.0);
+			else {
+				// now we use whether the light casts shadows or not since the light does not have a shadowmap of its own
+				shadow_params[i] = vec2(light->cast_shadows ? 1 : 0, light->shadow_bias);
+				
+				if (shadowmap_atlas) {
+					shadow_region[i] = light->shadowmap_region;
+					shadow_viewproj[i] = light->shadow_viewproj;
+				}
+			}
+
 
 			if (light->light_type == eLightType::SPOT)
 				light_cone[i] = vec2(cos(light->cone_info.x * DEG2RAD), cos(light->cone_info.y * DEG2RAD));
@@ -660,6 +678,16 @@ void Renderer::renderMeshWithMaterialLightSingle(const RenderCall rc)
 		shader->setUniform3Array("u_light_front", (float*)&light_front, MAX_LIGHTS);
 		shader->setUniform3Array("u_light_color", (float*)&light_color, MAX_LIGHTS);
 		shader->setUniform4Array("u_light_info", (float*)&light_info, MAX_LIGHTS);
+
+		// this we always need to pass so that the shader can check if a light has shadowmaps or not
+		shader->setUniform2Array("u_shadow_params", (float*)&shadow_params, MAX_LIGHTS);
+
+		// the rest we can ignore if we are not using shadowmaps or  the atlas does not exist
+		if (shadowmap_atlas && use_shadowmaps) {
+			shader->setTexture("u_shadowmap", shadowmap_atlas, 8);
+			shader->setUniform4Array("u_shadowmap_region", (float*)&shadow_region, MAX_LIGHTS);
+			shader->setMatrix44Array("u_shadow_viewproj", (Matrix44*) &shadow_viewproj, MAX_LIGHTS);
+		}
 
 		shader->setUniform("u_num_lights", min(num_lights, MAX_LIGHTS));
 

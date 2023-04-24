@@ -483,6 +483,51 @@ uniform vec3 u_light_color[MAX_LIGHTS];
 
 uniform vec2 u_light_cone[MAX_LIGHTS]; // cos(min_angle), cos(max_angle)
 
+// shadowmap related
+uniform mat4 u_shadow_viewproj[MAX_LIGHTS];
+uniform vec2 u_shadow_params[MAX_LIGHTS];
+uniform vec4 u_shadowmap_region[MAX_LIGHTS];
+uniform sampler2D u_shadowmap;
+
+
+float testShadow( vec3 world_pos , int i )
+{
+	// projection of 3d point to shadowmap
+	vec4 proj_pos = u_shadow_viewproj[i] * vec4(world_pos, 1.0);
+
+	// from homogenous space to clip space
+	vec2 shadow_uv = proj_pos.xy / proj_pos.w;
+
+	//clip space -> uv space
+	shadow_uv = shadow_uv * 0.5 + vec2(0.5);
+
+	//scale it 
+	shadow_uv.x = (shadow_uv.x + u_shadowmap_region[i].x) * u_shadowmap_region[i].z;
+	shadow_uv.y = (shadow_uv.y + u_shadowmap_region[i].y) * u_shadowmap_region[i].w;
+
+	// check if the point is inside the shadowmap
+	if( (shadow_uv.x < 0.0) || (shadow_uv.x > 1.0) 
+		|| (shadow_uv.y < 0.0) || (shadow_uv.y > 1.0) )
+		return 0.0;
+
+
+	// get point depth [-1 ... +1] in non-linear space
+	float real_depth = (proj_pos.z - u_shadow_params[i].y) / proj_pos.w;
+
+	// normalize [-1 .. +1] -> [0..1]
+	real_depth = real_depth * 0.5 + 0.5;
+
+	float shadow_depth = texture(u_shadowmap, shadow_uv).x;
+
+	float shadow_factor = 1.0;
+
+	if (shadow_depth < real_depth)
+		shadow_factor = 0.0;
+
+	return shadow_factor;
+}
+
+
 mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
 {
 	// get edge vectors of the pixel triangle
@@ -533,15 +578,22 @@ void main()
 	// add ambient light considering occlusion, taking into account that occlusion texture is in the red channel (pos x)
 	light +=  texture( u_occl_metal_rough_texture , v_uv).x * u_ambient_light;
 
+	float shadow_factor = 1.0;
+
 	for( int i = 0; i < MAX_LIGHTS; i++){
 		if((i >= u_num_lights) || (int(u_light_info[i].x) == NO_LIGHT)){}
 		
 		else{
+			
+			if(u_shadow_params[i] != 0.0){
+				shadow_factor = testShadow(v_world_position, i);
+			}
+
 			vec3 L;
 			if(int(u_light_info[i].x) == DIRECTIONAL_LIGHT)
 			{
 				float NdotL = dot(N, u_light_front[i]);
-				light += max(NdotL, 0.0) * u_light_color[i];
+				light += max(NdotL, 0.0) * u_light_color[i] * shadow_factor;
 				att = max(NdotL, 0.0);
 				L = normalize(u_light_front[i]);
 			}
@@ -570,7 +622,7 @@ void main()
 				att = att * att;
 
 				// we can simply do max since both N and L are normal vectors
-				light += max(NdotL, 0.0) * u_light_color[i] *att;
+				light += max(NdotL, 0.0) * u_light_color[i] *att * shadow_factor;
 
 			}
 
@@ -583,7 +635,7 @@ void main()
 				int shininess = int(1/(u_metal_rough_factor.y * texture( u_occl_metal_rough_texture , v_uv).z));
 				prod_s = pow(prod_s, shininess);
 
-				light += u_light_color[i] * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y;
+				light += u_light_color[i] * att * prod_s * u_metal_rough_factor.x * texture( u_occl_metal_rough_texture , v_uv).y * shadow_factor;
 
 			}
 
