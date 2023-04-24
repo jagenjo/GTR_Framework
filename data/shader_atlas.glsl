@@ -326,6 +326,8 @@ void main()
 		{
 			float NdotL = dot(N, u_light_front);
 			light += max(NdotL, 0.0) * u_light_color;
+
+			att = max(NdotL, 0.0);
 			L = normalize(u_light_front);
 		}
 		else
@@ -489,7 +491,7 @@ void main()
 			{
 				float NdotL = dot(N, u_light_front[i]);
 				light += max(NdotL, 0.0) * u_light_color[i];
-
+				att = max(NdotL, 0.0);
 				L = normalize(u_light_front[i]);
 			}
 			else
