@@ -266,8 +266,43 @@ uniform vec3 u_light_color;
 
 uniform vec2 u_light_cone; // cos(min_angle), cos(max_angle)
 
+// shadowmap related
+uniform mat4 u_shadow_viewproj;
+uniform vec2 u_shadow_params;
+uniform sampler2D u_shadowmap;
+
+float testShadow( vec3 world_pos )
+{
+	// projection of 3d point to shadowmap
+	vec4 proj_pos = u_shadow_viewproj * vec4(world_pos, 1.0);
+
+	// from homogenous space to clip space
+	vec2 shadow_uv = proj_pos.xy / proj_pos.w;
+
+	//clip space -> uv space
+	shadow_uv = shadow_uv * 0.5 + vec2(0.5);
+
+	// check if the point is inside the shadowmap
+	if( (shadow_uv.x < 0.0) || (shadow_uv.x > 1.0) 
+		|| (shadow_uv.y < 0.0) || (shadow_uv.y > 1.0) )
+		return 0.0;
 
 
+	// get point depth [-1 ... +1] in non-linear space
+	float real_depth = (proj_pos.z - u_shadow_params.y) / proj_pos.w;
+
+	// normalize [-1 .. +1] -> [0..1]
+	real_depth = real_depth * 0.5 + 0.5;
+
+	float shadow_depth = texture(u_shadowmap, shadow_uv).x;
+
+	float shadow_factor = 1.0;
+
+	if (shadow_depth < real_depth)
+		shadow_factor = 0.0;
+
+	return shadow_factor;
+}
 
 mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
 {

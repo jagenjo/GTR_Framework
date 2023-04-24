@@ -39,7 +39,7 @@ Renderer::Renderer(const char* shader_atlas_filename)
 
 	sort_alpha = true;
 	render_mode = eRenderMode::LIGHTS;
-	lights_mode = eLightsMode::SINGLE;
+	lights_mode = eLightsMode::MULTI;
 	nmap_mode = eNormalMapMode::WITH_NMAP;
 	spec_mode = eSpecMode::WITH_SPEC;
 	show_shadowmaps = false;
