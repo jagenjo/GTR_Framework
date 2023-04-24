@@ -269,6 +269,7 @@ uniform vec2 u_light_cone; // cos(min_angle), cos(max_angle)
 // shadowmap related
 uniform mat4 u_shadow_viewproj;
 uniform vec2 u_shadow_params;
+uniform vec4 u_shadowmap_region;
 uniform sampler2D u_shadowmap;
 
 float testShadow( vec3 world_pos )
@@ -281,6 +282,10 @@ float testShadow( vec3 world_pos )
 
 	//clip space -> uv space
 	shadow_uv = shadow_uv * 0.5 + vec2(0.5);
+
+	//scale it 
+	shadow_uv.x = (shadow_uv.x + u_shadowmap_region.x) * u_shadowmap_region.z;
+	shadow_uv.y = (shadow_uv.y + u_shadowmap_region.y) * u_shadowmap_region.w;
 
 	// check if the point is inside the shadowmap
 	if( (shadow_uv.x < 0.0) || (shadow_uv.x > 1.0) 

@@ -104,6 +104,7 @@ namespace SCN {
 
 		//updated every frame
 		Renderer(const char* shaders_atlas_filename );
+		~Renderer();
 
 		//just to be sure we have everything ready for the rendering
 		void setupScene(Camera* camera);

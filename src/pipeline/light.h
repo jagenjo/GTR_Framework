@@ -27,15 +27,12 @@ namespace SCN {
 		float area; //for direct;
 
 		//rendering
-		GFX::FBO* shadowmap_fbo;
-		GFX::Texture* shadowmap;
 		mat4 shadow_viewproj;
 		vec4 shadowmap_region;
 
 		ENTITY_METHODS(LightEntity, LIGHT, 14,4);
 
 		LightEntity();
-		~LightEntity();
 
 		void configure(cJSON* json);
 		void serialize(cJSON* json);

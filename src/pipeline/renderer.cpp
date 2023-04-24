@@ -56,6 +56,11 @@ Renderer::Renderer(const char* shader_atlas_filename)
 	white_texture = GFX::Texture::getWhiteTexture();
 }
 
+Renderer::~Renderer() {
+	if (shadowmap_atlas_fbo)
+		delete(shadowmap_atlas_fbo);
+}
+
 void Renderer::setupScene(Camera * camera)
 {
 	if (scene->skybox_filename.size())
@@ -330,15 +335,18 @@ void Renderer::showUI()
 
 	ImGui::Checkbox("Wireframe", &render_wireframe);
 	ImGui::Checkbox("Boundaries", &render_boundaries);
-
-	
 	ImGui::Checkbox("Show shadowmaps", &show_shadowmaps);
+
+	// my checkboxes
+	ImGui::Checkbox("Use shadowmaps", &use_shadowmaps);
+	ImGui::Checkbox("Sort by alpha", &sort_alpha);
+	
+
+
 
 	ImGui::Combo("Render Mode", (int*)&render_mode, "FLAT\0TEXTURED NO LIGHTS\0WITH LIGHTS", 3);
 	
-	//add here your stuff
-	ImGui::Checkbox("Use shadowmaps", &use_shadowmaps);
-	ImGui::Checkbox("Sort by alpha", &sort_alpha);
+	// my combos
 	ImGui::Combo("Lights Mode", (int*)&lights_mode, "MULTI-PASS\0SINGLE PASS", 2);
 	ImGui::Combo("Normal Map Mode", (int*)&nmap_mode, "WITHOUT\0WITH", 2);
 	ImGui::Combo("Specular Light Mode", (int*)&spec_mode, "WITHOUT\0WITH", 2);
@@ -526,12 +534,15 @@ GFX::Shader* Renderer::prep_shader(const RenderCall rc, const char* shader_name)
 
 void Renderer::sendLightInfoMulti(LightEntity* light, GFX::Shader* shader) {
 	
-	if (!use_shadowmaps)
+	// DELETE LATER: THIS SHOULD NOT CRASH; BUT MAYBE IT DOES :)
+	if (!use_shadowmaps || !shadowmap_atlas)
 		shader->setUniform("u_shadow_params", vec2(0, 0.0));
 	else {
-		shader->setUniform("u_shadow_params", vec2(light->shadowmap ? 1 : 0, light->shadow_bias));
-		if (light->shadowmap) {
-			shader->setTexture("u_shadowmap", light->shadowmap, 8);
+		// now we use whether the light casts shadows or not since the light does not have a shadowmap of its own
+		shader->setUniform("u_shadow_params", vec2(light->cast_shadows ? 1 : 0, light->shadow_bias));
+		if (shadowmap_atlas) {
+
+			shader->setUniform("u_shadowmap_region", light->shadowmap_region);
 			shader->setUniform("u_shadow_viewproj", light->shadow_viewproj);
 		}
 	}
@@ -566,7 +577,11 @@ void Renderer::renderMeshWithMaterialLightMulti(const RenderCall rc)
 	if (num_lights) {
 		// first iter outside the loop
 		LightEntity* light = rc.lights_affecting[0];
-	
+		
+		// we only pass the texture once
+		if(shadowmap_atlas && use_shadowmaps)
+			shader->setTexture("u_shadowmap", shadowmap_atlas, 8);
+
 		sendLightInfoMulti(light, shader);
 
 		rc.mesh->render(GL_TRIANGLES);
@@ -677,23 +692,6 @@ void Renderer::debugShadowMaps()
 
 	vec2 size = CORE::getWindowSize();
 
-	/*for (auto light : lights) {
-		if (!light->shadowmap)
-			continue;
-
-		GFX::Shader* shader = GFX::Shader::getDefaultShader("linear_depth");
-		shader->enable();
-		shader->setUniform("u_camera_nearfar", vec2(light->near_distance, light->max_distance));
-
-		glViewport(x, 100, 128, 128);
-
-		x += 130;
-
-		// so we don't get out of the screen.
-		if (x < size.x - 130)
-			light->shadowmap->toViewport(shader);;
-	}*/
-
 	// only paint it if it doesn't go out of the screen size
 	if(SHADOWMAP_RES_X + 325 < size.x && SHADOWMAP_RES_Y + 100 < size.y)
 		glViewport(325, 100, SHADOWMAP_RES_X, SHADOWMAP_RES_Y);
@@ -724,8 +722,9 @@ void Renderer::generateShadowmaps(Camera* camera) {
 	// since we are painting to a single texture, we just need to bind / unbind once
 	shadowmap_atlas_fbo->bind();
 
-	int x_offset;
-	int y_offset;
+	vec4 region, screen_region;
+
+	glEnable(GL_SCISSOR_TEST);
 	for (auto light : lights) {
 		//check if we have reached the limit of shadowmaps that we support, if so break;
 		if (num_shadowmaps >= MAX_LIGHTS * MAX_LIGHTS)
@@ -737,12 +736,13 @@ void Renderer::generateShadowmaps(Camera* camera) {
 		if ((light->light_type != eLightType::SPOT) && (light->light_type != eLightType::DIRECTIONAL))
 			continue;
 
+
 		// Check if light inside camera
 		//compute the bounding box of the light in world space
 		BoundingBox world_bounding = light->root.getBoundingBox();
 
-		//if bounding box is outside the camera frustum then the object is probably not visible
-		if (!camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize))
+		//if bounding box is outside the camera frustum then the object is probably not visible, unless it is a directional
+		if (!camera->testBoxInFrustum(world_bounding.center, world_bounding.halfsize) && light->light_type != eLightType::DIRECTIONAL)
 			continue;
 
 		vec3 position = light->root.model.getTranslation();
@@ -765,20 +765,22 @@ void Renderer::generateShadowmaps(Camera* camera) {
 			float half_area = light->area / 2;
 			local_cam.setOrthographic(-half_area, half_area, half_area * aspect, -half_area * aspect, light->near_distance, light->max_distance);
 		}
-
-		x_offset = SHADOWMAP_RES_X * (num_shadowmaps % MAX_LIGHTS);
-		y_offset = std::floor(num_shadowmaps / MAX_LIGHTS);
-		
 		
 		// set region and render the shadowmap into the shadow atlas, the formulas assume that it is a square texture
-		light->shadowmap_region = vec4(x_offset, y_offset, x_offset + SHADOWMAP_RES_X, x_offset + SHADOWMAP_RES_Y);
-		glViewport(x_offset, y_offset, SHADOWMAP_RES_X, SHADOWMAP_RES_Y);
+		region = vec4((num_shadowmaps % MAX_LIGHTS), std::floor(num_shadowmaps / MAX_LIGHTS), 1.0 / (float)MAX_LIGHTS, 1.0 / (float)MAX_LIGHTS);
+		screen_region = vec4(SHADOWMAP_RES_X * region.x, SHADOWMAP_RES_Y * region.y, SHADOWMAP_RES_X, SHADOWMAP_RES_Y);
+		
+		light->shadowmap_region = region;
+
+		glViewport(screen_region.x, screen_region.y, screen_region.z, screen_region.w);
+		glScissor(screen_region.x, screen_region.y, screen_region.z, screen_region.w);
 		renderFrame(scene, &local_cam);
 		
 		light->shadow_viewproj = local_cam.viewprojection_matrix;
 		num_shadowmaps++;
 	}
 	shadowmap_atlas_fbo->unbind();
+	glDisable(GL_SCISSOR_TEST);
 
 	// put viewport to what it was before.
 	vec2 size = CORE::getWindowSize();
