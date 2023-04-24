@@ -266,6 +266,9 @@ uniform vec3 u_light_color;
 
 uniform vec2 u_light_cone; // cos(min_angle), cos(max_angle)
 
+
+
+
 mat3 cotangent_frame(vec3 N, vec3 p, vec2 uv)
 {
 	// get edge vectors of the pixel triangle

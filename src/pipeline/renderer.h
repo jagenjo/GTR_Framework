@@ -86,6 +86,7 @@ namespace SCN {
 		eSpecMode spec_mode;
 
 		bool sort_alpha;
+		bool use_shadowmaps;
 		bool render_wireframe;
 		bool render_boundaries;
 		bool show_shadowmaps;

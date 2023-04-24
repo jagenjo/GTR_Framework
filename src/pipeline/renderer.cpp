@@ -43,6 +43,7 @@ Renderer::Renderer(const char* shader_atlas_filename)
 	nmap_mode = eNormalMapMode::WITH_NMAP;
 	spec_mode = eSpecMode::WITH_SPEC;
 	show_shadowmaps = false;
+	use_shadowmaps = true;
 
 	// initialize render_calls vector
 	render_calls = *(new std::vector<RenderCall>());
@@ -75,7 +76,8 @@ void Renderer::setupScene(Camera * camera)
 		}
 	}
 
-	generateShadowmaps(camera);
+	if(use_shadowmaps)
+		generateShadowmaps(camera);
 	
 }
 
@@ -323,6 +325,7 @@ void Renderer::showUI()
 	ImGui::Checkbox("Wireframe", &render_wireframe);
 	ImGui::Checkbox("Boundaries", &render_boundaries);
 
+	ImGui::Checkbox("Use shadowmaps", &use_shadowmaps);
 	ImGui::Checkbox("Show shadowmaps", &show_shadowmaps);
 	ImGui::Checkbox("Sort by alpha", &sort_alpha);
 
@@ -643,6 +646,10 @@ void Renderer::debugShadowMaps()
 {
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_BLEND);
+
+	int x = 325;
+	vec2 size = CORE::getWindowSize();
+
 	for (auto light : lights) {
 		if (!light->shadowmap)
 			continue;
@@ -651,8 +658,17 @@ void Renderer::debugShadowMaps()
 		shader->enable();
 		shader->setUniform("u_camera_nearfar", vec2(light->near_distance, light->max_distance));
 
-		light->shadowmap->toViewport(shader);
+		glViewport(x, 100, 128, 128);
+
+		x += 130;
+
+		// so we don't get out of the screen.
+		if (x < size.x - 130)
+			light->shadowmap->toViewport(shader);;
 	}
+
+	glViewport(0, 0, size.x, size.y);
+
 }
 
 void Renderer::generateShadowmaps(Camera* camera) {
@@ -663,7 +679,7 @@ void Renderer::generateShadowmaps(Camera* camera) {
 		if (!light->cast_shadows) 
 			continue;
 		
-		if (light->light_type != eLightType::SPOT)
+		if ((light->light_type != eLightType::SPOT) && (light->light_type != eLightType::DIRECTIONAL))
 			continue;
 
 		// Check if light inside camera
@@ -688,11 +704,20 @@ void Renderer::generateShadowmaps(Camera* camera) {
 		if (dot(up, front) == 0)
 			up = vec3(1, 0, 0);
 
+		float aspect = SHADOWMAP_RES_X / SHADOWMAP_RES_Y;
+
 		// as long as the light is not looking straight down we use (0, 1, 0) as up vector
 		local_cam.lookAt(position, position + front, up);
+
 		if (light->light_type == eLightType::SPOT)
-			local_cam.setPerspective(light->cone_info.y, SHADOWMAP_RES_X / SHADOWMAP_RES_Y, light->near_distance, light->max_distance);
+			local_cam.setPerspective(light->cone_info.y * 2.0, aspect, light->near_distance, light->max_distance);
 		
+		else if (light->light_type == eLightType::DIRECTIONAL)
+		{
+			float half_area = light->area / 2;
+			local_cam.setOrthographic(-half_area, half_area, half_area * aspect, -half_area * aspect, light->near_distance, light->max_distance);
+		}
+
 		light->shadowmap_fbo->bind();
 		renderFrame(scene, &local_cam);
 		light->shadowmap_fbo->unbind();
