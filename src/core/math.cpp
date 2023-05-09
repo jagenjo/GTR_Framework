@@ -515,66 +515,75 @@ void Matrix44::setFrontAndOrthonormalize(Vector3f front)
 
 bool Matrix44::inverse()
 {
-	// http://www.geometrictools.com/LibFoundation/Mathematics/Wm4Matrix4.inl
-	double A0 = m[0] * m[5] - m[1] * m[4];
-	double A1 = m[0] * m[6] - m[2] * m[4];
-	double A2 = m[0] * m[7] - m[3] * m[4];
-	double A3 = m[1] * m[6] - m[2] * m[5];
-	double A4 = m[1] * m[7] - m[3] * m[5];
-	double A5 = m[2] * m[7] - m[3] * m[6];
-	double B0 = m[8] * m[13] - m[9] * m[12];
-	double B1 = m[8] * m[14] - m[10] * m[12];
-	double B2 = m[8] * m[15] - m[11] * m[12];
-	double B3 = m[9] * m[14] - m[10] * m[13];
-	double B4 = m[9] * m[15] - m[11] * m[13];
-	double B5 = m[10] * m[15] - m[11] * m[14];
-	double det = A0 * B5 - A1 * B4 + A2 * B3 + A3 * B2 - A4 * B1 + A5 * B0;
+   unsigned int i, j, k, swap;
+   float t;
+   Matrix44 temp, final;
+   final.setIdentity();
 
-	// std::numeric_limits<T>::epsilon() does not work with orthographic matrix with znear/far 0.1, 2000
-	// 1e-10 does not work with ortographic matrix znear/zfar -2000, 2000
-	auto threshold = (double)1e-11;
-	if (std::abs(det) <= threshold)
-	{
-		setIdentity();
-		return false;
-	}
+   temp = (*this);
 
-	auto rdet = double(1) / det;
+   unsigned int m,n;
+   m = n = 4;
+	
+   for (i = 0; i < m; i++)
+   {
+      // Look for largest element in column
 
-	Matrix44 tmp;
-	tmp.M[0][0] = +m[5] * B5 - m[6] * B4 + m[7] * B3;
-	tmp.M[1][0] = -m[4] * B5 + m[6] * B2 - m[7] * B1;
-	tmp.M[2][0] = +m[4] * B4 - m[5] * B2 + m[7] * B0;
-	tmp.M[3][0] = -m[4] * B3 + m[5] * B1 - m[6] * B0;
-	tmp.M[0][1] = -m[1] * B5 + m[2] * B4 - m[3] * B3;
-	tmp.M[1][1] = +m[0] * B5 - m[2] * B2 + m[3] * B1;
-	tmp.M[2][1] = -m[0] * B4 + m[1] * B2 - m[3] * B0;
-	tmp.M[3][1] = +m[0] * B3 - m[1] * B1 + m[2] * B0;
-	tmp.M[0][2] = +m[13] * A5 - m[14] * A4 + m[15] * A3;
-	tmp.M[1][2] = -m[12] * A5 + m[14] * A2 - m[15] * A1;
-	tmp.M[2][2] = +m[12] * A4 - m[13] * A2 + m[15] * A0;
-	tmp.M[3][2] = -m[12] * A3 + m[13] * A1 - m[14] * A0;
-	tmp.M[0][3] = -m[9] * A5 + m[10] * A4 - m[11] * A3;
-	tmp.M[1][3] = +m[8] * A5 - m[10] * A2 + m[11] * A1;
-	tmp.M[2][3] = -m[8] * A4 + m[9] * A2 - m[11] * A0;
-	tmp.M[3][3] = +m[8] * A3 - m[9] * A1 + m[10] * A0;
-	m[0] = tmp.m[0] * rdet;
-	m[1] = tmp.m[1] * rdet;
-	m[2] = tmp.m[2] * rdet;
-	m[3] = tmp.m[3] * rdet;
-	m[4] = tmp.m[4] * rdet;
-	m[5] = tmp.m[5] * rdet;
-	m[6] = tmp.m[6] * rdet;
-	m[7] = tmp.m[7] * rdet;
-	m[8] = tmp.m[8] * rdet;
-	m[9] = tmp.m[9] * rdet;
-	m[10] = tmp.m[10] * rdet;
-	m[11] = tmp.m[11] * rdet;
-	m[12] = tmp.m[12] * rdet;
-	m[13] = tmp.m[13] * rdet;
-	m[14] = tmp.m[14] * rdet;
-	m[15] = tmp.m[15] * rdet;
-	return true;
+      swap = i;
+      for (j = i + 1; j < m; j++)// m or n
+	  {
+		 if ( fabs(temp.M[j][i]) > fabs( temp.M[swap][i]) )
+            swap = j;
+	  }
+   
+      if (swap != i)
+      {
+         // Swap rows.
+         for (k = 0; k < n; k++)
+         {
+			 std::swap( temp.M[i][k],temp.M[swap][k]);
+			 std::swap( final.M[i][k], final.M[swap][k]);
+         }
+      }
+
+      // No non-zero pivot.  The CMatrix is singular, which shouldn't
+      // happen.  This means the user gave us a bad CMatrix.
+
+
+#define MATRIX_SINGULAR_THRESHOLD 0.00001 //change this if you experience problems with matrices
+
+      if ( fabsf(temp.M[i][i]) <= MATRIX_SINGULAR_THRESHOLD)
+	  {
+		  final.setIdentity();
+         return false;
+	  }
+#undef MATRIX_SINGULAR_THRESHOLD
+
+      t = 1.0f/temp.M[i][i];
+
+      for (k = 0; k < n; k++)//m or n
+      {
+         temp.M[i][k] *= t;
+         final.M[i][k] *= t;
+      }
+
+      for (j = 0; j < m; j++) // m or n
+      {
+         if (j != i)
+         {
+            t = temp.M[j][i];
+            for (k = 0; k < n; k++)//m or n
+            {
+               temp.M[j][k] -= (temp.M[i][k] * t);
+               final.M[j][k] -= (final.M[i][k] * t);
+            }
+         }
+      }
+   }
+
+   *this = final;
+
+   return true;
 }
 
 Quaternion::Quaternion()

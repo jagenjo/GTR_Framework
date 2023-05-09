@@ -46,6 +46,8 @@ namespace SCN {
 
 		BoundingBox aabb; //node bounding box in world space
 
+		float distance_to_camera;
+
 		//info to create the tree
 		Node* parent;
 		std::vector<Node*> children;
