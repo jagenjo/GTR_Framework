@@ -22,7 +22,6 @@ namespace SCN {
 	enum eRenderMode {
 		TEXTURED,
 		LIGHTS,
-		NORMAL_MAP,
 		DEFERRED,
 		FLAT
 	};
@@ -77,7 +76,6 @@ namespace SCN {
 		void renderMeshWithMaterialFlat(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
 		void renderMeshWithMaterial(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
 		void renderMeshWithMaterialLight(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
-		void renderMeshWithMaterialNormal(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
 		void renderMeshWithMaterialGBuffers(const Matrix44 model, GFX::Mesh* mesh, SCN::Material* material);
 
 

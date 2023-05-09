@@ -271,7 +271,10 @@ void main()
 	if(albedo.a < u_alpha_cutoff)
 		discard;
 
-	vec3 normal_map = texture(u_normal_texture, v_uv).xyz;
+	vec3 metallicness = texture(u_metallic_texture, v_uv).rgb * u_metallic_factor;
+	vec3 roughness = texture(u_metallic_texture, v_uv).rgb * u_roughness_factor;
+
+	vec3 normal_map = texture(u_normal_texture, v_uv).rgb;
 	normal_map = normalize(normal_map * 2.0 - 1.0);
 
 	vec3 N = normalize(v_normal);
@@ -309,12 +312,6 @@ void main()
 
 		light += max(NdotL, 0.0)  * u_light_color * attenuation;
 	}
-
-	vec3 metallicness = texture(u_metallic_texture, v_uv).rgb * u_metallic_factor;
-	vec3 roughness = texture(u_metallic_texture, v_uv).rgb * u_roughness_factor;
-
-	vec3 reflectance = mix(vec3(0.04), albedo.rgb, metallicness); //fresnel
-	vec3 specular = mix(reflectance, vec3(1.0), roughness);
 
 	vec3 color = albedo.rgb * light * shadow_factor; //*specular
 	color += u_emissive_factor * texture( u_emissive_texture, v_uv ).xyz; 
@@ -525,12 +522,12 @@ float testShadow(vec3 pos)
 	vec4 proj_pos = u_shadow_viewproj * vec4(pos, 1.0);
 	vec2 shadow_uv = (proj_pos.xy / proj_pos.w) * 0.5 + vec2(0.5);
 
-	if( shadow_uv.x < 0.0 || shadow_uv.x > 1.0 || shadow_uv.y < 0.0 || shadow_uv.y > 1.0 ) return 0.0;	
+	if( shadow_uv.x < 0.0 || shadow_uv.x > 1.0 || shadow_uv.y < 0.0 || shadow_uv.y > 1.0 ) return 1.0;	
 
 	float real_depth = (proj_pos.z - u_shadow_param.y) / proj_pos.w;
 	real_depth = real_depth * 0.5 + 0.5;
 
-	if( real_depth < 0.0 || real_depth > 1.0) return 0.0;
+	if( real_depth < 0.0 || real_depth > 1.0) return 1.0;
 
 	float shadow_depth = texture( u_shadowmap, shadow_uv).x;
 
