@@ -34,6 +34,7 @@ namespace GFX {
 		static std::map<std::string, Mesh*> sMeshesLoaded;
 		static bool use_binary; //always load the binary version of a mesh when possible
 		static bool interleave_meshes; //loaded meshes will me automatically interleaved
+		static bool use_vao; //use vertex array object
 		static bool auto_upload_to_vram; //loaded meshes will be stored in the VRAM
 		static long num_meshes_rendered;
 		static long num_triangles_rendered;
@@ -72,6 +73,8 @@ namespace GFX {
 
 		float radius;
 
+		unsigned int vao_id; //Vertex Array Object
+
 		unsigned int vertices_vbo_id;
 		unsigned int uvs_vbo_id;
 		unsigned int normals_vbo_id;
@@ -94,9 +97,11 @@ namespace GFX {
 		void renderFixedPipeline(int primitive); //sloooooooow
 		//void renderAnimated(unsigned int primitive, Skeleton *sk);
 
-		void enableBuffers(Shader* shader);
+		void enableBuffers(Shader* shader); //if shader is null the attrib locations must be POS=0, NORM=1, COORD=2, COORD1=3, COLOR=4, BONES=5, WEIGHTS=6
 		void drawCall(unsigned int primitive, int submesh_id = -1, int num_instances = 0);
 		void disableBuffers(Shader* shader);
+
+		void getSubmeshStartAndSize(int submesh_id, unsigned int& start, unsigned int& size);
 
 		bool readBin(const char* filename);
 		bool writeBin(const char* filename);
@@ -131,6 +136,7 @@ namespace GFX {
 
 		//optimize meshes
 		void uploadToVRAM();
+		void drawUsingVAO(unsigned int primitive, int submesh_id = -1);
 		bool interleaveBuffers();
 
 	private:

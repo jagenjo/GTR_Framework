@@ -282,6 +282,29 @@ namespace GFX
 		return temp;
 	}
 
+	Texture* Texture::DecodeAsync(const char* filename, std::vector<uint8>& buffer, bool mipmaps, bool wrap)
+	{
+		//check if exists
+		Texture* texture = Find(filename);
+		if (texture)
+			return texture;
+
+		static uint8 default_color[] = { 128,128,128 };
+
+		//create temp texture
+		Texture* temp = new Texture();
+		temp->create(1, 1, GL_RGB, GL_UNSIGNED_BYTE, false, default_color);
+		//register
+		temp->setName(filename);
+		temp->loading = true;
+
+		//add action to BG Thread 
+		LoadTextureTask* task = new LoadTextureTask(filename,buffer);
+		TaskManager::background.addTask(task);
+
+		return temp;
+	}
+
 	bool Texture::load(const char* filename, bool mipmaps, bool wrap, unsigned int type)
 	{
 		//non-image based formats
@@ -403,6 +426,7 @@ namespace GFX
 		//assert(glGetError() == GL_NO_ERROR);
 
 		glBindTexture(this->texture_type, texture_id);	//we activate this id to tell opengl we are going to use this texture
+		glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 		int w = ((int)this->width) >> level;
 		int h = ((int)this->height) >> level;
@@ -754,13 +778,13 @@ bool Image::load(const char* filename)
 		found = loadJPG(filename);
 	else
 	{
-		std::cout << "[ERROR]: unsupported format" << std::endl;
+		std::cout << TermColor::RED << "[ERROR]: unsupported format" << TermColor::DEFAULT << std::endl;
 		return false; //unsupported file type
 	}
 
 	if (!found) //file not found
 	{
-		std::cout << " [ERROR]: Texture not found " << std::endl;
+		std::cout << TermColor::RED << " [ERROR]: Texture not found " << TermColor::DEFAULT << std::endl;
 		return false;
 	}
 
@@ -1087,10 +1111,36 @@ LoadTextureTask::LoadTextureTask(const char* str)
 	image = NULL;
 }
 
+LoadTextureTask::LoadTextureTask(const char* filename, std::vector<uint8>& buffer)
+{
+	this->filename = filename;
+	image = NULL;
+	this->buffer = buffer;
+}
+
 void LoadTextureTask::onExecute()
 {
 	image = new Image();
-	if (!image->load(filename.c_str()))
+
+	if (buffer.size())
+	{
+		double time = getTime();
+		std::cout << " + Image decoding: " << TermColor::YELLOW << filename << TermColor::DEFAULT << " ... ";
+		std::string ext = toLowerCase(getExtension(filename));
+		if(ext == "png")
+			image->loadPNG(buffer);
+		else if(ext == "jpg" || ext == "jpeg")
+			image->loadJPG(buffer);
+		if (!image->width)
+		{
+			delete image;
+			image = NULL;
+			std::cout << TermColor::RED << "[ERROR]: unsupported format" << TermColor::DEFAULT << std::endl;
+			return;
+		}
+		std::cout << "[OK] Size: " << image->width << "x" << image->height << " Time: " << (getTime() - time) * 0.001 << "sec" << std::endl;
+	}
+	else if (!image->load(filename.c_str()))
 	{
 		delete image;
 		image = NULL;

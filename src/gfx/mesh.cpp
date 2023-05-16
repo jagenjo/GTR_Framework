@@ -23,6 +23,7 @@ namespace GFX {
 bool Mesh::use_binary = false;			//checks if there is .wbin, it there is one tries to read it instead of the other file
 bool Mesh::auto_upload_to_vram = true;	//uploads the mesh to the GPU VRAM to speed up rendering
 bool Mesh::interleave_meshes = true;	//places the geometry in an interleaved array
+bool Mesh::use_vao = false;	//places the geometry in an interleaved array
 
 std::map<std::string, Mesh*> Mesh::sMeshesLoaded;
 long Mesh::num_meshes_rendered = 0;
@@ -38,7 +39,7 @@ Mesh::Mesh()
 {
 	index = s_last_index++;
 	radius = 0;
-	vertices_vbo_id = uvs_vbo_id = uvs1_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = bones_vbo_id = weights_vbo_id = 0;
+	vao_id = vertices_vbo_id = uvs_vbo_id = uvs1_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = bones_vbo_id = weights_vbo_id = 0;
 	collision_model = NULL;
 
 	clear();
@@ -73,6 +74,8 @@ void Mesh::clear()
 		if (uvs1_vbo_id)
 			glDeleteBuffersARB(1, &uvs1_vbo_id);
     #else
+	if(vao_id)
+		glDeleteVertexArrays(1, &vao_id);
 	if (vertices_vbo_id)
 		glDeleteBuffers(1,&vertices_vbo_id);
 	if (uvs_vbo_id)
@@ -94,8 +97,8 @@ void Mesh::clear()
     #endif
 
 
-	//VBOs ids
-	vertices_vbo_id = uvs_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = weights_vbo_id = bones_vbo_id = uvs1_vbo_id = 0;
+	//GPU Buffers ids set to 0
+	vao_id = vertices_vbo_id = uvs_vbo_id = normals_vbo_id = colors_vbo_id = interleaved_vbo_id = indices_vbo_id = weights_vbo_id = bones_vbo_id = uvs1_vbo_id = 0;
 
 	//buffers
 	vertices.clear();
@@ -112,392 +115,6 @@ void Mesh::clear()
 		delete (CollisionModel3D*)collision_model;
 }
 
-int vertex_location = -1;
-int normal_location = -1;
-int uv_location = -1;
-int uv1_location = -1;
-int color_location = -1;
-int bones_location = -1;
-int weights_location = -1;
-
-void Mesh::enableBuffers(Shader* sh)
-{
-	vertex_location = sh->getAttribLocation("a_vertex");
-	/*
-	assert(vertex_location != -1 && "No a_vertex found in shader");
-	if (vertex_location == -1)
-		return;
-	*/
-
-	int spacing = 0;
-	int offset_normal = 0;
-	int offset_uv = 0;
-
-	if (interleaved.size())
-	{
-		spacing = sizeof(tInterleaved);
-		offset_normal = sizeof(Vector3f);
-		offset_uv = sizeof(Vector3f) + sizeof(Vector3f);
-	}
-
-	if (vertex_location != -1)
-	{
-		glEnableVertexAttribArray(vertex_location);
-		if (vertices_vbo_id || interleaved_vbo_id)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : vertices_vbo_id);
-			glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, spacing, 0);
-		}
-		else
-			glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].vertex : &vertices[0]);
-		checkGLErrors();
-	}
-
-	normal_location = -1;
-	if (normals.size() || spacing)
-	{
-		normal_location = sh->getAttribLocation("a_normal");
-		if (normal_location != -1)
-		{
-			glEnableVertexAttribArray(normal_location);
-			if (normals_vbo_id || interleaved_vbo_id)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : normals_vbo_id);
-				glVertexAttribPointer(normal_location, 3, GL_FLOAT, GL_FALSE, spacing, (void*)offset_normal);
-			}
-			else
-				glVertexAttribPointer(normal_location, 3, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].normal : &normals[0]);
-		}
-		checkGLErrors();
-	}
-
-	uv_location = -1;
-	if (uvs.size() || spacing)
-	{
-		uv_location = sh->getAttribLocation("a_coord");
-		if (uv_location != -1)
-		{
-			glEnableVertexAttribArray(uv_location);
-			if (uvs_vbo_id || interleaved_vbo_id)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : uvs_vbo_id);
-				glVertexAttribPointer(uv_location, 2, GL_FLOAT, GL_FALSE, spacing, (void*)offset_uv);
-			}
-			else
-				glVertexAttribPointer(uv_location, 2, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].uv : &uvs[0]);
-		}
-		checkGLErrors();
-	}
-
-	uv1_location = -1;
-	if (m_uvs1.size())
-	{
-		uv1_location = sh->getAttribLocation("a_coord1");
-		if (uv1_location != -1)
-		{
-			glEnableVertexAttribArray(uv1_location);
-			if (uvs1_vbo_id)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, uvs1_vbo_id);
-				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-			}
-			else
-				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, 0, &m_uvs1[0]);
-		}
-		checkGLErrors();
-	}
-
-	color_location = -1;
-	if (colors.size())
-	{
-		color_location = sh->getAttribLocation("a_color");
-		if (color_location != -1)
-		{
-			glEnableVertexAttribArray(color_location);
-			if (colors_vbo_id)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, colors_vbo_id);
-				glVertexAttribPointer(color_location, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-			}
-			else
-				glVertexAttribPointer(color_location, 4, GL_FLOAT, GL_FALSE, 0, &colors[0]);
-		}
-		checkGLErrors();
-	}
-
-	bones_location = -1;
-	if (bones.size())
-	{
-		bones_location = sh->getAttribLocation("a_bones");
-		if (bones_location != -1)
-		{
-			glEnableVertexAttribArray(bones_location);
-			if (bones_vbo_id)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, bones_vbo_id);
-				glVertexAttribPointer(bones_location, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, NULL);
-			}
-			else
-				glVertexAttribPointer(bones_location, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, &bones[0]);
-		}
-	}
-	weights_location = -1;
-	if (weights.size())
-	{
-		weights_location = sh->getAttribLocation("a_weights");
-		if (weights_location != -1)
-		{
-			glEnableVertexAttribArray(weights_location);
-			if (weights_vbo_id)
-			{
-				glBindBuffer(GL_ARRAY_BUFFER, weights_vbo_id);
-				glVertexAttribPointer(weights_location, 4, GL_FLOAT, GL_FALSE, 0, NULL);
-			}
-			else
-				glVertexAttribPointer(weights_location, 4, GL_FLOAT, GL_FALSE, 0, &weights[0]);
-		}
-	}
-
-}
-
-void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
-{
-    //return;
-
-	Shader* shader = Shader::current;
-	if (!shader || !shader->compiled)
-	{
-		assert(0 && "no shader or shader not compiled or enabled");
-		return;
-	}
-	assert((interleaved.size() || vertices.size()) && "No vertices in this mesh");
-
-	//bind buffers to attribute locations
-	enableBuffers(shader);
-	checkGLErrors();
-
-	//draw call
-	drawCall(primitive, submesh_id, num_instances);
-	checkGLErrors();
-
-	//unbind them
-	disableBuffers(shader);
-	checkGLErrors();
-}
-
-void Mesh::drawCall(unsigned int primitive, int submesh_id, int num_instances)
-{
-	int start = 0; //in primitives
-	int size = (int)vertices.size();
-	if (m_indices.size())
-		size = (int)m_indices.size();
-	else
-	if (interleaved.size())
-		size = (int)interleaved.size();
-
-	if (submesh_id > -1)
-	{
-		assert(submesh_id < submeshes.size() && "this mesh doesnt have as many submeshes");
-		sSubmeshInfo& submesh = submeshes[submesh_id];
-		start = submesh.start;
-		size = submesh.start + submesh.length;
-	}
-
-	//DRAW
-	if (m_indices.size())
-	{
-		if (num_instances > 0)
-		{
-			assert(indices_vbo_id && "indices must be uploaded to the GPU");
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_id);
-			#ifdef OPENGL_ES3
-				glDrawElementsInstanced(primitive, size, GL_UNSIGNED_INT, (void*)(start + sizeof(Vector3u)), num_instances);
-            #else
-				assert(0 && "not supported in OpenGL ES2");
-            #endif
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		}
-		else
-		{
-			if (indices_vbo_id)
-			{
-				/*if (size != 90)*/ {
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_id);
-					glDrawElements(primitive, size, GL_UNSIGNED_INT,(void *) (start * sizeof(Vector3u)));
-					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-				}
-				checkGLErrors();
-			}
-			else
-				glDrawElements(primitive, size, GL_UNSIGNED_INT, (void*)(&m_indices[0] + start)); //no multiply, its a vector3u pointer)
-		}
-	}
-	else
-	{
-		if (num_instances > 0)
-		{
-			#ifdef OPENGL_ES3
-				glDrawArraysInstanced(primitive, start, size, num_instances);
-            #else
-				assert(0 && "not supported in OpenGL ES2");
-            #endif
-		}
-		else
-			glDrawArrays(primitive, start, size);
-	}
-
-	num_triangles_rendered += (size / 3) * (num_instances ? num_instances : 1);
-	num_meshes_rendered++;
-}
-
-void Mesh::disableBuffers(Shader* shader)
-{
-	if (vertex_location != -1) glDisableVertexAttribArray(vertex_location);
-	if (normal_location != -1) glDisableVertexAttribArray(normal_location);
-	if (uv_location != -1) glDisableVertexAttribArray(uv_location);
-	if (uv1_location != -1) glDisableVertexAttribArray(uv1_location);
-	if (color_location != -1) glDisableVertexAttribArray(color_location);
-	if (bones_location != -1) glDisableVertexAttribArray(bones_location);
-	if (weights_location != -1) glDisableVertexAttribArray(weights_location);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);    //if it crashes here, COMMENT THIS LINE ****************************
-	checkGLErrors();
-}
-
-GLuint instances_buffer_id = 0;
-
-//should be faster but in some system it is slower
-void Mesh::renderInstanced(unsigned int primitive, const Matrix44* instanced_models, int num_instances)
-{
-	if (!num_instances)
-		return;
-
-	#ifdef OPENGL_ES3
-		Shader* shader = Shader::current;
-		assert(shader && "shader must be enabled");
-
-		if (instances_buffer_id == 0)
-			glGenBuffersARB(1, &instances_buffer_id);
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, instances_buffer_id);
-		glBufferDataARB(GL_ARRAY_BUFFER_ARB, num_instances * sizeof(Matrix44), instanced_models, GL_STREAM_DRAW_ARB);
-
-		int attribLocation = shader->getAttribLocation("u_model");
-		assert(attribLocation != -1 && "shader must have attribute mat4 u_model (not a uniform)");
-		if (attribLocation == -1)
-			return; //this shader doesnt support instanced model
-
-		//mat4 count as 4 different attributes of vec4... (thanks opengl...)
-		for (int k = 0; k < 4; ++k)
-		{
-			glEnableVertexAttribArray(attribLocation + k );
-			int offset = sizeof(float) * 4 * k;
-			const Uint8* addr = (Uint8*) offset;
-			glVertexAttribPointer(attribLocation + k, 4, GL_FLOAT, false, sizeof(Matrix44), addr);
-			glVertexAttribDivisor(attribLocation + k, 1); // This makes it instanced!
-		}
-
-		//regular render
-		render(primitive, 0, num_instances);
-
-		//disable instanced attribs
-		for (int k = 0; k < 4; ++k)
-		{
-			glDisableVertexAttribArray(attribLocation + k);
-			glVertexAttribDivisor(attribLocation + k, 0);
-		}
-    #else
-		assert(0 && "not supported");
-    #endif
-}
-
-//super obsolete rendering method, do not use
-/*
-void Mesh::renderFixedPipeline(int primitive)
-{
-	assert((vertices.size() || interleaved.size()) && "No vertices in this mesh");
-
-	int interleave_offset = interleaved.size() ? sizeof(tInterleaved) : 0;
-	int offset_normal = sizeof(Vector3);
-	int offset_uv = sizeof(Vector3) + sizeof(Vector3);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-
-	if (vertices_vbo_id || interleaved_vbo_id)
-	{
-		glBindBuffer(GL_ARRAY_BUFFER, interleave_offset ? interleaved_vbo_id : vertices_vbo_id);
-		glVertexPointer(3, GL_FLOAT, interleave_offset, 0);
-	}
-	else
-		glVertexPointer(3, GL_FLOAT, interleave_offset, interleave_offset ? &interleaved[0].vertex : &vertices[0]);
-
-	if (normals.size() || interleave_offset)
-	{
-		glEnableClientState(GL_NORMAL_ARRAY);
-		if (normals_vbo_id || interleaved_vbo_id)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : normals_vbo_id);
-			glNormalPointer(GL_FLOAT, interleave_offset, (void*)offset_normal);
-		}
-		else
-			glNormalPointer(GL_FLOAT, interleave_offset, interleave_offset ? &interleaved[0].normal : &normals[0]);
-	}
-
-	if (uvs.size() || interleave_offset)
-	{
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		if (uvs_vbo_id || interleaved_vbo_id)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : uvs_vbo_id);
-			glTexCoordPointer(2, GL_FLOAT, interleave_offset, (void*)offset_uv);
-		}
-		else
-			glTexCoordPointer(2, GL_FLOAT, interleave_offset, interleave_offset ? &interleaved[0].uv : &uvs[0]);
-	}
-
-	if (colors.size())
-	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		if (colors_vbo_id)
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, colors_vbo_id);
-			glColorPointer(4, GL_FLOAT, 0, NULL);
-		}
-		else
-			glColorPointer(4, GL_FLOAT, 0, &colors[0]);
-	}
-
-	int size = (int)vertices.size();
-	if (!size)
-		size = (int)interleaved.size();
-
-	glDrawArrays(primitive, 0, (GLsizei)size);
-	glDisableClientState(GL_VERTEX_ARRAY);
-	if (normals.size())
-		glDisableClientState(GL_NORMAL_ARRAY);
-	if (uvs.size())
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	if (colors.size())
-		glDisableClientState(GL_COLOR_ARRAY);
-	glBindBuffer(GL_ARRAY_BUFFER, 0); //if it crashes, comment this line
-}
-*/
-
-/*
-void Mesh::renderAnimated( unsigned int primitive, Skeleton* skeleton )
-{
-	Shader* shader = Shader::current;
-	std::vector<Matrix44> bone_matrices;
-	assert(bones.size());
-	int bones_loc = shader->getUniformLocation("u_bones");
-	if (bones_loc != -1)
-	{
-		skeleton->computeFinalBoneMatrices(bone_matrices, this);
-		shader->setUniform("u_bones", bone_matrices );
-	}
-
-	render(primitive);
-}
-*/
-
 #define glGenBuffersARB glGenBuffers
 #define glBindBufferARB glBindBuffer
 #define glBufferDataARB glBufferData
@@ -507,6 +124,15 @@ void Mesh::renderAnimated( unsigned int primitive, Skeleton* skeleton )
 void Mesh::uploadToVRAM()
 {
 	assert(vertices.size() || interleaved.size());
+
+	/*
+	if (use_vao)
+	{
+		if (vao_id == 0)
+			glGenVertexArrays(1, &vao_id);
+		glBindVertexArray(vao_id);
+	}
+	*/
 
 	if (glGenBuffersARB == nullptr)
 	{
@@ -594,9 +220,392 @@ void Mesh::uploadToVRAM()
 	}
 	glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	/*
+	if (use_vao)
+	{
+		enableBuffers(nullptr);
+		glBindVertexArray(0);
+	}
+	*/
+
 	checkGLErrors();
 	//clear buffers to save memory
 }
+
+int vertex_location = -1;
+int normal_location = -1;
+int uv_location = -1;
+int uv1_location = -1;
+int color_location = -1;
+int bones_location = -1;
+int weights_location = -1;
+
+void Mesh::enableBuffers(Shader* sh)
+{
+	vertex_location = !sh ? 0 : sh->getAttribLocation("a_vertex");
+	/*
+	assert(vertex_location != -1 && "No a_vertex found in shader");
+	if (vertex_location == -1)
+		return;
+	*/
+
+	int spacing = 0;
+	int offset_normal = 0;
+	int offset_uv = 0;
+
+	if (interleaved.size())
+	{
+		spacing = sizeof(tInterleaved);
+		offset_normal = sizeof(Vector3f);
+		offset_uv = sizeof(Vector3f) + sizeof(Vector3f);
+	}
+
+	if (vertex_location != -1)
+	{
+		glEnableVertexAttribArray(vertex_location);
+		if (vertices_vbo_id || interleaved_vbo_id)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : vertices_vbo_id);
+			glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, spacing, 0);
+		}
+		else
+			glVertexAttribPointer(vertex_location, 3, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].vertex : &vertices[0]);
+		checkGLErrors();
+	}
+
+	normal_location = -1;
+	if (normals.size() || spacing)
+	{
+		normal_location = !sh ? 1 : sh->getAttribLocation("a_normal");
+		if (normal_location != -1)
+		{
+			glEnableVertexAttribArray(normal_location);
+			if (normals_vbo_id || interleaved_vbo_id)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : normals_vbo_id);
+				glVertexAttribPointer(normal_location, 3, GL_FLOAT, GL_FALSE, spacing, (void*)offset_normal);
+			}
+			else
+				glVertexAttribPointer(normal_location, 3, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].normal : &normals[0]);
+		}
+		checkGLErrors();
+	}
+
+	uv_location = -1;
+	if (uvs.size() || spacing)
+	{
+		uv_location = !sh ? 2 : sh->getAttribLocation("a_coord");
+		if (uv_location != -1)
+		{
+			glEnableVertexAttribArray(uv_location);
+			if (uvs_vbo_id || interleaved_vbo_id)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, interleaved_vbo_id ? interleaved_vbo_id : uvs_vbo_id);
+				glVertexAttribPointer(uv_location, 2, GL_FLOAT, GL_FALSE, spacing, (void*)offset_uv);
+			}
+			else
+				glVertexAttribPointer(uv_location, 2, GL_FLOAT, GL_FALSE, spacing, interleaved.size() ? &interleaved[0].uv : &uvs[0]);
+		}
+		checkGLErrors();
+	}
+
+	uv1_location = -1;
+	if (m_uvs1.size())
+	{
+		uv1_location = !sh ? 3 : sh->getAttribLocation("a_coord1");
+		if (uv1_location != -1)
+		{
+			glEnableVertexAttribArray(uv1_location);
+			if (uvs1_vbo_id)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, uvs1_vbo_id);
+				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+			}
+			else
+				glVertexAttribPointer(uv1_location, 2, GL_FLOAT, GL_FALSE, 0, &m_uvs1[0]);
+		}
+		checkGLErrors();
+	}
+
+	color_location = -1;
+	if (colors.size())
+	{
+		color_location = !sh ? 4 : sh->getAttribLocation("a_color");
+		if (color_location != -1)
+		{
+			glEnableVertexAttribArray(color_location);
+			if (colors_vbo_id)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, colors_vbo_id);
+				glVertexAttribPointer(color_location, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+			}
+			else
+				glVertexAttribPointer(color_location, 4, GL_FLOAT, GL_FALSE, 0, &colors[0]);
+		}
+		checkGLErrors();
+	}
+
+	bones_location = -1;
+	if (bones.size())
+	{
+		bones_location = !sh ? 5 : sh->getAttribLocation("a_bones");
+		if (bones_location != -1)
+		{
+			glEnableVertexAttribArray(bones_location);
+			if (bones_vbo_id)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, bones_vbo_id);
+				glVertexAttribPointer(bones_location, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, NULL);
+			}
+			else
+				glVertexAttribPointer(bones_location, 4, GL_UNSIGNED_BYTE, GL_FALSE, 0, &bones[0]);
+		}
+	}
+	weights_location = -1;
+	if (weights.size())
+	{
+		weights_location = !sh ? 6 : sh->getAttribLocation("a_weights");
+		if (weights_location != -1)
+		{
+			glEnableVertexAttribArray(weights_location);
+			if (weights_vbo_id)
+			{
+				glBindBuffer(GL_ARRAY_BUFFER, weights_vbo_id);
+				glVertexAttribPointer(weights_location, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+			}
+			else
+				glVertexAttribPointer(weights_location, 4, GL_FLOAT, GL_FALSE, 0, &weights[0]);
+		}
+	}
+
+}
+
+void Mesh::render(unsigned int primitive, int submesh_id, int num_instances)
+{
+    //return;
+
+	Shader* shader = Shader::current;
+	if (!shader || !shader->compiled)
+	{
+		assert(0 && "no shader or shader not compiled or enabled");
+		return;
+	}
+	assert((interleaved.size() || vertices.size()) && "No vertices in this mesh");
+
+	//bind buffers to attribute locations
+	enableBuffers(shader);
+	checkGLErrors();
+
+	//draw call
+	drawCall(primitive, submesh_id, num_instances);
+	checkGLErrors();
+
+	//unbind them
+	disableBuffers(shader);
+	checkGLErrors();
+}
+
+void Mesh::getSubmeshStartAndSize(int submesh_id, unsigned int& start, unsigned int& size)
+{
+	start = 0; //in primitives
+	size = (int)vertices.size();
+	if (m_indices.size())
+		size = (int)m_indices.size();
+	else
+		if (interleaved.size())
+			size = (int)interleaved.size();
+	if (submesh_id > -1)
+	{
+		assert(submesh_id < submeshes.size() && "this mesh doesnt have as many submeshes");
+		sSubmeshInfo& submesh = submeshes[submesh_id];
+		start = submesh.start;
+		size = submesh.start + submesh.length;
+	}
+}
+
+void Mesh::drawCall(unsigned int primitive, int submesh_id, int num_instances)
+{
+	unsigned int start;
+	unsigned int size;
+	getSubmeshStartAndSize(submesh_id, start, size);
+
+	//DRAW
+	if (m_indices.size())
+	{
+		if (num_instances > 0)
+		{
+			assert(indices_vbo_id && "indices must be uploaded to the GPU");
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_id);
+			#ifdef OPENGL_ES3
+				glDrawElementsInstanced(primitive, size, GL_UNSIGNED_INT, (void*)(start * sizeof(Vector3u)), num_instances);
+            #else
+				assert(0 && "not supported in OpenGL ES2");
+            #endif
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		}
+		else
+		{
+			if (indices_vbo_id)
+			{
+				/*if (size != 90)*/ {
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_id);
+					glDrawElements(primitive, size, GL_UNSIGNED_INT,(void *) (start * sizeof(Vector3u)));
+					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+				}
+				checkGLErrors();
+			}
+			else
+				glDrawElements(primitive, size, GL_UNSIGNED_INT, (void*)(&m_indices[0] + start)); //no multiply, its a vector3u pointer)
+		}
+	}
+	else //not indexed
+	{
+		if (num_instances > 0)
+		{
+			#ifdef OPENGL_ES3
+				glDrawArraysInstanced(primitive, start, size, num_instances);
+            #else
+				assert(0 && "not supported in OpenGL ES2");
+            #endif
+		}
+		else
+			glDrawArrays(primitive, start, size);
+	}
+
+	num_triangles_rendered += (size / 3) * (num_instances ? num_instances : 1);
+	num_meshes_rendered++;
+}
+
+void Mesh::disableBuffers(Shader* shader)
+{
+	if (vertex_location != -1) glDisableVertexAttribArray(vertex_location);
+	if (normal_location != -1) glDisableVertexAttribArray(normal_location);
+	if (uv_location != -1) glDisableVertexAttribArray(uv_location);
+	if (uv1_location != -1) glDisableVertexAttribArray(uv1_location);
+	if (color_location != -1) glDisableVertexAttribArray(color_location);
+	if (bones_location != -1) glDisableVertexAttribArray(bones_location);
+	if (weights_location != -1) glDisableVertexAttribArray(weights_location);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);    //if it crashes here, COMMENT THIS LINE ****************************
+	checkGLErrors();
+}
+
+void Mesh::drawUsingVAO(unsigned int primitive, int submesh_id)
+{
+	unsigned int start;
+	unsigned int size;
+	getSubmeshStartAndSize( submesh_id, start, size );
+
+	if (vao_id == 0) //upload
+	{
+		assert(vertices_vbo_id || interleaved_vbo_id); //geometry is not in the VRAM
+		glGenVertexArrays(1, &vao_id);
+		glBindVertexArray(vao_id);
+		enableBuffers(nullptr);
+		//enable also indices buffer
+		if (indices_vbo_id != 0)
+		{
+			glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER, indices_vbo_id);
+			glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER, m_indices.size() * sizeof(unsigned int), &m_indices[0], GL_STATIC_DRAW_ARB);
+		}
+		glBindVertexArray(0);
+	}
+
+	glBindVertexArray(vao_id);
+	if (indices_vbo_id)
+	{
+		glDrawElements(primitive, size, GL_UNSIGNED_INT, (void*)(start * sizeof(Vector3u)));
+		//glDrawElementsBaseVertex(primitive,size, GL_UNSIGNED_INT, (void*)(sizeof(unsigned int) * start), 0); //allows to specify offset for vertex buffers also, not only for indices
+	}
+	else
+		glDrawArrays(primitive, start, size);
+	glBindVertexArray(0);
+
+	num_triangles_rendered += (size / 3);
+	num_meshes_rendered++;
+}
+
+GLuint instances_buffer_id = 0;
+unsigned int total_instances = 0;
+
+//should be faster but in some system it is slower
+void Mesh::renderInstanced(unsigned int primitive, const Matrix44* instanced_models, int num_instances)
+{
+	if (!num_instances)
+		return;
+
+	if (glVertexAttribDivisorARB == nullptr)
+		return;//not suported
+
+	#ifdef OPENGL_ES3
+		Shader* shader = Shader::current;
+		assert(shader && "shader must be enabled");
+
+		//initialize global buffer for models so we dont resize every time
+		if (instances_buffer_id == 0)
+		{
+			glGenBuffersARB(1, &instances_buffer_id);
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, instances_buffer_id);
+			total_instances = 256;
+			glBufferDataARB(GL_ARRAY_BUFFER_ARB, total_instances * sizeof(Matrix44), nullptr, GL_STREAM_DRAW_ARB);
+			//glBufferDataARB(GL_ARRAY_BUFFER_ARB, num_instances * sizeof(Matrix44), instanced_models, GL_STREAM_DRAW_ARB);
+		}
+		else if (total_instances < num_instances)
+		{
+			total_instances *= 2;
+			glBindBufferARB(GL_ARRAY_BUFFER_ARB, instances_buffer_id);
+			glBufferDataARB(GL_ARRAY_BUFFER_ARB, total_instances * sizeof(Matrix44), nullptr, GL_STREAM_DRAW_ARB);
+		}
+
+		//upload models
+		glBindBufferARB(GL_ARRAY_BUFFER_ARB, instances_buffer_id);
+		glBufferSubDataARB(GL_ARRAY_BUFFER_ARB, 0, total_instances * sizeof(Matrix44), instanced_models);
+
+		int attribLocation = shader->getAttribLocation("u_model");
+		assert(attribLocation != -1 && "shader must have attribute mat4 u_model (not a uniform)");
+		if (attribLocation == -1)
+			return; //this shader doesnt support instanced model
+
+		//mat4 count as 4 different attributes of vec4... (thanks opengl...)
+		for (int k = 0; k < 4; ++k)
+		{
+			glEnableVertexAttribArray(attribLocation + k );
+			int offset = sizeof(float) * 4 * k;
+			const Uint8* addr = (Uint8*) offset;
+			glVertexAttribPointer(attribLocation + k, 4, GL_FLOAT, false, sizeof(Matrix44), addr);
+			glVertexAttribDivisorARB(attribLocation + k, 1); // This makes it instanced!
+		}
+
+		//regular render
+		render(primitive, -1, num_instances);
+
+		//disable instanced attribs
+		for (int k = 0; k < 4; ++k)
+		{
+			glDisableVertexAttribArray(attribLocation + k);
+			glVertexAttribDivisorARB(attribLocation + k, 0);
+		}
+		
+    #else
+		assert(0 && "not supported");
+    #endif
+}
+
+/*
+void Mesh::renderAnimated( unsigned int primitive, Skeleton* skeleton )
+{
+	Shader* shader = Shader::current;
+	std::vector<Matrix44> bone_matrices;
+	assert(bones.size());
+	int bones_loc = shader->getUniformLocation("u_bones");
+	if (bones_loc != -1)
+	{
+		skeleton->computeFinalBoneMatrices(bone_matrices, this);
+		shader->setUniform("u_bones", bone_matrices );
+	}
+
+	render(primitive);
+}
+*/
 
 bool Mesh::createCollisionModel(bool is_static)
 {

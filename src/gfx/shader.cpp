@@ -10,10 +10,6 @@
 
 #include "texture.h"
 
-#ifndef MAX
-	#define MAX(A,B) ((A)>(B)?(A):(B))
-#endif 
-
 //typedef unsigned int GLhandle;
 
 #ifdef LOAD_EXTENSIONS_MANUALLY
@@ -197,6 +193,8 @@ bool Shader::hasInfoLog() const
 
 bool Shader::compileFromMemory(const std::string& vsm, const std::string& psm)
 {
+	assert(glGetError() == GL_NO_ERROR);
+
 	if (glCreateProgram == 0)
 	{
 		std::cout << "Error: your graphics cards dont support shaders. Sorry." << std::endl;
@@ -419,7 +417,9 @@ void Shader::saveShaderInfoLog(GLuint obj )
 
 	for (size_t i = 0; i < lines.size(); ++i)
 	{
-		lines_with_error[i] = MAX(0, stoi(lines[i].substr(2)) - 1);
+		std::string num = lines[i].substr(2);
+		if(num[0] >= '0' && num[0] <= '9')
+			lines_with_error[i] = MAX(0, stoi(num) - 1);
 		std::cout << TermColor::RED << lines[i] << TermColor::DEFAULT << std::endl;
 	}
         
@@ -1082,27 +1082,34 @@ Shader* Shader::CompileShader(const char* name, const char* vs_code, const char*
 
 	std::string vs(vs_code);
 	std::string fs(fs_code);
-	std::string version;
+	std::string version_vs;
+	std::string version_fs;
+	size_t index;
 
 	//add macros after #version, otherwise it crashes
-	if (vs[0] == '#')
+	if (vs.substr(0,8) == "#version")
 	{
-		size_t index = vs.find_first_of('\n');
-		version = vs.substr(0, index);
+		index = vs.find_first_of('\n');
+		version_vs = vs.substr(0, index);
 		vs = vs.substr(index);
+	}
+	if (fs.substr(0, 8) == "#version")
+	{
 		index = fs.find_first_of('\n');
+		version_fs = fs.substr(0, index);
 		fs = fs.substr(index);
 	}
 
-	vs = version + "\n" + macros_str + "\n" + vs;
-	fs = version + "\n" + macros_str + "\n" + fs;
+	vs = version_vs + "\n" + macros_str + "\n" + vs;
+	fs = version_fs + "\n" + macros_str + "\n" + fs;
 
 	Shader* shader = NULL;
+	bool is_new = false;
 	auto it2 = s_Shaders.find(name);
 	if (it2 == s_Shaders.end())
 	{
 		shader = new Shader();
-		s_Shaders[name] = shader;
+		is_new = true;
 	}
 	else
 		shader = it2->second;
@@ -1118,7 +1125,8 @@ Shader* Shader::CompileShader(const char* name, const char* vs_code, const char*
 	//shader->ps_filename = subshader.fs_name;
 	//if(macros)
 	//	subshader.default_macros = macros;
-
+	if(is_new)
+		s_Shaders[name] = shader;
 	return shader;
 }
 
@@ -1142,6 +1150,9 @@ Shader* Shader::UberShader::get(uint64 macros)
 	auto it = compiled_shaders.find(macros);
 	if (it != compiled_shaders.end())
 		return it->second;
+
+	if (has_error)
+		return nullptr;
 
 	std::string fullname = name + "[" + std::to_string(macros) + "]";
 
@@ -1167,7 +1178,10 @@ Shader* Shader::UberShader::get(uint64 macros)
 
 	Shader* shader = Shader::CompileShader(fullname.c_str(), vs_code.c_str(), fs_code.c_str(), macros_str.c_str() );
 	if (!shader)
+	{
+		has_error = true;
 		return nullptr;
+	}
 	compiled_shaders[macros] = shader;
 	shader->vs_filename = this->vs_name;
 	shader->fs_filename = this->fs_name;
@@ -1254,6 +1268,17 @@ void BufferObject::updateFromPointer(const void* data, int size)
 	glBufferData(type, size, data, GL_STREAM_DRAW);
 	glBindBuffer(type, 0);
 }
+
+void BufferObject::readToPointer(void* data, int size)
+{
+	assert(size && id);
+
+	//allocate and upload
+	glBindBuffer(type, id);
+	glGetBufferSubData( type, 0, size, data );
+	glBindBuffer(type, 0);
+}
+
 
 void BufferObject::bind(Shader* shader, int index, int start, int length)
 {

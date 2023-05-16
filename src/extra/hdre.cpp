@@ -165,6 +165,7 @@ bool HDRE::load(const char* filename)
 	assert(nFullMips <= N_MAX_LEVELS);
 	levels = nFullMips;
 	w = width;
+    //printf("Load %d mips of HDRE texture\n", nFullMips);
 
     int i;
     for (i = 0; i < N_LEVELS; i++)
@@ -180,13 +181,27 @@ bool HDRE::load(const char* filename)
 			// allocate memory
 			this->pixels_f[i][j] = new float[faceSize];
 
-			// set data
+			//reverseY
+			if (i && 1)
+			{
+				for (int y = 0; y < w; ++y)
+				{
+					memcpy(this->pixels_f[i][j] + w * (w - y - 1) * HDREHeader.numChannels, &this->data[mapOffset + faceOffset + w * y * HDREHeader.numChannels], sizeof(float) * w * HDREHeader.numChannels);
+				}
+			}
+			else
+			{
+				// set data
+				memcpy(this->pixels_f[i][j], &this->data[mapOffset + faceOffset], faceSize * sizeof(float));
+			}
+
+			/* OLD
 			for (int k = 0; k < faceSize; k++) {
 
 				float value = this->data[mapOffset + faceOffset + k];
-
 				this->pixels_f[i][j][k] = value;
 			}
+			*/
 
 			// update face offset
 			faceOffset += faceSize;

@@ -167,10 +167,12 @@ namespace GFX {
 			std::string name;
 			std::string vs_name;
 			std::string fs_name;
+			bool has_error;
 			std::vector<std::string> macros;
 			std::map<std::string,int> macros_index;
 			std::map<uint64,Shader*> compiled_shaders;
 			UberShader(std::string name, std::string vs_name, std::string fs_name, std::vector<std::string> macros) {
+				has_error = false;
 				this->name = name, this->vs_name = vs_name, this->fs_name = fs_name, this->macros = macros;
 				for (size_t i = 0; i < macros.size(); ++i) 
 					macros_index[ macros[i] ] = i;
@@ -201,7 +203,10 @@ namespace GFX {
 		void deallocate();
 		template <typename T>
 		void update(const T& obj) { updateFromPointer(&obj, sizeof(T)); }
+		template <typename T>
+		void read(T& obj) { readToPointer(&obj, sizeof(T)); }
 		void updateFromPointer(const void* data, int size);
+		void readToPointer(void* data, int size);
 		//the global index behaves similar to slots in textures, you bind a UBO to an index, and a block to the same index
 		void bind(Shader* shader, int global_index, int start = 0, int length = -1);
 	};

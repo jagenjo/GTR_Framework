@@ -181,6 +181,7 @@ namespace GFX {
 		//load using the manager (caching loaded ones to avoid reloading them)
 		static Texture* Get(const char* filename, bool mipmaps = true, bool wrap = true);
 		static Texture* GetAsync(const char* filename, bool mipmaps = true, bool wrap = true);
+		static Texture* DecodeAsync(const char* filename, std::vector<uint8>& buffer, bool mipmaps = true, bool wrap = true);
 		static Texture* Find(const char* filename);
 		void setName(const char* name) {
 			filename = name;
@@ -213,9 +214,11 @@ bool isPowerOfTwo(int n);
 class LoadTextureTask : public Task {
 public:
 	std::string filename;
+	std::vector<uint8> buffer;
 	Image* image;
 
 	LoadTextureTask(const char* filename);
+	LoadTextureTask(const char* filename, std::vector<uint8>& buffer);
 	void onExecute();
 };
 
