@@ -242,7 +242,7 @@ void SceneEditor::render(Camera* camera)
 		ImGui::ColorEdit3("Ambient Light", scene->ambient_light.v);
 
 		if (UI::Filename("Skybox", scene->skybox_filename, scene->base_folder))
-			renderer->setupScene();
+			renderer->setupScene(camera);
 
 		//add info to the debug panel about the camera
 		if (ImGui::TreeNode(camera, "Camera")) {
