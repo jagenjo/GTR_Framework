@@ -10,6 +10,10 @@
 
 #include "texture.h"
 
+#ifndef MAX
+	#define MAX(A,B) ((A)>(B)?(A):(B))
+#endif
+
 //typedef unsigned int GLhandle;
 
 #ifdef LOAD_EXTENSIONS_MANUALLY
