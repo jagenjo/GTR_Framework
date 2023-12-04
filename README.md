@@ -1,6 +1,8 @@
 # GTR Framework
 OpenGL C++ Framework used for teach the Real-time Grapchics course at Universitat Pompeu Fabra.
 
+Course material can be found here: https://tamats.com/learn/realtime-graphics/
+
 ## Compile
 
 ### Windows
