@@ -1611,7 +1611,7 @@ void Mesh::updateBoundingBox()
 	else if (interleaved.size())
 	{
 		aabb_max = aabb_min = interleaved[0].vertex;
-		for (int i = 1; i < vertices.size(); ++i)
+		for (int i = 1; i < interleaved.size(); ++i)
 		{
 			aabb_min.setMin(interleaved[i].vertex);
 			aabb_max.setMax(interleaved[i].vertex);
