@@ -1,0 +1,35 @@
+# Makefile for KTH's code.
+
+include Makefile.inc
+
+SOURCES = src/*.cpp src/core/*.cpp src/gfx/*.cpp src/pipeline/*.cpp src/utils/*.cpp src/extra/*.cpp src/extra/coldet/*.cpp src/extra/*.c src/extra/imgui/*.cpp
+
+LDFLAGS  :=$(shell sdl2-config --libs) -ldl
+CPPFLAGS :=$(CPPFLAGS) -I$(shell sdl2-config --prefix)/include
+
+$(info VAR="$(CXXFLAGS)")
+
+OBJECTS = $(patsubst %.cpp, %.o, $(wildcard $(SOURCES)))
+DEPENDS = $(patsubst %.cpp, %.d, $(wildcard $(SOURCES)))
+
+LIBS = $(LDFLAGS) -framework Cocoa -framework OpenGL
+
+$(info VAR="$(LIBS)")
+
+all:	main
+
+main:	$(DEPENDS) $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) $(LIBS) -o $@
+
+%.d: %.cpp
+	@$(CXX) -M -MT "$*.o $@" $(CPPFLAGS) $<  > $@
+	@echo Generating new dependencies for $<
+
+run:
+	./main
+
+clean:
+	rm -f $(OBJECTS) $(DEPENDS) main *.pyc
+
+-include $(SOURCES:.cpp=.d)
+
