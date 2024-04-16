@@ -13,12 +13,12 @@ namespace GFX {
 
 	void startGPULabel(const char* text)
 	{
-		glPushDebugGroup(GL_DEBUG_SOURCE_THIRD_PARTY, 1, -1, text);
+		//glPushDebugGroup(GL_DEBUG_SOURCE_THIRD_PARTY, 1, -1, text);
 	}
 
 	void endGPULabel()
 	{
-		glPopDebugGroup();
+		//glPopDebugGroup();
 	}
 
 
