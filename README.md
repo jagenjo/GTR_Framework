@@ -24,4 +24,9 @@ and to compile
 make
 ```
 
+### CMake
+
+The project includes a CMAKE to build the project. To use it in case the other options doesnt work, follow the guide on this other repo:
+https://github.com/upf-gti/TJE_Framework/tree/master
+
 
