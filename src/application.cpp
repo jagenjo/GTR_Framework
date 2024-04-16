@@ -40,7 +40,7 @@ Application::Application()
 	//loads and compiles several shaders from one single file
 	//change to "data/shader_atlas_osx.txt" if you are in XCODE
 #ifdef __APPLE__
-	const char* shader_atlas_filename = "data/shader_atlas_osx.txt";
+	const char* shader_atlas_filename = "data/shader_atlas_osx.glsl";
 #else
 	const char* shader_atlas_filename = "data/shader_atlas.glsl";
 #endif
